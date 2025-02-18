@@ -25,17 +25,17 @@ jobs:
       # Install dependencies
       - name: Install frontend dependencies
         run: |
-          cd ../SustainaFoodFront
+          cd SustainaFoodFront
           npm install
 
       # Run tests
       - name: Run frontend tests
         run: |
-          cd ../SustainaFoodFront
+          cd SustainaFoodFront
           npm test
 
       # Build the frontend
       - name: Build frontend
         run: |
-          cd ../SustainaFoodFront
+          cd SustainaFoodFront
           npm run build
