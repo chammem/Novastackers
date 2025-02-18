@@ -26,11 +26,11 @@ jobs:
       # Install dependencies
       - name: Install backend dependencies
         run: |
-          cd ../SustaiaFoodBack
+          cd ../SustainaFoodBack
           npm install
 
       # Run tests (if you have any)
       - name: Run backend tests
         run: |
-          cd ../SustaiaFoodBack
+          cd ../SustainaFoodBack
           npm test
