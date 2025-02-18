@@ -1,13 +1,15 @@
 import React from 'react'
 import { useState } from 'react';
 function RestaurantForm() {
-      const [firstName,setFirstName] = useState("");
-        const [lastName,setlastName] = useState("");
+        const [restaurantName,setRestaurantName] = useState("");
+        const [phoneNumber,setPhoneNumber] = useState("");
         const [email,setEmail] = useState("");
         const [password,setPassword] = useState("");
         const [confirmPassword,setConfirmPassword] = useState("");
+        const [adress,setAdress] = useState("");
+        const [buisnessLicense,setBuisnessLicense]= useState("");
         const RegisterUser = () => {
-            console.log(firstName,lastName,email,password,confirmPassword);
+            console.log(restaurantName,phoneNumber,email,password,confirmPassword,adress,buisnessLicense);
         }
   return (
     <div className="ltn__login-area pb-110">
@@ -25,11 +27,15 @@ function RestaurantForm() {
         <div className="col-lg-6 offset-lg-3">
           <div className="account-login-inner">
             <form action="#" className="ltn__form-box contact-form-box">
-              <input  onChange={(e)=> setFirstName(e.target.value)}  type="text" name="firstname" placeholder="First Name" />
-              <input  onChange={(e)=> setLastName(e.target.value)} type="text" name="lastname" placeholder="Last Name" />
-              <input  onChange={(e)=> setEmail(e.target.value)} type="text" name="email" placeholder="Email*" />
-              <input  onChange={(e)=> setPassword(e.target.value)} type="password" name="password" placeholder="Password*" />
-              <input  onChange={(e)=> setConfirmPassword(e.target.value)} type="password" name="confirmpassword" placeholder="Confirm Password*" />
+              <input  onChange={(e)=> setRestaurantName(e.target.value)}  type="text" name="firstname" placeholder="Restaurant Name" />
+              <input  onChange={(e)=> setPhoneNumber(e.target.value)} type="text" name="lastname" placeholder="Phone Number" />
+              <input  onChange={(e)=> setEmail(e.target.value)} type="text" name="email" placeholder="Email" />
+              <input  onChange={(e)=> setPassword(e.target.value)} type="password" name="password" placeholder="Password" />
+              <input  onChange={(e)=> setConfirmPassword(e.target.value)} type="password" name="confirmpassword" placeholder="Confirm Password" />
+              <input  onChange={(e)=> setAdress(e.target.value)} type="password" name="confirmpassword" placeholder="Adress" />
+              <input  onChange={(e)=> setBuisnessLicense(e.target.value)} type="password" name="confirmpassword" placeholder="Buisness License" />
+
+
               <label className="checkbox-inline">
                 <input type="checkbox" defaultValue />
                 I consent to Herboil processing my personal data in order to send personalized marketing material in accordance with the consent form and the privacy policy.

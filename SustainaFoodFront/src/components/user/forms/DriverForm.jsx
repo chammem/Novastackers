@@ -4,10 +4,14 @@ function DriverForm() {
       const [firstName,setFirstName] = useState("");
         const [lastName,setlastName] = useState("");
         const [email,setEmail] = useState("");
+        const [phoneNumber,setPhoneNumber] = useState("");
         const [password,setPassword] = useState("");
         const [confirmPassword,setConfirmPassword] = useState("");
+        const [vehiculeInfo,setVehiculeInfo] = useState("");
+        const [availability,setAvailaility] = useState("");
+        const [license,setLicense] = useState("");
         const RegisterUser = () => {
-            console.log(firstName,lastName,email,password,confirmPassword);
+          
         }
   return (
 
@@ -28,9 +32,14 @@ function DriverForm() {
           <form action="#" className="ltn__form-box contact-form-box">
             <input  onChange={(e)=> setFirstName(e.target.value)}  type="text" name="firstname" placeholder="First Name" />
             <input  onChange={(e)=> setLastName(e.target.value)} type="text" name="lastname" placeholder="Last Name" />
-            <input  onChange={(e)=> setEmail(e.target.value)} type="text" name="email" placeholder="Email*" />
-            <input  onChange={(e)=> setPassword(e.target.value)} type="password" name="password" placeholder="Password*" />
-            <input  onChange={(e)=> setConfirmPassword(e.target.value)} type="password" name="confirmpassword" placeholder="Confirm Password*" />
+            <input  onChange={(e)=> setEmail(e.target.value)} type="text" name="email" placeholder="Email" />
+            <input  onChange={(e)=> setPassword(e.target.value)} type="password" name="password" placeholder="Password" />
+            <input  onChange={(e)=> setConfirmPassword(e.target.value)} type="password" name="confirmpassword" placeholder="Confirm Password" />
+            <input  onChange={(e)=> setVehiculeInfo(e.target.value)} type="password" name="confirmpassword" placeholder="Vehicule Info" />
+            <input  onChange={(e)=> setAvailaility(e.target.value)} type="password" name="confirmpassword" placeholder="Availability" />
+            <input  onChange={(e)=> setLicense(e.target.value)} type="password" name="confirmpassword" placeholder="License" />
+
+
             <label className="checkbox-inline">
               <input type="checkbox" defaultValue />
               I consent to Herboil processing my personal data in order to send personalized marketing material in accordance with the consent form and the privacy policy.
