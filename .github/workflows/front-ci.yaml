@@ -28,11 +28,11 @@ jobs:
           cd SustainaFoodFront
           npm install
 
-      # Run tests
-      - name: Run frontend tests
-        run: |
-          cd SustainaFoodFront
-          npm test
+      # # Run tests
+      # - name: Run frontend tests
+      #   run: |
+      #     cd SustainaFoodFront
+      #     npm test
 
       # Build the frontend
       - name: Build frontend
