@@ -1,13 +1,16 @@
 import React from 'react'
 import { useState } from 'react';
 function UserForm() {
-      const [firstName,setFirstName] = useState("");
+        const [firstName,setFirstName] = useState("");
         const [lastName,setlastName] = useState("");
         const [email,setEmail] = useState("");
         const [password,setPassword] = useState("");
         const [confirmPassword,setConfirmPassword] = useState("");
+        const [dietaryRestriction,setDietatyRestriction] = useState("");
+        const [allergies,setAllergies] = useState("");
+        
         const RegisterUser = () => {
-            console.log(firstName,lastName,email,password,confirmPassword);
+           
         }
   return (
     <div className="ltn__login-area pb-110">
@@ -27,9 +30,11 @@ function UserForm() {
           <form action="#" className="ltn__form-box contact-form-box">
             <input  onChange={(e)=> setFirstName(e.target.value)}  type="text" name="firstname" placeholder="First Name" />
             <input  onChange={(e)=> setLastName(e.target.value)} type="text" name="lastname" placeholder="Last Name" />
-            <input  onChange={(e)=> setEmail(e.target.value)} type="text" name="email" placeholder="Email*" />
-            <input  onChange={(e)=> setPassword(e.target.value)} type="password" name="password" placeholder="Password*" />
-            <input  onChange={(e)=> setConfirmPassword(e.target.value)} type="password" name="confirmpassword" placeholder="Confirm Password*" />
+            <input  onChange={(e)=> setEmail(e.target.value)} type="text" name="email" placeholder="Email" />
+            <input  onChange={(e)=> setPassword(e.target.value)} type="password" name="password" placeholder="Password" />
+            <input  onChange={(e)=> setConfirmPassword(e.target.value)} type="password" name="confirmpassword" placeholder="Confirm Password" />
+            <input  onChange={(e)=> setDietatyRestriction(e.target.value)} type="password" name="confirmpassword" placeholder="Dietary Restriction" />
+            <input  onChange={(e)=> setAllergies(e.target.value)} type="password" name="confirmpassword" placeholder="Allergies" />
             <label className="checkbox-inline">
               <input type="checkbox" defaultValue />
               I consent to Herboil processing my personal data in order to send personalized marketing material in accordance with the consent form and the privacy policy.
