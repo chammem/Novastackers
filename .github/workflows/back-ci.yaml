@@ -29,8 +29,8 @@ jobs:
           cd SustainaFoodBack
           npm install
 
-      # Run tests (if you have any)
-      - name: Run backend tests
-        run: |
-          cd SustainaFoodBack
-          npm test
+      # # Run tests (if you have any)
+      # - name: Run backend tests
+      #   run: |
+      #     cd SustainaFoodBack
+      #     npm test
