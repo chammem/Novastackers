@@ -15,11 +15,12 @@ jobs:
       uses: actions/checkout@v3
 
     # Étape 2 : Connexion à Docker Hub
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Connexion à Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: "nawrasse"
+          password: "222jft7768"
+
 
     # Étape 3 : Construction et Tagging de l'image Docker
     - name: Build and Tag Docker image
