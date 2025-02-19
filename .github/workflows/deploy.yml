@@ -3,7 +3,7 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - main   # ou la branche que tu utilises pour déployer, par exemple "nawrasse"
+      - main  # Modifier si ta branche de déploiement est différente
 
 jobs:
   deploy:
@@ -12,7 +12,7 @@ jobs:
     steps:
     # Étape 1 : Vérification du code source
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     # Étape 2 : Connexion à Docker Hub
     - name: Login to Docker Hub
@@ -21,15 +21,16 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # Étape 3 : Construction de l'image Docker
-    - name: Build Docker image
+    # Étape 3 : Construction et Tagging de l'image Docker
+    - name: Build and Tag Docker image
       run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/sustainafoodback .
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/sustainafoodback:latest .
+        docker tag ${{ secrets.DOCKER_USERNAME }}/sustainafoodback:latest ${{ secrets.DOCKER_USERNAME }}/sustainafoodback:$(date +%Y%m%d%H%M)
 
     # Étape 4 : Push de l'image vers Docker Hub
     - name: Push Docker image
       run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/sustainafoodback
+        docker push ${{ secrets.DOCKER_USERNAME }}/sustainafoodback:latest
 
     # Étape 5 : Déploiement sur le serveur distant via SSH
     - name: Deploy to Server
@@ -38,9 +39,21 @@ jobs:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: 22  # Par défaut, SSH utilise le port 22
+        port: 22  # Modifier si le SSH utilise un autre port
         script: |
-          # Commandes pour déployer sur ton serveur
-          docker pull ${{ secrets.DOCKER_USERNAME }}/sustainafoodback
-          docker run -d -p 80:80 ${{ secrets.DOCKER_USERNAME }}/sustainafoodback
+          echo "Déploiement en cours sur le serveur..."
+          
+          # Arrêt et suppression du conteneur existant s'il y en a un
+          docker stop sustainafoodback || true
+          docker rm sustainafoodback || true
+          
+          # Récupération de la nouvelle image
+          docker pull ${{ secrets.DOCKER_USERNAME }}/sustainafoodback:latest
+          
+          # Lancement du conteneur avec les bons paramètres
+          docker run -d --name sustainafoodback \
+            -p 80:80 \
+            --restart unless-stopped \
+            ${{ secrets.DOCKER_USERNAME }}/sustainafoodback:latest
 
+          echo "Déploiement terminé avec succès !"
