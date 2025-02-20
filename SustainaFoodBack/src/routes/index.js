@@ -2,11 +2,11 @@ const express = require('express')
 
 const router = express.Router()
 
-const userSignUpController = require('../controllers/userSignUp')
-const userSignInController = require('../controllers/userSignIn')
+const userSignUpController = require('../controllers/auth/userSignUp')
+const userSignInController = require('../controllers/auth/userSignIn')
 const authToken = require('../middleware/authToken')
-const userDetailsController = require('../controllers/userDetails')
-const userLogout = require('../controllers/userLogout')
+const userDetailsController = require('../controllers/auth/userDetails')
+const userLogout = require('../controllers/auth/userLogout')
 const allUsers = require('../controllers/allUsers')
 
 

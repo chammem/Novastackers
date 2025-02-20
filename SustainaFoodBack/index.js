@@ -4,6 +4,10 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const connectDB = require("./src/config/db");
 const router = require("./src/routes");
+const FoodItem = require("./src/models/foodItem");
+
+
+
 
 const app = express();
 app.use(
