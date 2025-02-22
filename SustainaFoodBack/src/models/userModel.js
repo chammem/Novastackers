@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       enum: ["user", "driver", "restaurant", "supermarket", "charity"],
     },
-    fullName: { type: String, required: true, trim: true },
+    fullName: { type: String, required: false, trim: true },
     phoneNumber: { type: String, trim: true },
     address: { type: String, trim: true },
     dietaryRestrictions: { type: [String], default: [] },

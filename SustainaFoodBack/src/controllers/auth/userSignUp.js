@@ -67,40 +67,39 @@ async function userSendVerificationMail(req,res) {
         })
     }  
 }
-async function registerVerification (req,res){
-    const {email,code,userInput} = req.body;
+// async function registerVerification (req,res){
+//     const {code,userInput} = req.body;
 
-    const verification = await Verification.findOne({email,code});
+//     const verification = await Verification.findOne({email:userInput.email,code:code});
 
-    if(!verification){
-        return res.status(400).json({message:"invalid verification"});
-    }
+//     if(!verification){
+//         return res.status(400).json({message:"invalid verification"});
+//     }
     
-    return res.status(200).json({message:"User registered succesfully!"})
-}
+//     return res.status(200).json({message:"Verification sent to you email"})
+// }
 async function registerVerification(req, res) {
-    const {  emaile,code, userInput } = req.body;
+    const { code, userInput } = req.body;
     
-
+    console.log(userInput.email);
+    console.log(code);
     try {
-        const verification = await Verification.findOne({ email: emaile, code: code });
+        const verification = await Verification.findOne({ email:userInput.email,code:code });
 
         console.log(verification);
-
+        
         if (!verification) {
             return res.status(400).json({ message: "Invalid verification code." });
         }
         if (verification.expiresAt < new Date()) {
             return res.status(400).json({ message: "Verification code expired." });
         }
-        
-
         // Create user after successful verification
         const newUser = new userModel(userInput);
         const savedUser = await newUser.save();
 
         // Remove verification record after successful registration
-        await Verification.deleteOne({ email:emaile, code:code });
+        await Verification.deleteOne({ email:userInput.email,code:code });
 
         return res.status(200).json({ message: "User registered successfully!", user: savedUser });
 
