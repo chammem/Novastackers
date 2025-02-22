@@ -37,7 +37,7 @@ function RoleChoice() {
                 <option>restaurant</option>
                 <option>supermarket</option>
                 <option>driver</option>
-                <option>regularUser</option>
+                <option>user</option>
               </select>
             </div>
             <div className="btn-wrapper mt-3 w-100 text-center">

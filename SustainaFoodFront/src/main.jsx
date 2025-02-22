@@ -9,12 +9,9 @@ import Error404 from './components/Error404.jsx'
 import Account from './components/user/Account.jsx'
 import Connect from './components/user/Connect.jsx'
 import RoleChoice from './components/user/RoleChoice.jsx'
-import RestaurantForm from './components/user/forms/RestaurantForm.jsx'
-import UserForm from './components/user/forms/UserForm.jsx'
-import SuperMarketForm from './components/user/forms/SuperMarketForm.jsx'
-import DriverForm from './components/user/forms/DriverForm.jsx'
 
-
+import VerifyAccount from './components/user/forms/VerifyAccount.jsx'
+import UserForm from './components/user/RegisterTest.jsx'
 const router = createBrowserRouter([
 {
    path:"/",
@@ -22,15 +19,11 @@ const router = createBrowserRouter([
    errorElement:<Error404/>
 },  
 {
-  path:'/register',
-  element:<Register/>,
-  children:[
-    {path:"restaurant",element:<RestaurantForm/>},
-    {path:"regularUser",element:<UserForm/>},
-    {path:"supermarket",element:<SuperMarketForm/>},
-    {path:"driver",element:<DriverForm/>}
-  ]
+  path:'/register/:role',
+  element:<UserForm/>,
+  
 },
+  
 {
   path:'/forget-password',
   element:<ForgotPassword/>
@@ -46,7 +39,10 @@ const router = createBrowserRouter([
 {
   path:'/role',
   element:<RoleChoice/>
-}
+},  {
+  path: "/verify", 
+  element: <VerifyAccount />,
+},
 
 
 ])

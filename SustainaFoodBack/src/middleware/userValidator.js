@@ -16,7 +16,11 @@ const userValidatorSchema = Joi.object({
   role: Joi.string()
     .valid("user", "driver", "restaurant", "supermarket", "charity")
     .required(),
-  fullName: Joi.string().trim().required(),
+  fullName: Joi.string().trim().when("role",{
+    is : Joi.valid('driver','user'),
+    then:Joi.required(),
+    otherwise:Joi.optional()
+  }),
   phoneNumber: Joi.string()
     .pattern(/^\d{8,15}$/)
     .messages({
@@ -37,21 +41,37 @@ const userValidatorSchema = Joi.object({
 
   dietaryRestrictions: Joi.array().items(Joi.string()).default([]).optional(),
   allergies: Joi.array().items(Joi.string()).default([]).optional(),
-  vehicleType: Joi.string().optional(),
-  licensePlateNumber: Joi.string().optional(),
-  vehicleCapacity: Joi.string().optional(),
+
+  // Driver-specific fields
+  vehicleType: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
+  licensePlateNumber: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
+  vehicleCapacity: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
+  driverLicenseNumber: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
+  vehicleRegistration: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
   workingHours: Joi.string().optional(),
   daysAvailable: Joi.array().items(Joi.string()).default([]).optional(),
-  driverLicenseNumber: Joi.string().optional(),
-  vehicleRegistration: Joi.string().optional(),
-  restaurantName: Joi.string().optional(),
+
+  // Restaurant-specific fields
+  restaurantName: Joi.string().when("role", { is: "restaurant", then: Joi.required(), otherwise: Joi.optional() }),
   businessType: Joi.string().optional(),
   foodTypesDonated: Joi.array().items(Joi.string()).default([]).optional(),
   averageQuantityDonated: Joi.string().optional(),
   preferredPickupTimes: Joi.string().optional(),
-  businessLicenseNumber: Joi.string().optional(),
-  taxId: Joi.string().optional(),
-  supermarketName: Joi.string().optional(),
+
+  // Fields required for both restaurants and supermarkets
+  businessLicenseNumber: Joi.string().when("role", {
+    is: Joi.valid("restaurant", "supermarket"),
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }),
+  taxId: Joi.string().when("role", {
+    is: Joi.valid("restaurant", "supermarket"),
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }),
+
+  // Supermarket-specific fields
+  supermarketName: Joi.string().when("role", { is: "supermarket", then: Joi.required(), otherwise: Joi.optional() }),
 });
 
 module.exports = userValidatorSchema;
