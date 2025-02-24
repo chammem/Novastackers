@@ -21,6 +21,8 @@ const userSchema = new mongoose.Schema(
     address: { type: String, trim: true },
     dietaryRestrictions: { type: [String], default: [] },
     allergies: { type: [String], default: [] },
+    
+    //Driver specific fields//
     vehicleType: { type: String },
     licensePlateNumber: { type: String },
     vehicleCapacity: { type: String },
@@ -28,6 +30,8 @@ const userSchema = new mongoose.Schema(
     daysAvailable: { type: [String], default: [] },
     driverLicenseNumber: { type: String },
     vehicleRegistration: { type: String },
+
+    //Restaurant-specific fields//
     restaurantName: { type: String },
     businessType: { type: String },
     foodTypesDonated: { type: [String], default: [] },
@@ -35,7 +39,16 @@ const userSchema = new mongoose.Schema(
     preferredPickupTimes: { type: String },
     businessLicenseNumber: { type: String },
     taxId: { type: String },
+    
+    //
     supermarketName: { type: String },
+    ///NonUser-specific attribute //
+    isActive:{type:Boolean,default:false},
+    verificationStatus:{
+      type:String,
+      enum:["pending","verified","rejected"],
+      default:"pending"
+    }
   },
   { timestamps: true }
 );

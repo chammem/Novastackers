@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import { createBrowserRouter,RouterProvider,BrowserRouter} from 'react-router-dom'
 import App from './App.jsx'
-import Register from './components/user/Register.jsx'
+
 import ForgotPassword from './components/user/ForgotPassword.jsx'
 import Error404 from './components/Error404.jsx'
 import Account from './components/user/Account.jsx'
