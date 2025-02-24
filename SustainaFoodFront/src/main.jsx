@@ -9,6 +9,8 @@ import Error404 from './components/Error404.jsx'
 import Account from './components/user/Account.jsx'
 import Connect from './components/user/Connect.jsx'
 import RoleChoice from './components/user/RoleChoice.jsx'
+import TabArea from "./components/user/TabArea.jsx";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 import VerifyAccount from './components/user/forms/VerifyAccount.jsx'
 import UserForm from './components/user/RegisterTest.jsx'
@@ -43,7 +45,11 @@ const router = createBrowserRouter([
   path: "/verify", 
   element: <VerifyAccount />,
 },
-
+,
+  {
+    path: "/TabArea",
+    element: <TabArea />,
+  },
 
 ])
 
