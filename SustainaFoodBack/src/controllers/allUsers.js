@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const userModel = require("../models/userModel");
 
 async function allUsers(req,res) {
@@ -21,64 +20,4 @@ async function allUsers(req,res) {
         })
     }
 }
-
-
-// Update user by ID 
-async function updateUser(req, res) {
-    try {
-        const { fullName, phoneNumber, address, email, role,facebook } = req.body;
-        let updateData = { fullName, phoneNumber, address, email, role ,facebook};
-
-        const updatedUser = await userModel.findByIdAndUpdate(req.params.id, updateData, { new: true });
-
-        if (!updatedUser) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        res.status(200).json(updatedUser);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error updating user');
-    }
-}
-
-
-// Get a single user by ID
-const getUser = async (req, res) => {
-    try {
-      const { id } = req.params;
-
-  
-      // Vérifier la validité de l'ID
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ message: 'ID invalide' });
-      }
-  
-      const user = await userModel.findById(id);
-      if (!user) {
-        return res.status(404).json({ message: 'Utilisateur non trouvé' });
-      }
-      res.status(200).json(user);
-    } catch (error) {
-      console.error('Erreur lors de la récupération de l\'utilisateur :', error);
-      res.status(500).json({ message: 'Erreur serveur' });
-    }
-  };
-  
-  
-
-// Delete user by ID
-async function deleteUser(req, res) {
-    try {
-        const deletedUser = await userModel.findByIdAndDelete(req.params.id);
-        if (!deletedUser) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        res.status(200).json({ message: 'User deleted successfully' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error deleting user');
-    }
-}
-
-module.exports = {allUsers,updateUser,getUser,deleteUser};
+module.exports = allUsers

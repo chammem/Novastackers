@@ -1,115 +1,62 @@
 const userModel = require("../../models/userModel");
-const nodemailer= require('nodemailer');
+
 const bcrypt = require('bcryptjs');
-require("dotenv").config();
-const Verification = require("../../models/Verification")
-const sendMail = require("../../config/mailer");
-async function createVerification(email,code){
+
+
+async function userSignUpController(req,res) {
     try {
-        const expiresAt = new Date();
-        expiresAt.setMinutes(expiresAt.getMinutes() + 15); // Set expiration 15 min from now
+        const {email,password,fullName} = req.body
 
-        const newVerification = new Verification({ email, code, expiresAt });
-        const savedUserVerification = await newVerification.save();
-        
-        console.log("Verification created:", savedUserVerification);
-    } catch (error) {
-        console.error("Error creating verification:", error);
-    }
+        // Debugging logs
+    console.log(userModel); // Should log the Mongoose model
+    console.log(typeof userModel.findOne); // Should log 'function'
 
-}
-function generateVerificationCode(length) {
-    let code = '';
-    const characters = '0123456789';  // You can add more characters (A-Z, a-z) if needed
+        const user = await userModel.findOne({email})
 
-    for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        code += characters[randomIndex];
-    }
+        console.log("user", user)
 
-    return code;
-}
-
-async function userSendVerificationMail(req,res) {
-    try {
-        //const {email,password,confirmPassword,fullName,phoneNumber,address} = req.body;
-        const userInput= req.body;
-        console.log(userInput);
-        
-
-        const findUser = await userModel.findOne({email:userInput.email});
-
-        if(findUser){
-            return res.status(409).json({
-                message:'email already exists'
-            })
+        if(user){
+            throw new Error("this email is already used")
         }
-        
-        
 
-              
+        if(!email){
+            throw new Error("please provide your email")
+        }
+        if(!password){
+            throw new Error("please provide your password")
+        }
+        if(!fullName){
+            throw new Error("please provide your username")
+        }
 
+        const salt = bcrypt.genSaltSync(10);
+        const hashPassword = await bcrypt.hashSync(password, salt);
 
+        if(!hashPassword){
+            throw new Error("something went wrong")
+        }
 
-        const randomCode = generateVerificationCode(6);
-        await sendMail(userInput.email,"Email Verification",`this is ur verification Code : ${randomCode}`)
-        await createVerification(userInput.email,`${randomCode}`);
-        
-        return res.status(200).json({
-            message:'user aded sucssfully'
+        const payload={
+            ...req.body,
+            password : hashPassword
+        }
+
+        const userData = new userModel(payload)
+        const saveUser =await userData.save()
+
+        res.status(201).json({
+            data : saveUser,
+            success : true,
+            error : false,
+            message: "User registered successfully"
         })
-
-     } catch (err) {
-         res.json({
-             message : err.message || err,
-             error:true,
-             success : false,
+    } catch (err) {
+        res.json({
+            message : err.message || err,
+            error:true,
+            success : false,
         })
     }  
 }
-// async function registerVerification (req,res){
-//     const {code,userInput} = req.body;
 
-//     const verification = await Verification.findOne({email:userInput.email,code:code});
-
-//     if(!verification){
-//         return res.status(400).json({message:"invalid verification"});
-//     }
-    
-//     return res.status(200).json({message:"Verification sent to you email"})
-// }
-async function registerVerification(req, res) {
-    const { code, userInput } = req.body;
-    
-    console.log(userInput.email);
-    console.log(code);
-    try {
-        const verification = await Verification.findOne({ email:userInput.email,code:code });
-
-        console.log(verification);
-        
-        if (!verification) {
-            return res.status(400).json({ message: "Invalid verification code." });
-        }
-        if (verification.expiresAt < new Date()) {
-            return res.status(400).json({ message: "Verification code expired." });
-        }
-        // Create user after successful verification
-        const newUser = new userModel(userInput);
-        const savedUser = await newUser.save();
-
-        // Remove verification record after successful registration
-        await Verification.deleteOne({ email:userInput.email,code:code });
-
-        return res.status(200).json({ message: "User registered successfully!", user: savedUser });
-
-    } catch (error) {
-        console.error("Error during verification:", error);
-        return res.status(500).json({ message: "Internal server error." });
-    }
-}
-
-
-
-
-module.exports = {registerVerification, userSendVerificationMail}
+module.exports =userSignUpController
