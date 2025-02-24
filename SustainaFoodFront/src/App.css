@@ -1,0 +1,82 @@
+.app-container {
+    display: fixed;
+  }
+  
+  .main-content {
+    transition: margin-left 0.3s ease;
+    padding: 20px;
+    flex-grow: 1;
+  }
+  
+  .expanded {
+    margin-left: 250px;
+  }
+  
+  .collapsed {
+    margin-left: 80px;
+  }
+  
+  .content-area {
+    margin-top: 20px;
+  }
+  
+  .header {
+    padding: 10px 20px;
+  }
+  
+  .navbar-brand {
+    font-size: 1.5rem;
+  }
+  
+  .nav-link {
+    margin-left: 15px;
+    font-size: 1rem;
+  }
+  
+  .nav-link i {
+    font-size: 1.2rem;
+  }
+  
+  .sidebar {
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sidebar-header {
+    padding: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  .sidebar-menu {
+    padding: 10px 0;
+  }
+  
+  .sidebar-menu-item {
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+  
+  .sidebar-footer {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .add-button {
+    background-color: #4f46e5; /* Indigo-900 */
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 15px;
+    display: block;
+    width: 100%;
+  }
+  
+  .green-box {
+    background-color: #059669; /* Green-600 */
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+

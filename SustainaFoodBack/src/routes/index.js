@@ -17,7 +17,9 @@ router.get("/user-details",authToken,userDetailsController)
 router.get("/userLogout",userLogout)
 
 //admin panel
-router.get("/all-user",authToken,allUsers)
-
+router.get("/users",allUsers.allUsers)
+router.get('/user/:id', allUsers.getUser);
+router.put('/updateUser/:id', allUsers.updateUser);
+router.delete('/deleteUser/:id', allUsers.deleteUser);
 
 module.exports = router
