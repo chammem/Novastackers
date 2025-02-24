@@ -4,10 +4,10 @@ const foodSchema = new mongoose.Schema({
   seller_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: false,
+    required: true,
   },
-  name: { type: String, required: false },
-  quantity: { type: Number, required: false },
+  name: { type: String, required: true },
+  quantity: { type: Number, required:true},
   expiry_date: { type: Date, required: false },
   category: { type: String, required: false },
   allergens: { type: String, required: false },
