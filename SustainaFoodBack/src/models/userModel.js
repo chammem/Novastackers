@@ -9,12 +9,6 @@ const userSchema = new Schema(
 
     email: {
       type: String,required: true,unique: true,trim: true,lowercase: true,
-      validate: {
-        validator: function(value) {
-            return emailRegex.test(value);
-        },
-        message: 'Email must be from gmail.com, yahoo.com, or esprit.tn.'
-    }
     },
     password: { type: String, required: true },
     confirmPassword:{type:String,required:true},
@@ -25,13 +19,8 @@ const userSchema = new Schema(
     },
     fullName: { type: String, required: false, trim: true },
     phoneNumber: { type: String, trim: true },
-    address: { type: String, trim: true, validate: {
-      validator: function(value) {
-          return /^\d{8}$/.test(value.toString()); // Ensures exactly 8 digits
-      },
-      message: 'Phone number must be exactly 8 digits.'
-  } },
-  facebook:{type: String,required: true},
+    address: { type: String, trim: true},
+  facebook:{type: String,optional:true},
     dietaryRestrictions: { type: [String], default: [] },
     allergies: { type: [String], default: [] },
     
