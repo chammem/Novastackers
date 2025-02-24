@@ -10,7 +10,9 @@ function VerifyAccount() {
     const location = useLocation();
     const { state } = location;
     const userInput = state || {};
+    //
     console.log(userInput);
+    
     // Get email from URL query parameters
     //const searchParams = new URLSearchParams(location.search);
    // const email = searchParams.get("email");

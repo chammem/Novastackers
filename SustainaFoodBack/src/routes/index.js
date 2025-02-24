@@ -5,6 +5,8 @@ const router = express.Router()
 const foodController = require("../controllers/food/foodItem")
 const roleVerification = require("../controllers/roleVerification")
 
+
+
 const  {registerVerification, userSendVerificationMail} = require('../controllers/auth/userSignUp')
 const userSignInController = require('../controllers/auth/userSignIn')
 const authToken = require('../middleware/authToken')
@@ -27,7 +29,7 @@ router.get("/users",allUsers.allUsers)
 router.get('/user/:id', allUsers.getUser);
 router.put('/updateUser/:id', allUsers.updateUser);
 router.delete('/deleteUser/:id', allUsers.deleteUser);
-router.get("/all-user",authToken,allUsers)
+
 
 // DOCUMENT UPLOADING //
 router.post("/upload-driver-documents", upload.fields([

@@ -49,17 +49,19 @@ function UserForm() {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      const { firstName, lastName, ...otherFields } = data;
+      const { firstName,lastName, ...otherFields } = data;
       const fullName = `${firstName} ${lastName}`;
-      const response = await axiosInstance.post("/sign-up", {
+      const payload = {
         ...otherFields,
-        role,
+        role, // Add the role from useParams()
         fullName,
-      });
+      };
+      console.log("Payload:", payload);
+      const response = await axiosInstance.post("/sign-up",payload);
       console.log("Signup successful:", response.data);
       //alert("A verification code has been sent to your email.");
       setTimeout(() => {
-        navigate("/verify", { state: data });
+        navigate("/verify", { state: { ...payload, role } });
       }, 100); 
     } catch (error) {
       console.error("Signup error:", error.response?.data || error.message);
