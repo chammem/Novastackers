@@ -1,61 +1,53 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import { createBrowserRouter,RouterProvider,BrowserRouter} from 'react-router-dom'
-import App from './App.jsx'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import "./index.css";
+import App from "./App.jsx";
+import UserForm from './components/user/forms/UserForm.jsx';
+import ForgotPassword from "./components/user/ForgotPassword.jsx";
+import Error404 from "./components/Error404.jsx";
+import Account from "./components/user/Account.jsx";
+import Connect from "./components/user/Connect.jsx";
+import RoleChoice from "./components/user/RoleChoice.jsx";
 
-import ForgotPassword from './components/user/ForgotPassword.jsx'
-import Error404 from './components/Error404.jsx'
-import Account from './components/user/Account.jsx'
-import Connect from './components/user/Connect.jsx'
-import RoleChoice from './components/user/RoleChoice.jsx'
-import TabArea from "./components/user/TabArea.jsx";
-import 'bootstrap/dist/css/bootstrap.min.css';
 
-import VerifyAccount from './components/user/forms/VerifyAccount.jsx'
-import UserForm from './components/user/RegisterTest.jsx'
+
+// 📌 Définition des routes
 const router = createBrowserRouter([
-{
-   path:"/",
-   element:<App />,
-   errorElement:<Error404/>
-},  
-{
-  path:'/register/:role',
-  element:<UserForm/>,
-  
-},
-  
-{
-  path:'/forget-password',
-  element:<ForgotPassword/>
-},
-{
-  path:'/account',
-  element:<Account/>
-},
-{
-  path:'/login',
-  element:<Connect/>
-},
-{
-  path:'/role',
-  element:<RoleChoice/>
-},  {
-  path: "/verify", 
-  element: <VerifyAccount />,
-},
-,
   {
-    path: "/TabArea",
-    element: <TabArea />,
+    path: "/",
+    element: <App />,
+    errorElement: <Error404 />,
   },
+  {
+    path: "/register/:role",
+    element: <UserForm />,
+  },
+  {
+    path: "/forget-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/account",
+    element: <Account />,
+  },
+  {
+    path: "/login",
+    element: <Connect />,
+  },
+  {
+    path: "/role",
+    element: <RoleChoice />,
+  },
+  // {
+  //   path: "/verify",
+  //   element: <VerifyAccount />,
+  // },
+]);
 
-])
-
-
-createRoot(document.getElementById('root')).render(
-  <RouterProvider router={router} />
-  
- 
+// 📌 Rendu de l'application
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <RouterProvider router={router} />
+  </React.StrictMode>
 );

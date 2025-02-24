@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import HeaderMid from '../HeaderMid'
 import BreadCrumb from '../BreadCrumb'
+import { Navigate } from 'react-router';
 
 function Connect() {
 
@@ -36,7 +37,7 @@ function Connect() {
               <button className="theme-btn-1 btn " type="button" onClick={()=>Submit()}>SIGN IN</button>
             </div>
             <div className="go-to-btn mt-20">
-              <a href="#"><small>FORGOTTEN YOUR PASSWORD?</small></a>
+              <a href="#" onClick={()=>NavigatetoOtp()}><small>FORGOTTEN YOUR PASSWORD?</small></a>
             </div>
           </form>
         </div>

@@ -1,17 +1,15 @@
-import React from 'react'
-import HeaderTop from './HeaderTop'
-import HeaderMid from './HeaderMid'
-import Hero from './Hero'
-import Footer from './Footer'
-import TopCategories from './TopCategories'
+import { useContext } from "react";
+import { PageContext } from "../App"; // Assure-toi d'importer ton PageContext
 
 function Home() {
+  const { setPage } = useContext(PageContext);
+
   return (
     <>
-    <HeaderTop/>
-    <HeaderMid/>
-    <Hero/>
-    <div className="ltn__feature-area mt-100 mt--65">
+      <HeaderTop />
+      <HeaderMid />
+      <Hero />
+      <div className="ltn__feature-area mt-100 mt--65">
         <div className="container">
           <div className="row">
             <div className="col-lg-12">
@@ -56,12 +54,18 @@ function Home() {
             </div>
           </div>
         </div>
-    </div>
-    <TopCategories/>
-    <Footer/>
-    
-</>
-  )
+      </div>
+      <TopCategories />
+
+      {/* Exemple d'ajout de bouton pour changer de page */}
+      <div className="container">
+        <button onClick={() => setPage("register")}>S'inscrire</button>
+        <button onClick={() => setPage("connect")}>Se connecter</button>
+      </div>
+
+      <Footer />
+    </>
+  );
 }
 
-export default Home
+export default Home;
