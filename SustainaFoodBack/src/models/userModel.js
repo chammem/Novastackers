@@ -20,7 +20,7 @@ const userSchema = new Schema(
     fullName: { type: String, required: false, trim: true },
     phoneNumber: { type: String, trim: true },
     address: { type: String, trim: true},
-  facebook:{type: String,optional:true},
+    facebook:{type: String,optional:true},
     dietaryRestrictions: { type: [String], default: [] },
     allergies: { type: [String], default: [] },
     
