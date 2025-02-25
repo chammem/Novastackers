@@ -1,32 +1,37 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
-// Configuration du transporteur Nodemailer
+// Create a transporter using nodemailer
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER, // Votre adresse Gmail
-    pass: process.env.EMAIL_PASS, // Votre mot de passe Gmail
+    user: process.env.EMAIL_USER, // Your email
+    pass: process.env.EMAIL_PASS, // Your password or App password
   },
 });
 
-// Fonction pour envoyer un e-mail de réinitialisation de mot de passe
-const sendResetPasswordEmail = async (email, resetLink) => {
+// Function to send OTP email
+const sendResetPasswordEmail = async (email, otp) => {
   const mailOptions = {
-    from: process.env.EMAIL_USER, // Expéditeur
-    to: email, // Destinataire
-    subject: "Réinitialisation de votre mot de passe", // Sujet de l'email
-    html: `<p>Cliquez sur ce lien pour réinitialiser votre mot de passe : <a href="${resetLink}">${resetLink}</a></p>`, // Corps de l'email au format HTML
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Password Recovery OTP",
+    text: `Your OTP is: ${otp}`,
   };
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log("E-mail envoyé avec succès à :", email);
-    return { success: true, message: "E-mail envoyé avec succès." };
+    console.log("OTP sent successfully to:", email);
+    return { success: true, message: "OTP sent successfully." };
   } catch (error) {
-    console.error("Erreur lors de l'envoi de l'e-mail :", error);
-    return { success: false, message: "Erreur lors de l'envoi de l'e-mail." };
+    console.error("Error while sending OTP:", error);
+    if (error.response) {
+      console.error("SMTP Error Response:", error.response);
+    }
+    return { success: false, message: "Error sending OTP." };
   }
 };
 
-module.exports = { sendResetPasswordEmail };
+
+// Export the function
+module.exports = sendResetPasswordEmail;
