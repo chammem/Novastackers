@@ -95,12 +95,17 @@ async function disableUser(req, res) {
             return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
 
-        res.status(200).json({ message: 'Utilisateur désactivé avec succès', user: updatedUser });
+        res.clearCookie("token").status(200).json({
+            message: 'Utilisateur désactivé avec succès. Déconnexion forcée.',
+            user: updatedUser
+        });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Erreur serveur' });
     }
 }
+
 
 
 module.exports = {allUsers,updateUser,getUser,deleteUser,disableUser};
