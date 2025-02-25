@@ -19,6 +19,11 @@ async function userSignInController(req, res) {
             throw new Error("User not found !")
         }
 
+        // Vérifier si l'utilisateur est désactivé
+        if (user.isDisabled) {
+            throw new Error("Your account has been disabled.");
+        }
+
         const checkPassword =await bcrypt.compare(password,user.password)
 
         console.log("checkPassword",checkPassword)
