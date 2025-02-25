@@ -81,4 +81,26 @@ async function deleteUser(req, res) {
     }
 }
 
-module.exports = {allUsers,updateUser,getUser,deleteUser};
+async function disableUser(req, res) {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'ID invalide' });
+        }
+
+        const updatedUser = await userModel.findByIdAndUpdate(id, { isDisabled: true }, { new: true });
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+
+        res.status(200).json({ message: 'Utilisateur désactivé avec succès', user: updatedUser });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+}
+
+
+module.exports = {allUsers,updateUser,getUser,deleteUser,disableUser};

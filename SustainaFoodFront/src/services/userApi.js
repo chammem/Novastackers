@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:3000/api";
+const API_URL = "http://localhost:8082/api";
 
 const userApi = {
   // 🔹 Récupérer tous les utilisateurs
