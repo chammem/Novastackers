@@ -1,3 +1,3 @@
 import { createContext } from "react";
 
-export const RecoveryContext = createContext();
+export const RecoveryContext = createContext(null);

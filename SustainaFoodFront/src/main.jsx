@@ -9,6 +9,7 @@ import Error404 from "./components/Error404.jsx";
 import Account from "./components/user/Account.jsx";
 import Connect from "./components/user/Connect.jsx";
 import RoleChoice from "./components/user/RoleChoice.jsx";
+import OTPInput from "./components/user/OTPInput.jsx";
 
 
 
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
     path: "/role",
     element: <RoleChoice />,
   },
+  {
+    path: "/otp",
+    element: <OTPInput />,
+  }
   // {
   //   path: "/verify",
   //   element: <VerifyAccount />,

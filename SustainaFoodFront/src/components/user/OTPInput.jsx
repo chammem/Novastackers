@@ -1,19 +1,15 @@
-import React, { useState, useContext } from "react";
-import { RecoveryContext } from "../App"; // Assure this context is correctly provided
+import { useState } from "react";
 
-export default function OTPInput() {
-  const { OTP, setPage } = useContext(RecoveryContext);
+export default function OTPInput({ OTP, setPage }) { // ✅ Passer OTP et setPage en props
   const [userInput, setUserInput] = useState("");
-  const [error, setError] = useState(""); // Track error state
+  const [error, setError] = useState("");
 
-  // Handle OTP submission
   function handleSubmit() {
-    // Validate if OTP input matches
-    if (parseInt(userInput) === OTP) {
+    if (parseInt(userInput) === parseInt(OTP)) { // ✅ Convertir en entier pour éviter les erreurs
       alert("OTP correct, proceed to reset password.");
-      setPage("reset-password"); // Transition to the reset-password page
+      setPage("reset-password");
     } else {
-      setError("Invalid OTP. Please try again."); // Set error message for invalid OTP
+      setError("Invalid OTP. Please try again.");
     }
   }
 
@@ -25,9 +21,9 @@ export default function OTPInput() {
         value={userInput}
         onChange={(e) => setUserInput(e.target.value)}
         placeholder="Enter OTP"
-        maxLength={6} // Ensure that OTP input is limited to 6 digits
+        maxLength={6}
       />
-      {error && <p style={{ color: 'red' }}>{error}</p>} {/* Display error message */}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       <button onClick={handleSubmit}>Submit OTP</button>
     </div>
   );

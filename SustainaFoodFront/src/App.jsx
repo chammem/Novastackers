@@ -9,16 +9,16 @@ import UserForm from "./components/user/forms/UserForm"; // Ajuste le chemin si 
 
 function App() {
   const [page, setPage] = useState("forgot-password"); // Page par défaut
-  const [email, setEmail] = useState(""); // État pour stocker l'email de l'utilisateur
-  const [OTP, setOTP] = useState(""); // État pour stocker l'OTP
+  const [email, setEmail] = useState(""); // Stocker l'email de l'utilisateur
+  const [OTP, setOTP] = useState(""); // Stocker l'OTP envoyé
 
   useEffect(() => {
     console.log(`Page actuelle : ${page}`);
   }, [page]);
 
   const components = {
-    "forgot-password": <ForgotPassword />,
-    "reset-password": <ResetPassword />,
+    "forgot-password": <ForgotPassword setPage={setPage} setEmail={setEmail} setOTP={setOTP} />,
+    "reset-password": <ResetPassword setPage={setPage} email={email} OTP={OTP} />,
     "user-form": <UserForm />,
   };
 
@@ -28,7 +28,7 @@ function App() {
       <HeaderMid />
 
       <div className="flex justify-center items-center min-h-screen">
-        {components[page] || <ForgotPassword />}
+        {components[page] || <ForgotPassword setPage={setPage} setEmail={setEmail} setOTP={setOTP} />}
       </div>
 
       <Footer />
