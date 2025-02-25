@@ -24,11 +24,13 @@ router.post("/login",userSignInController)
 router.get("/user-details",authToken,userDetailsController)
 router.get("/userLogout",userLogout)
 router.get("/verification",registerVerification);
+
 //admin panel
 router.get("/users",allUsers.allUsers)
 router.get('/user/:id', allUsers.getUser);
 router.put('/updateUser/:id', allUsers.updateUser);
 router.delete('/deleteUser/:id', allUsers.deleteUser);
+router.put('/disableUser/:id', allUsers.disableUser);
 
 
 // DOCUMENT UPLOADING //

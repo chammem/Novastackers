@@ -30,7 +30,7 @@ const TabArea = () => {
   const [selectedUserId, setSelectedUserId] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/users")
+    fetch("http://localhost:8082/api/users")
       .then((res) => res.json())
       .then((data) => {
         setUsers(data.data || data);
