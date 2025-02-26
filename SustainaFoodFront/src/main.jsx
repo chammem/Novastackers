@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
+
 import { createBrowserRouter,RouterProvider,BrowserRouter} from 'react-router-dom'
 import App from './App.jsx'
 
@@ -9,13 +9,16 @@ import Error404 from './components/Error404.jsx'
 import Account from './components/user/Account.jsx'
 import Connect from './components/user/Connect.jsx'
 import RoleChoice from './components/user/RoleChoice.jsx'
-import TabArea from "./components/user/TabArea.jsx";
-import 'bootstrap/dist/css/bootstrap.min.css';
+// import TabArea from "./components/user/TabArea.jsx";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import VerifyAccount from './components/user/forms/VerifyAccount.jsx'
 import UserForm from './components/user/RegisterTest.jsx'
 import Home from './components/Home.jsx'
-import UserProfile from './components/user/UserProfile.jsx'
+
 import AdminVerificationComponent from './components/user/adminVerificationComponent.jsx'
+import Profile from './components/user/Profile.jsx'
+import ActivateAccount from './components/user/ActivateAccount.jsx'
 const router = createBrowserRouter([
 {
    path:"/",
@@ -32,8 +35,8 @@ const router = createBrowserRouter([
   element:<AdminVerificationComponent/>
 },
   {
-    path:'/userProfile',
-    element:<UserProfile/>
+    path:'/activateAccount',
+    element:<ActivateAccount/>
   },
 {
   path:'/forget-password',
@@ -54,20 +57,20 @@ const router = createBrowserRouter([
   path: "/verify", 
   element: <VerifyAccount />,
 },
+{ path:"/profile",
+  element:<Profile/>
+}
 ,
-  {
-    path: "/TabArea",
-    element: <TabArea />,
-  },
+
 
 ])
 
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-  
+    <ToastContainer/>
     <RouterProvider router={router} />
-  *
+  
 </StrictMode>
   
  

@@ -36,7 +36,8 @@ router.put('/updateUser/:id', allUsers.updateUser);
 router.delete('/deleteUser/:id', allUsers.deleteUser);
 router.put('/disableUser/:id', allUsers.disableUser);
 
-
+router.put('/update-profile/:userId',allUsers.updateLogedInUser);
+router.put('/change-password/:userId',allUsers.updateLogedInPassword);
 // DOCUMENT UPLOADING //
 router.post("/upload-driver-documents", upload.fields([
     { name: "driverLicense", maxCount: 1 },

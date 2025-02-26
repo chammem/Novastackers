@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const userModel = require("../models/userModel");
+const bcrypt = require('bcryptjs');
 
 async function allUsers(req,res) {
     try {
@@ -42,6 +43,53 @@ async function updateUser(req, res) {
     }
 }
 
+async function updateLogedInUser(req,res){
+    const {userId} = req.params; 
+    const updatedData = req.body; 
+    console.log(userId)
+    console.log(updatedData);
+    try {
+     
+      const updatedUser = await userModel.findByIdAndUpdate(userId, updatedData, {
+        new: true, 
+      });
+  
+    
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      
+      res.status(200).json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user", error: error.message });
+    }
+}
+async function updateLogedInPassword(req,res){
+    const {currentPassword,newPassword} = req.body;
+    const {userId} = req.params;
+    try {
+        const user = await userModel.findById(userId);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+    
+        const isMatch = await bcrypt.compare(currentPassword,user.password);
+        if (!isMatch) {
+          return res.status(400).json({ message: "Current password is incorrect" });
+        }
+        user.password = newPassword;
+        await user.save();
+    
+        res.status(200).json({ message: "Password changed successfully" });   
+    } catch (error) {
+        console.error("Error updating users Password:", error);
+        res.status(500).json({ message: "Failed to update user", error: error.message }); 
+    }
+
+
+}
 
 // Get a single user by ID
 const getUser = async (req, res) => {
@@ -108,4 +156,4 @@ async function disableUser(req, res) {
 
 
 
-module.exports = {allUsers,updateUser,getUser,deleteUser,disableUser};
+module.exports = {allUsers,updateUser,getUser,deleteUser,disableUser,updateLogedInUser,updateLogedInPassword};

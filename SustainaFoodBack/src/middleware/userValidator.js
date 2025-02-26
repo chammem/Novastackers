@@ -43,11 +43,11 @@ const userValidatorSchema = Joi.object({
   allergies: Joi.array().items(Joi.string()).default([]).optional(),
 
   // Driver-specific fields
-  vehicleType: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
-  licensePlateNumber: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
-  vehicleCapacity: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
-  driverLicenseNumber: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
-  vehicleRegistration: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
+  vehicleType: Joi.string(),
+  licensePlateNumber: Joi.string(),
+  vehicleCapacity: Joi.string(),
+  driverLicenseNumber: Joi.string(),
+  vehicleRegistration: Joi.string(),
   workingHours: Joi.string().optional(),
   daysAvailable: Joi.array().items(Joi.string()).default([]).optional(),
 
