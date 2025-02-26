@@ -48,7 +48,21 @@ exports.uploadRestaurantSuperMarketDocuments = async (req, res) => {
     } catch (error) {
         console.log("Error uploading business documents:", error);
         res.status(500).json({ message: "An error occurred while uploading documents" });
-    }
+    }}
+
+exports.getAllDriverVerifications = async (req,res) => {
+    try {
+        const verifications = await RoleVerification.find({ status: "pending" })
+          .populate("userId", "email role fullName") // Populate user details
+          .exec();
+        res.status(200).json(verifications);
+      } catch (error) {
+        console.error("Error fetching pending verifications:", error);
+        res.status(500).json({ message: "An error occurred while fetching verifications" });
+      }
 
 
 }
+
+
+

@@ -18,11 +18,15 @@ const { uploadDriverDocuments } = require('../controllers/roleVerification');
 const upload = require("../middleware/upload");
 
 
+router.get("/auth-endpoint",authToken,(request, response) => {
+  response.json({ message: "You are authorized to access me" });
+});
+
 router.post("/sign-up",validateRequest(userValidatorSchema), userSendVerificationMail);
 router.post("/verification",registerVerification);
 router.post("/login",userSignInController)
 router.get("/user-details",authToken,userDetailsController)
-router.get("/userLogout",userLogout)
+router.post("/userLogout",userLogout)
 router.get("/verification",registerVerification);
 
 //admin panel
@@ -42,6 +46,10 @@ router.post("/upload-buisness-documents",upload.fields([
     { name: "taxId", maxCount: 1 },
     { name: "businessLicenseNumber", maxCount: 1 },
   ]),roleVerification.uploadRestaurantSuperMarketDocuments);
+
+  //role verification//
+
+  router.get("/pending-verification",roleVerification.getAllDriverVerifications)
 
 
 //Food Related Routes//
