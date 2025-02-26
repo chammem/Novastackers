@@ -11,21 +11,30 @@ import Connect from './components/user/Connect.jsx'
 import RoleChoice from './components/user/RoleChoice.jsx'
 import TabArea from "./components/user/TabArea.jsx";
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 import VerifyAccount from './components/user/forms/VerifyAccount.jsx'
 import UserForm from './components/user/RegisterTest.jsx'
+import Home from './components/Home.jsx'
+import UserProfile from './components/user/UserProfile.jsx'
+import AdminVerificationComponent from './components/user/adminVerificationComponent.jsx'
 const router = createBrowserRouter([
 {
    path:"/",
    element:<App />,
-   errorElement:<Error404/>
+   errorElement:<Home/>
 },  
 {
   path:'/register/:role',
   element:<UserForm/>,
   
 },
-  
+{
+  path:'/roleVerification',
+  element:<AdminVerificationComponent/>
+},
+  {
+    path:'/userProfile',
+    element:<UserProfile/>
+  },
 {
   path:'/forget-password',
   element:<ForgotPassword/>
@@ -55,7 +64,11 @@ const router = createBrowserRouter([
 
 
 createRoot(document.getElementById('root')).render(
-  <RouterProvider router={router} />
+  <StrictMode>
+  
+    <RouterProvider router={router} />
+  *
+</StrictMode>
   
  
 );

@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../config/axiosInstance'; // Ensure you have this configured
 import HeaderMid from '../HeaderMid';
 import BreadCrumb from '../BreadCrumb';
-
+import axios from 'axios';
+import { useCookies } from "react-cookie";
 function Connect() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,17 +18,15 @@ function Connect() {
     setError(null);
 
     try {
-      const response = await axiosInstance.post('/login', { email, password });
+      const response = await axiosInstance.post("/login", { email, password });
 
       if (response.data.success) {
-        // Store token in cookies or localStorage if needed
-        document.cookie = `token=${response.data.data}; path=/; Secure; HttpOnly`;
-        navigate('/dashboard'); // Redirect to dashboard after login
+        navigate("/home"); // Redirect to home page after login
       } else {
-        setError(response.data.message || 'Invalid credentials');
+        setError(response.data.message || "Invalid credentials");
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong');
+      setError(err.response?.data?.message || "Something went wrong");
     } finally {
       setIsLoading(false);
     }
