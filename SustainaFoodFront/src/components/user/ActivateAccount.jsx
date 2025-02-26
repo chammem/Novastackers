@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../config/axiosInstance";
-
-function UserProfile() {
+import HeaderMid from "../HeaderMid";
+function ActivateAccount() {
   const [user, setUser] = useState(null); // State to store user details
   const [vehiculeType, setVehiculeType] = useState("");
   const [driverLicense, setDriverLicense] = useState(null);
@@ -53,12 +53,12 @@ function UserProfile() {
     }
   };
 
-  // Handle restaurant document upload
-  const handleRestaurantSubmit = async (e) => {
+  // Handle restaurant/supermarket document upload
+  const handleBusinessSubmit = async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("restaurantId", user._id.toString()); // Convert to string
+    formData.append("businessId", user._id.toString()); // Convert to string
     formData.append("businessLicenseNumber", businessLicenseNumber);
     formData.append("taxId", taxId);
 
@@ -68,63 +68,44 @@ function UserProfile() {
     }
 
     try {
-      const response = await axiosInstance.post("/upload-buisness-documents", formData, {
+      const response = await axiosInstance.post("/upload-business-documents", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
       setMessage(response.data.message);
     } catch (error) {
-      setMessage("Error uploading restaurant documents");
-      console.error(error);
-    }
-  };
-
-  // Handle supermarket document upload
-  const handleSupermarketSubmit = async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("supermarketId", user._id.toString()); // Convert to string
-    formData.append("businessLicenseNumber", businessLicenseNumber);
-    formData.append("taxId", taxId);
-
-    // Log FormData for debugging
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
-
-    try {
-      const response = await axiosInstance.post("/upload-buisness-documents", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      setMessage(response.data.message);
-    } catch (error) {
-      setMessage("Error uploading supermarket documents");
+      setMessage("Error uploading business documents");
       console.error(error);
     }
   };
 
   // Render nothing until user details are fetched
   if (!user) {
-    return <p>Loading user details...</p>;
+    return <p className="text-center py-8">Loading user details...</p>;
   }
 
   // Check if the role is valid
   if (!user.role || !["driver", "restaurant", "supermarket"].includes(user.role)) {
-    return <p>Invalid role. Please contact support.</p>;
+    return <p className="text-center py-8 text-error">Invalid role. Please contact support.</p>;
   }
 
   return (
-    <div>
-      <h2>Upload Documents</h2>
-      {user.role === "driver" ? (
-        <form onSubmit={handleDriverSubmit}>
-          <div>
-            <label>Vehicle Type:</label>
+    <>
+    <HeaderMid/>
+    <div className="max-w-4xl mx-auto p-6 bg-base-100 shadow-md rounded-lg mt-10">
+      <h2 className="text-3xl font-bold text-center mb-6">Activate Your Account</h2>
+
+      {/* Driver Form */}
+      {user.role === "driver" && (
+        <form onSubmit={handleDriverSubmit} className="space-y-6">
+          {/* Vehicle Type */}
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Vehicle Type</span>
+            </label>
             <select
+              className="select select-bordered w-full"
               value={vehiculeType}
               onChange={(e) => setVehiculeType(e.target.value)}
               required
@@ -132,72 +113,92 @@ function UserProfile() {
               <option value="">Select Vehicle Type</option>
               <option value="motor">Motor</option>
               <option value="car">Car</option>
+              <option value="bike">Bike</option>
             </select>
           </div>
-          <div>
-            <label>Driver License:</label>
+
+          {/* Driver License */}
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Driver License</span>
+            </label>
             <input
               type="file"
+              className="file-input file-input-bordered w-full"
               onChange={(e) => setDriverLicense(e.target.files[0])}
               required
             />
           </div>
-          <div>
-            <label>Vehicle Registration:</label>
+
+          {/* Vehicle Registration */}
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Vehicle Registration</span>
+            </label>
             <input
               type="file"
+              className="file-input file-input-bordered w-full"
               onChange={(e) => setVehiculeRegistration(e.target.files[0])}
               required
             />
           </div>
-          <button type="submit">Upload Driver Documents</button>
+
+          {/* Submit Button */}
+          <div className="form-control mt-8">
+            <button type="submit" className="btn btn-primary w-full">
+              Upload Driver Documents
+            </button>
+          </div>
         </form>
-      ) : user.role === "restaurant" ? (
-        <form onSubmit={handleRestaurantSubmit}>
-          <div>
-            <label>Business License Number:</label>
-            <input
-              type="file"
-              onChange={(e) => setBusinessLicenseNumber(e.target.files[0])}
-              required
-            />
-          </div>
-          <div>
-            <label>Tax ID:</label>
-            <input
-              type="file"
-              onChange={(e) => setTaxId(e.target.files[0])}
-              required
-            />
-          </div>
-          <button type="submit">Upload Restaurant Documents</button>
-        </form>
-      ) : user.role === "supermarket" ? (
-        <form onSubmit={handleSupermarketSubmit}>
-          <div>
-            <label>Business License Number:</label>
-            <input
-              type="file"
-              onChange={(e) => setBusinessLicenseNumber(e.target.files[0])}
-              required
-            />
-          </div>
-          <div>
-            <label>Tax ID:</label>
-            <input
-              type="file"
-              onChange={(e) => setTaxId(e.target.files[0])}
-              required
-            />
-          </div>
-          <button type="submit">Upload Supermarket Documents</button>
-        </form>
-      ) : (
-        <p>Invalid role. Please contact support.</p>
       )}
-      {message && <p>{message}</p>}
+
+      {/* Restaurant/Supermarket Form */}
+      {(user.role === "restaurant" || user.role === "supermarket") && (
+        <form onSubmit={handleBusinessSubmit} className="space-y-6">
+          {/* Business License Number */}
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Business License Number</span>
+            </label>
+            <input
+              type="file"
+              className="file-input file-input-bordered w-full"
+              onChange={(e) => setBusinessLicenseNumber(e.target.files[0])}
+              required
+            />
+          </div>
+
+          {/* Tax ID */}
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Tax ID</span>
+            </label>
+            <input
+              type="file"
+              className="file-input file-input-bordered w-full"
+              onChange={(e) => setTaxId(e.target.files[0])}
+              required
+            />
+          </div>
+
+          {/* Submit Button */}
+          <div className="form-control mt-8">
+            <button type="submit" className="btn btn-primary w-full">
+              Upload {user.role === "restaurant" ? "Restaurant" : "Supermarket"} Documents
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Success/Error Message */}
+      {message && (
+        <div className={`mt-6 text-center ${message.startsWith("Error") ? "text-error" : "text-success"}`}>
+          {message}
+        </div>
+      )}
     </div>
+    </>
   );
 }
 
-export default UserProfile;
+export default ActivateAccount;
