@@ -1,32 +1,21 @@
 const jwt = require('jsonwebtoken')
 async function authToken(req,res,next) {
-    try {
-        const token = req.cookies?.token
-        if(!token){
-            return res.status(200).json({
-                message : "user not logged in",
-                error : true,
-                success : false
-            })
+   try {
+        const token = req.cookies?.token;
+        if (!token) {
+          return res.status(401).json({ message: "User not logged in", error: true });
         }
-        jwt.verify(token, process.env.TOKEN_SECRET_KEY, function(err, decoded) {
-            console.log(err)
-            console.log("decoded", decoded)
-            if(err){
-                console.log("error auth",err)
-            }
-            req.userId = decoded?._id
-            next()
-        });
-        // console.log("token            -",token)
-    } catch (err) {
-        res.status(400).json({
-            message : err.message || err,
-            data: [],
-            error : true,
-            success : false
-        })
-    }
     
-}
-module.exports = authToken
+        const decodedToken = await jwt.verify(token, process.env.TOKEN_SECRET_KEY);
+        req.userId = decodedToken._id; // Attach user ID to the request object
+        next();
+      } catch (err) {
+        res.status(401).json({
+          message: err.message || "Invalid token",
+          error: true,
+          success: false,
+        });
+      }
+    }
+module.exports = authToken;
+    
