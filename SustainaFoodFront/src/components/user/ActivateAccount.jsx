@@ -10,6 +10,8 @@ function ActivateAccount() {
   const [taxId, setTaxId] = useState(null);
   const [message, setMessage] = useState("");
 
+
+
   // Fetch user details (including role and ID) on component mount
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -30,14 +32,15 @@ function ActivateAccount() {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("driverId", user._id.toString()); // Convert to string
+    formData.append("driverId", user._id.toString());
     formData.append("vehiculeType", vehiculeType);
-    formData.append("driverLicense", driverLicense);
-    formData.append("vehiculeRegistration", vehiculeRegistration);
 
-    // Log FormData for debugging
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
+    // Add documents based on vehicle type
+    if (vehiculeType === "motor") {
+      formData.append("vehiculeRegistration", vehiculeRegistration);
+    } else if (vehiculeType === "car") {
+      formData.append("driverLicense", driverLicense);
+      formData.append("vehiculeRegistration", vehiculeRegistration);
     }
 
     try {
@@ -48,7 +51,7 @@ function ActivateAccount() {
       });
       setMessage(response.data.message);
     } catch (error) {
-      setMessage("Error uploading driver documents");
+      setMessage(error.response?.data?.message || "Error uploading documents");
       console.error(error);
     }
   };
@@ -68,7 +71,7 @@ function ActivateAccount() {
     }
 
     try {
-      const response = await axiosInstance.post("/upload-business-documents", formData, {
+      const response = await axiosInstance.post("/upload-buisness-documents", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -98,59 +101,77 @@ function ActivateAccount() {
 
       {/* Driver Form */}
       {user.role === "driver" && (
-        <form onSubmit={handleDriverSubmit} className="space-y-6">
-          {/* Vehicle Type */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Vehicle Type</span>
-            </label>
-            <select
-              className="select select-bordered w-full"
-              value={vehiculeType}
-              onChange={(e) => setVehiculeType(e.target.value)}
-              required
-            >
-              <option value="">Select Vehicle Type</option>
-              <option value="motor">Motor</option>
-              <option value="car">Car</option>
-              <option value="bike">Bike</option>
-            </select>
-          </div>
+          <form onSubmit={handleDriverSubmit} className="space-y-6">
+            {/* Vehicle Type Dropdown */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Vehicle Type</span>
+              </label>
+              <select
+                className="select select-bordered w-full"
+                value={vehiculeType}
+                onChange={(e) => setVehiculeType(e.target.value)}
+                required
+              >
+                <option value="">Select Vehicle Type</option>
+                <option value="bike">Bike</option>
+                <option value="motor">Motor</option>
+                <option value="car">Car</option>
+              </select>
+            </div>
 
-          {/* Driver License */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Driver License</span>
-            </label>
-            <input
-              type="file"
-              className="file-input file-input-bordered w-full"
-              onChange={(e) => setDriverLicense(e.target.files[0])}
-              required
-            />
-          </div>
+            {/* Motor: Only Vehicle Registration */}
+            {vehiculeType === "motor" && (
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Vehicle Registration</span>
+                </label>
+                <input
+                  type="file"
+                  className="file-input file-input-bordered w-full"
+                  onChange={(e) => setVehiculeRegistration(e.target.files[0])}
+                  required
+                />
+              </div>
+            )}
 
-          {/* Vehicle Registration */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Vehicle Registration</span>
-            </label>
-            <input
-              type="file"
-              className="file-input file-input-bordered w-full"
-              onChange={(e) => setVehiculeRegistration(e.target.files[0])}
-              required
-            />
-          </div>
+            {/* Car: Both Driver License and Vehicle Registration */}
+            {vehiculeType === "car" && (
+              <>
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Driver License</span>
+                  </label>
+                  <input
+                    type="file"
+                    className="file-input file-input-bordered w-full"
+                    onChange={(e) => setDriverLicense(e.target.files[0])}
+                    required
+                  />
+                </div>
 
-          {/* Submit Button */}
-          <div className="form-control mt-8">
-            <button type="submit" className="btn btn-primary w-full">
-              Upload Driver Documents
-            </button>
-          </div>
-        </form>
-      )}
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Vehicle Registration</span>
+                  </label>
+                  <input
+                    type="file"
+                    className="file-input file-input-bordered w-full"
+                    onChange={(e) => setVehiculeRegistration(e.target.files[0])}
+                    required
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Submit Button */}
+            <div className="form-control mt-8">
+              <button type="submit" className="btn btn-primary w-full">
+                Upload Documents
+              </button>
+            </div>
+          </form>
+        )}
 
       {/* Restaurant/Supermarket Form */}
       {(user.role === "restaurant" || user.role === "supermarket") && (

@@ -6,12 +6,14 @@ import BreadCrumb from '../BreadCrumb';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useCookies } from "react-cookie";
+
 function Connect() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const [showPassword,setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +24,7 @@ function Connect() {
       const response = await axiosInstance.post("/login", { email, password });
 
       if (response.data.success) {
-        navigate("/home"); // Redirect to home page after login
+        navigate("/"); // Redirect to home page after login
       } else {
         setError(response.data.message || "Invalid credentials");
       }
@@ -49,7 +51,7 @@ function Connect() {
                 id="email"
                 placeholder="Enter your email"
                 className="input input-bordered w-full"
-                onChange={e=>{{setEmail(e.target.value)}}}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
@@ -57,14 +59,19 @@ function Connect() {
                 Password
               </label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 placeholder="Enter your password"
                 className="input input-bordered w-full"
-                onChange={e=>{{setPassword(e.target.value);console.log(password)}}}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            {error && <p className="error-message">{error}</p>}
+            <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-sm text-blue-500 hover:underline mt-2"
+              >Show Password</button>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
             <div className="flex items-center justify-between">
               <a
                 href="/forgot-password"
@@ -73,22 +80,38 @@ function Connect() {
                 Forgot Password?
               </a>
             </div>
-            <button type="submit" disabled={isLoading} className="btn btn-primary w-full" >
-             {isLoading ? 'Signing In...' : 'SIGN IN'}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="btn btn-primary w-full"
+            >
+              {isLoading ? 'Signing In...' : 'SIGN IN'}
             </button>
           </form>
 
           {/* Social Media Login */}
           <div className="mt-4 flex flex-col gap-2">
-            <button className="btn btn-outline btn-google w-full flex items-center justify-center gap-2">
-            <img
-                src="/images/google.png"
+            <a
+              href="http://localhost:8082/api/auth/google"
+              className="btn btn-outline w-full flex items-center justify-center gap-2 hover:bg-gray-100 border-gray-300"
+              style={{
+                backgroundColor: '#fff',
+                color: '#757575',
+                border: '1px solid #dadce0',
+                borderRadius: '4px',
+                padding: '10px',
+                fontSize: '14px',
+                fontWeight: '500',
+                textTransform: 'none',
+              }}
+            >
+              <img
+                src="/images/google.png" // Ensure this image is in your public folder
                 alt="Google"
                 className="h-6 w-6"
               />
-              Login with Google
-            </button>
-          
+              <span>Sign in with Google</span>
+            </a>
           </div>
 
           {/* Create Account Link */}

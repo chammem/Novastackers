@@ -45,7 +45,7 @@ function HeaderMid() {
 
         {/* Navigation Links */}
         <nav className="hidden md:flex space-x-6">
-          <Link to="/home" className="text-gray-700 hover:text-gray-900">
+          <Link to="/" className="text-gray-700 hover:text-gray-900">
             Home
           </Link>
           <Link to="/features" className="text-gray-700 hover:text-gray-900">

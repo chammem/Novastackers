@@ -27,21 +27,22 @@ async function allUsers(req,res) {
 // Update user by ID 
 async function updateUser(req, res) {
     try {
-        const { fullName, phoneNumber, address, email, role,facebook } = req.body;
-        let updateData = { fullName, phoneNumber, address, email, role ,facebook};
+        const { fullName, phoneNumber, address, email, role } = req.body;
+        let updateData = { fullName, phoneNumber, address, email };
 
         const updatedUser = await userModel.findByIdAndUpdate(req.params.id, updateData, { new: true });
 
         if (!updatedUser) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        res.status(200).json(updatedUser);
+        res.status(200).json({ success: true, data: updatedUser });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Error updating user');
+        res.status(500).json({ success: false, message: 'Error updating user' });
     }
 }
+
 
 async function updateLogedInUser(req,res){
     const {userId} = req.params; 
@@ -118,41 +119,48 @@ const getUser = async (req, res) => {
 // Delete user by ID
 async function deleteUser(req, res) {
     try {
-        const deletedUser = await userModel.findByIdAndDelete(req.params.id);
-        if (!deletedUser) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        res.status(200).json({ message: 'User deleted successfully' });
+      const deletedUser = await userModel.findByIdAndDelete(req.params.id);
+      if (!deletedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+      res.status(200).json({ success: true, message: "User deleted successfully" });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Error deleting user');
+      console.error(err);
+      res.status(500).json({ success: false, message: "Error deleting user" });
     }
-}
+  }
 
 async function disableUser(req, res) {
     try {
         const { id } = req.params;
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'ID invalide' });
+            return res.status(400).json({ message: 'Invalid ID' });
         }
 
-        const updatedUser = await userModel.findByIdAndUpdate(id, { isDisabled: true }, { new: true });
-
-        if (!updatedUser) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        // Fetch user
+        const user = await userModel.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        res.clearCookie("token").status(200).json({
-            message: 'Utilisateur désactivé avec succès. Déconnexion forcée.',
-            user: updatedUser
+        // Toggle isDisabled field
+        user.isDisabled = !user.isDisabled;
+        await user.save();
+
+        res.status(200).json({
+            message: `User ${user.isDisabled ? 'disabled' : 'enabled'} successfully.`,
+            user
         });
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Erreur serveur' });
+        res.status(500).json({ message: 'Server error' });
     }
 }
+
+
+
 
 
 

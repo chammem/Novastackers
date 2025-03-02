@@ -24,7 +24,7 @@ const userSchema = new Schema(
     address: { type: String, trim: true },
     facebook: { type: String, optional: true },
     isDisabled: { type: Boolean, default: false }, // Désactivé = true
-
+    googleId: { type: String, unique: true },
     dietaryRestrictions: { type: [String], default: [] },
     allergies: { type: [String], default: [] },
 
