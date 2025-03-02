@@ -1,33 +1,29 @@
 const multer = require("multer");
 const path = require("path");
+const sanitizeFilename = require("sanitize-filename");
 
-// Set up storage for uploaded files
+// Configure storage for uploaded files
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Save files in the 'uploads' folder
+    cb(null, path.join(__dirname, "../../uploads")); // Save files in the "uploads" directory
   },
   filename: (req, file, cb) => {
-    // Generate a unique filename
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname); // Get file extension
-    cb(null, file.fieldname + "-" + uniqueSuffix + ext); // e.g., driverLicense-1234567890.jpg
+    const sanitizedFilename = sanitizeFilename(file.originalname); // Sanitize the filename
+    cb(null, `${Date.now()}-${sanitizedFilename}`); // Rename files to avoid conflicts
   },
 });
 
-// File filter to allow only specific file types
+// File filter to allow only specific file types (e.g., images, PDFs)
 const fileFilter = (req, file, cb) => {
-  const filetypes = /jpeg|jpg|png|pdf/; // Allowed file types
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (extname && mimetype) {
-    cb(null, true); // Accept the file
+  const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
   } else {
-    cb(new Error("Only images (jpeg, jpg, png) and PDFs are allowed"), false);
+    cb(new Error("Invalid file type. Only JPEG, PNG, and PDF files are allowed."), false);
   }
 };
 
-// Initialize Multer
+// Initialize multer
 const upload = multer({
   storage,
   fileFilter,

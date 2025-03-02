@@ -12,7 +12,7 @@ const Profile = () => {
   const {
     register: registerProfile,
     handleSubmit: handleSubmitProfile,
-    setValue,
+    setValue: setValueProfile,
     formState: { errors: profileErrors },
   } = useForm();
 
@@ -23,26 +23,38 @@ const Profile = () => {
     getValues,
   } = useForm();
 
+  const {
+    register: registerAllergiesPreferences,
+    handleSubmit: handleSubmitAllergiesPreferences,
+    setValue: setValueAllergiesPreferences,
+    formState: { errors: allergiesPreferencesErrors },
+  } = useForm();
+
   // Fetch user details
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
         const response = await axiosInstance.get("/user-details");
-        setUser(response.data.data);
-        setValue("fullName", response.data.data.fullName);
-        setValue("email", response.data.data.email);
-        setValue("phoneNumber", response.data.data.phoneNumber);
-        setValue("address", response.data.data.address);
+        if (response.data?.data) {
+          setUser(response.data.data);
+          // Set form values only if data exists
+          setValueProfile("fullName", response.data.data.fullName);
+          setValueProfile("email", response.data.data.email);
+          setValueProfile("phoneNumber", response.data.data.phoneNumber);
+          setValueProfile("address", response.data.data.address);
+          setValueAllergiesPreferences("allergies", response.data.data.allergies || "");
+          setValueAllergiesPreferences("preferences", response.data.data.preferences || "");
+        }
       } catch (error) {
         console.error("Error fetching user details:", error);
-        toast.error("Failed to fetch user details.");
+        toast.error(error.response?.data?.message || "Failed to fetch user details.");
       } finally {
         setIsLoading(false);
       }
     };
-
+  
     fetchUserDetails();
-  }, [setValue]);
+  }, [setValueProfile, setValueAllergiesPreferences]);
 
   // Handle profile update
   const onSubmitProfile = async (data) => {
@@ -59,11 +71,27 @@ const Profile = () => {
   // Handle password change
   const onSubmitPassword = async (data) => {
     try {
+      if (!user?._id) { // Add null check
+        throw new Error("User information not available");
+      }
+      
       await axiosInstance.put(`/change-password/${user._id}`, data);
       toast.success("Password changed successfully!");
     } catch (error) {
       console.error("Error changing password:", error);
-      toast.error("Failed to change password.");
+      toast.error(error.response?.data?.message || error.message);
+    }
+  };
+
+  // Handle allergies and preferences update
+  const onSubmitAllergiesPreferences = async (data) => {
+    try {
+      const response = await axiosInstance.put(`/update-allergies-preferences/${user._id}`, data);
+      toast.success("Allergies and preferences updated successfully!");
+      setUser(response.data.data);
+    } catch (error) {
+      console.error("Error updating allergies and preferences:", error);
+      toast.error("Failed to update allergies and preferences.");
     }
   };
 
@@ -91,6 +119,14 @@ const Profile = () => {
           >
             Change Password
           </button>
+          {user?.role === "user" && (
+    <button
+      className={`tab ${activeTab === "allergiesPreferences" ? "tab-active" : ""}`}
+      onClick={() => setActiveTab("allergiesPreferences")}
+    >
+      Allergies & Preferences
+    </button>
+  )}
         </div>
 
         {/* Update Profile Form */}
@@ -262,6 +298,50 @@ const Profile = () => {
             <div className="form-control mt-8">
               <button type="submit" className="btn btn-primary w-full">
                 Change Password
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Allergies & Preferences Form */}
+        {activeTab === "allergiesPreferences" && (
+          <form onSubmit={handleSubmitAllergiesPreferences(onSubmitAllergiesPreferences)} className="space-y-6">
+            {/* Allergies */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Allergies</span>
+              </label>
+              <input
+                type="text"
+                {...registerAllergiesPreferences("allergies")}
+                className="input input-bordered w-full"
+                placeholder="Enter your allergies"
+              />
+              {allergiesPreferencesErrors.allergies && (
+                <p className="text-sm text-error">{allergiesPreferencesErrors.allergies.message}</p>
+              )}
+            </div>
+
+            {/* Preferences */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Preferences</span>
+              </label>
+              <input
+                type="text"
+                {...registerAllergiesPreferences("preferences")}
+                className="input input-bordered w-full"
+                placeholder="Enter your preferences"
+              />
+              {allergiesPreferencesErrors.preferences && (
+                <p className="text-sm text-error">{allergiesPreferencesErrors.preferences.message}</p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <div className="form-control mt-8">
+              <button type="submit" className="btn btn-primary w-full">
+                Update Allergies & Preferences
               </button>
             </div>
           </form>
