@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import axiosInstance from "../../../config/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const ResetPassword = ({ email }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate(); 
 
   const handleResetPassword = async () => {
     if (password !== confirmPassword) {
@@ -14,6 +16,7 @@ const ResetPassword = ({ email }) => {
     try {
       await axiosInstance.post("/reset-password", { email, password });
       toast.success("Password reset successfully!");
+      navigate("/login"); 
     } catch (error) {
       toast.error("Failed to reset password.");
     }

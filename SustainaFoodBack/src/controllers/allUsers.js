@@ -1,6 +1,64 @@
 const mongoose = require('mongoose');
 const userModel = require("../models/userModel");
 const bcrypt = require('bcryptjs');
+const FoodItem = require("../models/foodItem");
+
+//get User details by Id
+
+async function getUserById(req,res){
+    const {id} = req.params;
+  try {
+    const user = await userModel.findById(id);
+
+    if(user){
+      res.status(200).json(user);
+    }
+  }catch{
+    res.status(400).json({
+      message: err.message || err,
+      error : true,
+      success : false
+  })
+  }
+
+}
+async function getAssignedFoodForVolunteer(req,res){
+  const { volunteerId } = req.params;
+
+  try {
+    const assignedFoods = await FoodItem.find({
+      assignedVolunteer: volunteerId,
+    }).sort({ created_at: -1 });
+
+    res.status(200).json(assignedFoods);
+  } catch (err) {
+    console.error("Error fetching assigned food:", err);
+    res.status(500).json({ message: "Error fetching assignments", error: err.message });
+  }
+};
+
+
+
+
+
+
+
+
+
+async function getAllVolunteers(req,res){
+    try {
+      const { role } = req.query;
+
+      const filter = role ? { role } : {}; // Only filter by role if provided
+      const users = await userModel.find(filter).select('fullName email role'); // You can project only needed fields
+
+      res.status(200).json(users);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch users', error });
+    }
+}
+
+
 
 async function allUsers(req,res) {
     try {
@@ -159,9 +217,40 @@ async function disableUser(req, res) {
     }
 }
 
+async function updateNgoProfile (req,res){
+  console.log("🟢 updateNgoProfile endpoint hit");
+
+  try {
+
+    const userId = req.userId || req.body.userId || req.query.userId || req.params.id;
+    const {mission,description,website,facebook,instagram,twitter,} = req.body;
+
+    const updates = {mission,description,website,facebook,instagram,twitter,};
+
+    if (req.file) {
+      updates.logoUrl = `/uploads/${req.file.filename}`;
+    }
+
+    const updatedUser = await userModel.findByIdAndUpdate(userId, updates, {
+      new: true,
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "NGO profile updated", user: updatedUser });
+
+
+  } catch (error) {
+    console.error("Error updating NGO profile:", error);
+    res.status(500).json({ message: "Failed to update NGO profile" });
+  }
+
+
+}
 
 
 
 
-
-module.exports = {allUsers,updateUser,getUser,deleteUser,disableUser,updateLogedInUser,updateLogedInPassword};
+module.exports = {updateNgoProfile,getAssignedFoodForVolunteer,getAllVolunteers,getUserById,allUsers,updateUser,getUser,deleteUser,disableUser,updateLogedInUser,updateLogedInPassword};

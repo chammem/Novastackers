@@ -5,9 +5,9 @@ const notificationSchema = new mongoose.Schema({
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true,
+    required: false,
   },
-  message: { type: String, required: true },
+  message: { type: String, required: false },
   type: {
     type: String,
     enum: [
@@ -15,12 +15,19 @@ const notificationSchema = new mongoose.Schema({
       "delivery_update",
       "expiry_alert",
       "system_notification",
+      'pickup_code',
+      'delivery_code',
+      'status_update',
+      'assignment'
     ],
-    required: true,
+    required: false,
   },
-  channel: { type: String, enum: ["email", "SMS", "in-app"], required: true },
-  sent_at: { type: Date, default: Date.now },
-  status: { type: String, enum: ["sent", "read"], required: true },
+  
+  read: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+  channel: { type: String, enum: ["email", "SMS", "in-app"], required: false },
+  // sent_at: { type: Date, default: Date.now },
+  // status: { type: String, enum: ["sent", "read"], required: false },
 });
 const Notification = mongoose.model("Notification", notificationSchema);
 module.exports = Notification;

@@ -19,7 +19,7 @@ const allUsers = require('../controllers/allUsers');
 const { addFoodItem } = require('../controllers/food/foodItem');
 const { uploadDriverDocuments } = require('../controllers/roleVerification');
 const upload = require("../middleware/upload");
-
+const notificationController = require('../controllers/notifications/notificationController');
 
 router.get("/auth-endpoint",authToken,(request, response) => {
   response.json({ message: "You are authorized to access me" });
@@ -161,7 +161,7 @@ router.get('/auth/google/callback', async (req, res) => {
     res.cookie("token", token, tokenOptions);
 
     // Step 7: Redirect to the frontend home page
-    res.redirect("http://localhost:5173/home");
+    res.redirect("http://localhost:5173/");
 
   } catch (error) {
     console.error("Google OAuth error:", error.response ? error.response.data : error.message);
@@ -197,6 +197,80 @@ router.get("/role-verifications", async (req, res) => {
     res.json({ success: true, data: verifications });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+router.post("/test", upload.fields([
+  { name: "vehiculeRegistration", maxCount: 1 },
+]),roleVerification.testTenserFlowApi)
+
+router.get("/user/:id",allUsers.getUserById);
+router.get("/users-by-role", allUsers.getAllVolunteers);
+router.get("/notification", notificationController.getNotifications);
+router.get("/volunteer/:volunteerId/assignments",allUsers.getAssignedFoodForVolunteer);
+
+
+//food pick up verification //
+router.patch("/food/:foodId/start-delivery", foodController.startDelivery);
+router.post("/food/:foodId/verify-delivery", foodController.verifyDeliveryCode);
+
+router.patch("/food/:foodId/start-pickup", foodController.startPickup);
+router.post("/food/:foodId/verify-pickup", foodController.verifyPickupCode);
+router.delete("/notification/:id",notificationController.deleteNotification);
+router.delete("/notification/clear-all/:userId",notificationController.clearAllNotifications);
+router.put( "/update-ngo-profile",upload.single("logo"),allUsers.updateNgoProfile);
+
+
+
+
+
+
+////MAP THINGS /////
+
+router.get("/search", async (req, res) => {
+  const { q } = req.query;
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+      q
+    )}&addressdetails=1&limit=5&countrycodes=tn`;
+
+    const response = await axios.get(url, {
+      headers: {
+        "User-Agent": "SustainaFoodApp/1.0 (ahmedkacem.jebari@esprit.tn)",
+        "Accept-Language": "en",
+      },
+    });
+    const data = response.data;
+    res.json(data);
+  } catch (err) {
+    console.error("Nominatim error:", err);
+    res.status(500).json({ message: "Failed to fetch address suggestions." });
+  }
+});
+
+
+// routes/map.js
+router.post("/route", async (req, res) => {
+  const { start, end } = req.body; // start/end = [lng, lat]
+
+  try {
+    const response = await axios.post(
+      "https://api.openrouteservice.org/v2/directions/driving-car",
+      {
+        coordinates: [start, end],
+      },
+      {
+        headers: {
+          Authorization: process.env.ORS_API_KEY,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    res.json(response.data);
+  } catch (err) {
+    console.error("ORS error:", err);
+    res.status(500).json({ message: "Failed to fetch route" });
   }
 });
 
