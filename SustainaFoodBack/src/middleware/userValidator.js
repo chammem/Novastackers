@@ -28,17 +28,19 @@ const userValidatorSchema = Joi.object({
         "Phone number must contain only numbers and be between 8 to 15 digits.",
     })
     .optional(),
-  address: Joi.string()
-    .trim()
-    .min(5)
-    .max(100)
-    .pattern(/^[a-zA-Z0-9\s,.'-]{5,100}$/)
-    .messages({
-      "string.pattern.base":
-        "Address must contain only letters, numbers, spaces, and common symbols (, . ' -).",
-    })
-    .required(),
-
+  // address: Joi.string()
+  //   .trim()
+  //   .min(5)
+  //   .max(100)
+  //   .pattern(/^[a-zA-Z0-9\s,.'-]{5,100}$/)
+  //   .messages({
+  //     "string.pattern.base":
+  //       "Address must contain only letters, numbers, spaces, and common symbols (, . ' -).",
+  //   })
+  //   .required(),
+    address: Joi.string().optional(),
+  lat: Joi.number().optional(),
+  lng: Joi.number().optional(),
   dietaryRestrictions: Joi.array().items(Joi.string()).default([]).optional(),
   allergies: Joi.array().items(Joi.string()).default([]).optional(),
 

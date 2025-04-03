@@ -119,14 +119,7 @@ const Profile = () => {
           >
             Change Password
           </button>
-          {user?.role === "user" && (
-    <button
-      className={`tab ${activeTab === "allergiesPreferences" ? "tab-active" : ""}`}
-      onClick={() => setActiveTab("allergiesPreferences")}
-    >
-      Allergies & Preferences
-    </button>
-  )}
+         
         </div>
 
         {/* Update Profile Form */}
@@ -303,49 +296,7 @@ const Profile = () => {
           </form>
         )}
 
-        {/* Allergies & Preferences Form */}
-        {activeTab === "allergiesPreferences" && (
-          <form onSubmit={handleSubmitAllergiesPreferences(onSubmitAllergiesPreferences)} className="space-y-6">
-            {/* Allergies */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Allergies</span>
-              </label>
-              <input
-                type="text"
-                {...registerAllergiesPreferences("allergies")}
-                className="input input-bordered w-full"
-                placeholder="Enter your allergies"
-              />
-              {allergiesPreferencesErrors.allergies && (
-                <p className="text-sm text-error">{allergiesPreferencesErrors.allergies.message}</p>
-              )}
-            </div>
-
-            {/* Preferences */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Preferences</span>
-              </label>
-              <input
-                type="text"
-                {...registerAllergiesPreferences("preferences")}
-                className="input input-bordered w-full"
-                placeholder="Enter your preferences"
-              />
-              {allergiesPreferencesErrors.preferences && (
-                <p className="text-sm text-error">{allergiesPreferencesErrors.preferences.message}</p>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <div className="form-control mt-8">
-              <button type="submit" className="btn btn-primary w-full">
-                Update Allergies & Preferences
-              </button>
-            </div>
-          </form>
-        )}
+       
       </div>
     </>
   );

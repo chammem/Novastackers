@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../config/axiosInstance";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import AddressAutoComplete from "../AddressAutoComplete";
 
 // Yup Validation Schema
 const registerSchema = yup.object().shape({
@@ -27,10 +28,7 @@ const registerSchema = yup.object().shape({
     .max(15, "Phone number must contain at most 15 digits")
     .matches(/^\d+$/, "Phone number must be numeric")
     .required("Phone number is required"),
-  address: yup
-    .string()
-    .min(5, "Minimum of 5 characters")
-    .matches(/^[a-zA-Z0-9\s,.'-]{5,100}$/),
+  address: yup.string().required("Address is required"),
 });
 
 function RegisterForm() {
@@ -38,10 +36,13 @@ function RegisterForm() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState("");
+  const [coordinates, setCoordinates] = useState({ lat: null, lng: null });
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({ mode: "onChange", resolver: yupResolver(registerSchema) });
 
@@ -52,8 +53,11 @@ function RegisterForm() {
 
       const payload = {
         ...otherFields,
-        role, // Ensure role is explicitly added
-        fullName, // Map name to fullName
+        role,
+        fullName,
+        address: selectedAddress,
+        lat: coordinates.lat,
+        lng: coordinates.lng,
       };
 
       console.log("Payload:", payload);
@@ -76,7 +80,9 @@ function RegisterForm() {
       <div className="flex w-full max-w-4xl bg-white rounded-lg shadow-lg">
         {/* Form Section */}
         <div className="w-1/2 p-8">
-          <h2 className="text-3xl font-bold mb-6 text-center">Register as {role.charAt(0).toUpperCase() + role.slice(1)}</h2>
+          <h2 className="text-3xl font-bold mb-6 text-center">
+            Register as {role.charAt(0).toUpperCase() + role.slice(1)}
+          </h2>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Full Name Field */}
             <div>
@@ -90,7 +96,9 @@ function RegisterForm() {
                 className="input input-bordered w-full"
                 {...register("fullName")}
               />
-              {errors.fullName && <p className="text-sm text-red-500">{errors.fullName.message}</p>}
+              {errors.fullName && (
+                <p className="text-sm text-red-500">{errors.fullName.message}</p>
+              )}
             </div>
 
             {/* Email Field */}
@@ -105,7 +113,9 @@ function RegisterForm() {
                 className="input input-bordered w-full"
                 {...register("email")}
               />
-              {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+              {errors.email && (
+                <p className="text-sm text-red-500">{errors.email.message}</p>
+              )}
             </div>
 
             {/* Password Field */}
@@ -127,7 +137,9 @@ function RegisterForm() {
               >
                 {showPassword ? "Hide" : "Show"} Password
               </button>
-              {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+              {errors.password && (
+                <p className="text-sm text-red-500">{errors.password.message}</p>
+              )}
             </div>
 
             {/* Confirm Password Field */}
@@ -142,7 +154,9 @@ function RegisterForm() {
                 className="input input-bordered w-full"
                 {...register("confirmPassword")}
               />
-              {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>}
+              {errors.confirmPassword && (
+                <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+              )}
             </div>
 
             {/* Phone Number Field */}
@@ -157,23 +171,30 @@ function RegisterForm() {
                 className="input input-bordered w-full"
                 {...register("phoneNumber")}
               />
-              {errors.phoneNumber && <p className="text-sm text-red-500">{errors.phoneNumber.message}</p>}
+              {errors.phoneNumber && (
+                <p className="text-sm text-red-500">{errors.phoneNumber.message}</p>
+              )}
             </div>
 
-            {/* Address Field */}
+            {/* Address Autocomplete Field */}
             <div>
-              <label htmlFor="address" className="block text-sm font-medium">
-                Address
-              </label>
-              <input
-                type="text"
-                id="address"
-                placeholder="Enter your address"
-                className="input input-bordered w-full"
-                {...register("address")}
+              <label className="block text-sm font-medium">Address</label>
+              <AddressAutoComplete
+                onSelect={(place) => {
+                  const address = place.display_name;
+                  setSelectedAddress(address);
+                  setValue("address", address); // for yup
+                  setCoordinates({ lat: parseFloat(place.lat), lng: parseFloat(place.lon) }); // store lat/lng
+                }}
               />
-              {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
+
+              {errors.address && (
+                <p className="text-sm text-red-500">{errors.address.message}</p>
+              )}
             </div>
+
+            {/* Hidden address value to trigger validation */}
+            <input type="hidden" {...register("address")} value={selectedAddress} />
 
             {/* Submit Button */}
             <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>

@@ -17,14 +17,21 @@ const userSchema = new Schema(
     role: {
       type: String,
 
-      enum: ["user", "driver", "restaurant", "supermarket", "charity"],
+      enum: ["user", "driver", "restaurant", "supermarket", "charity","volunteer"],
     },
     fullName: { type: String, required: false, trim: true },
     phoneNumber: { type: String, trim: true },
     address: { type: String, trim: true },
+    lat: { type: Number },
+    lng: { type: Number },
+
     facebook: { type: String, optional: true },
     isDisabled: { type: Boolean, default: false }, // Désactivé = true
     googleId: { type: String, unique: true },
+   
+   
+   
+   
     dietaryRestrictions: { type: [String], default: [] },
     allergies: { type: [String], default: [] },
 
@@ -55,6 +62,17 @@ const userSchema = new Schema(
       enum: ["pending", "verified", "rejected"],
       default: "pending",
     },
+    // Charity (NGO) specific fields
+    organizationName: { type: String, trim: true },
+    mission: { type: String },
+    description: { type: String },
+    website: { type: String },
+    logoUrl: { type: String },
+    donationNeeds: { type: [String], default: [] },
+    instagram: { type: String },
+   facebook: { type: String },
+    twitter: { type: String },
+
   },
   { timestamps: true }
 );

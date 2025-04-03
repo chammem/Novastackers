@@ -1,7 +1,8 @@
 const RoleVerification = require("../models/roleVerification");
 const upload = require("../middleware/upload");
 const User = require("../models/userModel")
-
+const axios = require("axios")
+const fs = require("fs");
 exports.uploadDriverDocuments = async (req, res) => {
   try {
     const { driverId, vehiculeType } = req.body;
@@ -138,3 +139,40 @@ exports.getAllDriverVerifications = async (req,res) => {
 
 
 }
+
+exports.testTenserFlowApi = async (req, res) => {
+  try {
+    // Check if files were uploaded
+    if (!req.files || !req.files.vehiculeRegistration) {
+      return res.status(400).json({ message: "No files were uploaded" });
+    }
+
+    // Get the path of the uploaded file
+    const vehiculeRegistrationPath = `uploads/${req.files.vehiculeRegistration[0].filename}`;
+
+    // Read the uploaded file and encode it in base64
+    const image = fs.readFileSync(vehiculeRegistrationPath, { encoding: "base64" });
+
+    // Make a POST request to the Roboflow API
+    const roboflowResponse = await axios({
+      method: "POST",
+      url: "https://detect.roboflow.com/carte_grise-93igw/4", // Replace with your model endpoint
+      params: {
+        api_key: "YZV3QhelravXCokeC6ey", // Replace with your API key
+      },
+      data: image,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    // Delete the uploaded file after processing
+    fs.unlinkSync(vehiculeRegistrationPath);
+
+    // Return the Roboflow API response
+    res.json(roboflowResponse.data);
+  } catch (error) {
+    console.log("Error uploading documents:", error);
+    res.status(500).json({ message: "An error occurred while uploading documents" });
+  }
+};
