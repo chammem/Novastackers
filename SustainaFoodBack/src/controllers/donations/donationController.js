@@ -367,7 +367,51 @@ exports.getPaginatedFoodsByCampaign = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch paginated food" });
   }
 };
+exports.getFoodById = async (req, res) => {
+  try {
+    const food = await FoodItem.findById(req.params.id)
+      .populate("buisiness_id") // The donating business
+      .populate({
+        path: "donationId",
+        populate: {
+          path: "ngoId", // Make sure this matches your FoodDonation model
+          model: "User"
+        }
+      });
 
+    if (!food) {
+      return res.status(404).json({ message: "Food item not found" });
+    }
+
+    const isPickup = food.status === "assigned" || food.status === "pending";
+
+    const destinationUser = isPickup
+      ? food.buisiness_id
+      : food.donationId?.ngoId;
+
+    if (!destinationUser) {
+      return res.status(400).json({ message: "Destination user not found" });
+    }
+
+    const destinationName =destinationUser.fullName;
+
+    
+    return res.json({
+      foodId: food._id,
+      foodName: food.name,
+      status: food.status,
+      destination: {
+        name: destinationName,
+        address: destinationUser.address,
+        lat: destinationUser.lat,
+        lng: destinationUser.lng,
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching food with destination:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
 
 
 

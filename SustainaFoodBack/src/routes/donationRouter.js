@@ -17,5 +17,5 @@ donationRouter.get("/:campaignId/volunteer",donationController.getVolunteersForC
 donationRouter.get("/get-donations-by-buisiness/:businessId",donationController.getBuisnessFoodDonations);
 donationRouter.get("/:campaignId/businesses",donationController.getBusinessesForCampaign);
 donationRouter.get("/:campaignId/foods/paginated", donationController.getPaginatedFoodsByCampaign);
-
+donationRouter.get("/food/:id", donationController.getFoodById);
 module.exports = donationRouter;
