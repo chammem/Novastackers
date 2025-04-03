@@ -251,10 +251,10 @@ router.get("/search", async (req, res) => {
 
 // routes/map.js
 router.post("/route", async (req, res) => {
-  const { start, end } = req.body; // start/end = [lng, lat]
+  const { start, end } = req.body;
 
   try {
-    const response = await axios.post(
+    const orsRes = await axios.post(
       "https://api.openrouteservice.org/v2/directions/driving-car",
       {
         coordinates: [start, end],
@@ -267,11 +267,13 @@ router.post("/route", async (req, res) => {
       }
     );
 
-    res.json(response.data);
+    console.log("ORS route data:", JSON.stringify(orsRes.data, null, 2)); // Log full response
+    res.json(orsRes.data);
   } catch (err) {
-    console.error("ORS error:", err);
-    res.status(500).json({ message: "Failed to fetch route" });
+    console.error("ORS error:", err?.response?.data || err.message);
+    res.status(500).json({ message: "Failed to fetch route from ORS." });
   }
 });
+
 
 module.exports = router
