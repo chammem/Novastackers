@@ -251,11 +251,11 @@ router.get("/search", async (req, res) => {
 
 // routes/map.js
 router.post("/route", async (req, res) => {
-  const { start, end } = req.body;
+  const { start, end ,mode="driving-car"} = req.body;
 
   try {
     const orsRes = await axios.post(
-      "https://api.openrouteservice.org/v2/directions/driving-car",
+     `https://api.openrouteservice.org/v2/directions/${mode}`,
       {
         coordinates: [start, end],
       },

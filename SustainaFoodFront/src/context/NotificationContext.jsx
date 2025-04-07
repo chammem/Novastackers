@@ -3,24 +3,15 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import axiosInstance from "../config/axiosInstance";
 import { toast } from "react-toastify";
+import { useAuth } from "./AuthContext";
 
 const NotificationContext = createContext();
 
 export const useNotifications = () => useContext(NotificationContext);
 
 export const NotificationProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const { user } = useAuth(); // use user from AuthContext
   const [notifications, setNotifications] = useState([]);
-  console.log("NotificationProvider loaded");
-
-  // Fetch user and notifications on mount
-  useEffect(() => {
-    const init = async () => {
-      const res = await axiosInstance.get("/user-details");
-      setUser(res.data.data);
-    };
-    init();
-  }, []);
 
   useEffect(() => {
     if (!user?._id) return;
@@ -51,7 +42,6 @@ export const NotificationProvider = ({ children }) => {
         notifications,
         setNotifications,
         unreadCount: notifications.filter((n) => !n.read).length,
-        user,
       }}
     >
       {children}

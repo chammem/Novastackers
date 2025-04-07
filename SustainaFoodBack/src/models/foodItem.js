@@ -24,7 +24,7 @@ const foodSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'assigned', 'picked-up', 'delivered', 'cancelled'],
+    enum: ['pending', 'assigned', 'picked-up', 'delivered', 'cancelled','requested'],
     default: 'pending',
   }, 
   volunteerPickedUpAt:{type:Date,required:false},
@@ -37,7 +37,12 @@ const foodSchema = new mongoose.Schema({
   deliveryCode: { type: String },              // code used for delivery confirmation
   deliveryCodeGeneratedAt: { type: Date },
   deliveredAt: { type: Date },
-
+  assignmentStatus: {
+    type: String,
+    enum: ['pending', 'accepted', 'declined'],
+    default: 'pending',
+  }
+  
 });
 
 const FoodItem = mongoose.model("FoodItem", foodSchema);
