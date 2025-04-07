@@ -35,6 +35,9 @@ import NGOProfileUpdate from './components/NGOProfileUpdate.jsx'
 import MyFoodDonations from './components/donations/MyFoodDonations.jsx'
 import AddressAutoComplete from './components/AddressAutoComplete.jsx'
 import MapView from './components/MapView.jsx'
+import RouteDetailsPage from './components/donations/RouteDetailsPage.jsx'
+import RequestedAssignments from './components/donations/RequestedAssignments.jsx'
+import { AuthProvider } from "./context/AuthContext";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -63,7 +66,8 @@ const router = createBrowserRouter([
       {path:"/my-donations",element:<MyFoodDonations/>},
       {path:"/test-map",element:<MapView/>},
       {path:"/adress",element:<AddressAutoComplete/>},
-
+      {path:"/route/:foodId",element:<RouteDetailsPage/>},
+      {path:"/requested-assignments",element:<RequestedAssignments/>},
       {
         element: <ProtectedRoute />,
         children: [
@@ -86,9 +90,12 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <AuthProvider>
     <NotificationProvider>
     <ToastContainer/>
+
     <RouterProvider router={router} /> {/* Fix: router1 => router */}
     </NotificationProvider>
+    </AuthProvider>
   </StrictMode>
 );

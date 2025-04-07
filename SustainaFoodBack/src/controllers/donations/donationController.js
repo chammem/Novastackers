@@ -179,32 +179,99 @@ exports.assignFoodToVolunteer = async (req, res) => {
   const { volunteerId } = req.body;
 
   try {
-    // Populate buisiness_id so we can access fullName
     const food = await FoodItem.findById(foodId).populate("buisiness_id assignedVolunteer");
-
     if (!food) return res.status(404).json({ message: "Food item not found" });
 
     food.assignedVolunteer = volunteerId;
-    food.status = "assigned";
+    food.status = "requested"; // Optional: Keep or move this to "accepted"
+    food.assignmentStatus = "pending"; // ✨ New
     await food.save();
 
-    // Create the notification
     const notification = await Notification.create({
       user_id: volunteerId,
-      message: `You've been assigned to pick up food from ${food.buisiness_id?.fullName || "a business"}.`,
-      type: "assignment", // Make sure "assignment" is a valid enum in your schema
+      message: `You’ve been requested to pick up food from ${food.buisiness_id?.fullName || "a business"}.`,
+      type: "assignment-request",
       read: false
     });
 
-    // Emit the notification in real-time
-    req.io.to(food.assignedVolunteer._id.toString()).emit("new-notification", notification);
+    req.io.to(volunteerId.toString()).emit("new-notification", notification);
 
-    res.status(200).json({ message: "Volunteer assigned successfully", food });
+    res.status(200).json({ message: "Volunteer request sent", food });
   } catch (err) {
     console.error("Assignment error:", err);
     res.status(500).json({ message: "Error assigning volunteer", error: err.message });
   }
 };
+exports.acceptAssignment = async (req, res) => {
+  const { foodId } = req.params;
+
+  try {
+    const food = await FoodItem.findById(foodId).populate({
+      path: 'donationId',
+      populate: { path: 'ngoId' }
+    });
+
+    if (!food) return res.status(404).json({ message: "Food not found" });
+
+    food.assignmentStatus = "accepted";
+    food.status = "assigned";
+    await food.save();
+
+    // 🔔 Notify NGO
+    if (food.donationId?.ngoId) {
+      const notification = await Notification.create({
+        user_id: food.donationId.ngoId._id,
+        message: `✅ Volunteer accepted the assignment for "${food.name}".`,
+        type: "assignment",
+        read: false
+      });
+
+      req.io.to(food.donationId.ngoId._id.toString()).emit("new-notification", notification);
+    }
+
+    res.status(200).json({ message: "Assignment accepted" });
+  } catch (err) {
+    console.error("Accept error:", err);
+    res.status(500).json({ message: "Error accepting assignment" });
+  }
+};
+
+
+exports.declineAssignment = async (req, res) => {
+  const { foodId } = req.params;
+
+  try {
+    const food = await FoodItem.findById(foodId).populate({
+      path: 'donationId',
+      populate: { path: 'ngoId' }
+    });
+
+    if (!food) return res.status(404).json({ message: "Food not found" });
+
+    food.assignmentStatus = "declined";
+    food.assignedVolunteer = null;
+    food.status = "pending";
+    await food.save();
+
+    // 🔔 Notify NGO
+    if (food.donationId?.ngoId) {
+      const notification = await Notification.create({
+        user_id: food.donationId.ngoId._id,
+        message: `❌ Volunteer declined the assignment for "${food.name}".`,
+        type: "assignment",
+        read: false
+      });
+
+      req.io.to(food.donationId.ngoId._id.toString()).emit("new-notification", notification);
+    }
+
+    res.status(200).json({ message: "Assignment declined" });
+  } catch (err) {
+    console.error("Decline error:", err);
+    res.status(500).json({ message: "Error declining assignment" });
+  }
+};
+
 
 
 
@@ -370,46 +437,20 @@ exports.getPaginatedFoodsByCampaign = async (req, res) => {
 exports.getFoodById = async (req, res) => {
   try {
     const food = await FoodItem.findById(req.params.id)
-      .populate("buisiness_id") // The donating business
       .populate({
         path: "donationId",
-        populate: {
-          path: "ngoId", // Make sure this matches your FoodDonation model
-          model: "User"
-        }
-      });
+        populate: { path: "ngoId" } 
+      })
+      .populate("buisiness_id"); 
 
     if (!food) {
-      return res.status(404).json({ message: "Food item not found" });
+      return res.status(404).json({ message: "Food not found" });
     }
 
-    const isPickup = food.status === "assigned" || food.status === "pending";
-
-    const destinationUser = isPickup
-      ? food.buisiness_id
-      : food.donationId?.ngoId;
-
-    if (!destinationUser) {
-      return res.status(400).json({ message: "Destination user not found" });
-    }
-
-    const destinationName =destinationUser.fullName;
-
-    
-    return res.json({
-      foodId: food._id,
-      foodName: food.name,
-      status: food.status,
-      destination: {
-        name: destinationName,
-        address: destinationUser.address,
-        lat: destinationUser.lat,
-        lng: destinationUser.lng,
-      }
-    });
-  } catch (error) {
-    console.error("Error fetching food with destination:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    res.json(food);
+  } catch (err) {
+    console.error("Error fetching food:", err);
+    res.status(500).json({ message: "Server error" });
   }
 }
 

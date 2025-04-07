@@ -10,6 +10,9 @@ donationRouter.get('/get-donations-by-ngo',donationController.getDonationsByNgo)
 donationRouter.get('/get-donation-by-id/:ngoId',donationController.getDonationByNgoId);
 donationRouter.get('/:id/details', donationController.getDonationDetails);
 donationRouter.post('/assign-volunteer/:foodId', donationController.assignFoodToVolunteer);
+donationRouter.patch('/accept-assignment/:foodId', donationController.acceptAssignment);
+donationRouter.patch('/decline-assignment/:foodId', donationController.declineAssignment);
+
 // donationRouter.put('/pickup/volunteer/:foodId', donationController.markAsPickedUpByVolunteer);
 donationRouter.put('/pickup/buisness/:foodId',donationController.confirmPickupByBuisness);
 donationRouter.post("/:campaignId/volunteer", donationController.volunteerForCampaign);

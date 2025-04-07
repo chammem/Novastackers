@@ -1,142 +1,202 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../../config/axiosInstance'; // Ensure you have this configured
-import HeaderMid from '../HeaderMid';
-import BreadCrumb from '../BreadCrumb';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
-import { useCookies } from "react-cookie";
+// src/components/auth/Connect.jsx
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../config/axiosInstance";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useAuth } from "../../context/AuthContext";
+import { motion } from "framer-motion";
+import {
+  FiMail,
+  FiLock,
+  FiEye,
+  FiEyeOff,
+  FiAlertTriangle,
+} from "react-icons/fi";
 
 function Connect() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const [showPassword,setShowPassword] = useState(false);
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
     try {
       const response = await axiosInstance.post("/login", { email, password });
-
       if (response.data.success) {
-        navigate("/"); // Redirect to home page after login
+        await login(response.data.data);
+        toast.success("Login successful!");
+        setTimeout(() => {
+          navigate("/", { replace: true });
+        }, 100);
       } else {
         setError(response.data.message || "Invalid credentials");
       }
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
+      toast.error("Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100">
-      <div className="flex w-full max-w-4xl bg-white rounded-lg shadow-lg">
-        {/* Form Section */}
-        <div className="w-1/2 p-8">
-          <h2 className="text-3xl font-bold mb-6 text-center">Login</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                placeholder="Enter your email"
-                className="input input-bordered w-full"
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium">
-                Password
-              </label>
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                placeholder="Enter your password"
-                className="input input-bordered w-full"
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="text-sm text-blue-500 hover:underline mt-2"
-              >Show Password</button>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <div className="flex items-center justify-between">
-              <a
-                href="/forgot-password"
-                className="text-sm text-blue-500 hover:underline"
-              >
-                Forgot Password?
-              </a>
-            </div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn btn-primary w-full"
-            >
-              {isLoading ? 'Signing In...' : 'SIGN IN'}
-            </button>
-          </form>
-
-          {/* Social Media Login */}
-          <div className="mt-4 flex flex-col gap-2">
-            <a
-              href="http://localhost:8082/api/auth/google"
-              className="btn btn-outline w-full flex items-center justify-center gap-2 hover:bg-gray-100 border-gray-300"
-              style={{
-                backgroundColor: '#fff',
-                color: '#757575',
-                border: '1px solid #dadce0',
-                borderRadius: '4px',
-                padding: '10px',
-                fontSize: '14px',
-                fontWeight: '500',
-                textTransform: 'none',
-              }}
-            >
-              <img
-                src="/images/google.png" // Ensure this image is in your public folder
-                alt="Google"
-                className="h-6 w-6"
-              />
-              <span>Sign in with Google</span>
-            </a>
-          </div>
-
-          {/* Create Account Link */}
-          <div className="mt-4 text-center">
-            <p>
-              Don't have an account?{" "}
-              <Link
-                to="/register"
-                className="text-blue-500 hover:underline"
-              >
-                Create one here.
-              </Link>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="hero min-h-screen bg-base-200"
+    >
+      <div className="hero-content flex-col lg:flex-row-reverse">
+        <div className="text-center lg:text-left lg:w-1/3 lg:ml-6">
+          <motion.div
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h1 className="text-3xl font-bold">Welcome Back!</h1>
+            <p className="py-6">
+              Sign in to continue your sustainable journey with SustainaFood.
+              Reduce waste and help your community today.
             </p>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Image Section */}
-        <div
-          className="w-1/2 bg-cover bg-center"
-          style={{
-            backgroundImage: 'url("/images/login.svg")',
-          }}
-        ></div>
+        <motion.div
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="card flex-shrink-0 w-full max-w-sm shadow-lg bg-base-100"
+        >
+          <div className="card-body">
+            <h2 className="card-title justify-center text-2xl font-bold">
+              Login
+            </h2>
+
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="alert alert-error shadow-sm"
+              >
+                <FiAlertTriangle />
+                <span>{error}</span>
+              </motion.div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Email</span>
+                </label>
+                <div className="input-group">
+                  <span>
+                    <FiMail />
+                  </span>
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="input input-bordered w-full"
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Password</span>
+                  <Link
+                    to="/forgot-password"
+                    className="label-text-alt link link-hover"
+                  >
+                    Forgot password?
+                  </Link>
+                </label>
+                <div className="input-group">
+                  <span>
+                    <FiLock />
+                  </span>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    className="input input-bordered w-full"
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="btn btn-ghost btn-square"
+                  >
+                    {showPassword ? <FiEyeOff /> : <FiEye />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="form-control mt-6">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="btn btn-primary"
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      Signing In...
+                    </>
+                  ) : (
+                    "Sign In"
+                  )}
+                </button>
+              </div>
+            </form>
+
+            <div className="divider">OR</div>
+
+            {/* Social Media Login */}
+            <div className="mt-2">
+              <a
+                href="http://localhost:8082/api/auth/google"
+                className="btn btn-outline w-full flex items-center justify-center gap-2 hover:bg-gray-100 border-gray-300"
+                style={{
+                  backgroundColor: "#fff",
+                  color: "#757575",
+                  border: "1px solid #dadce0",
+                  borderRadius: "4px",
+                  padding: "10px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  textTransform: "none",
+                }}
+              >
+                <img
+                  src="/images/google.png" // Ensure this image is in your public folder
+                  alt="Google"
+                  className="h-6 w-6"
+                />
+                <span>Sign in with Google</span>
+              </a>
+            </div>
+
+            <div className="text-center mt-4">
+              <p>
+                Don't have an account?
+                <Link to="/register" className="link link-primary ml-1">
+                  Create one here
+                </Link>
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
