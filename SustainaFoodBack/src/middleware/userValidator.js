@@ -28,26 +28,28 @@ const userValidatorSchema = Joi.object({
         "Phone number must contain only numbers and be between 8 to 15 digits.",
     })
     .optional(),
-  address: Joi.string()
-    .trim()
-    .min(5)
-    .max(100)
-    .pattern(/^[a-zA-Z0-9\s,.'-]{5,100}$/)
-    .messages({
-      "string.pattern.base":
-        "Address must contain only letters, numbers, spaces, and common symbols (, . ' -).",
-    })
-    .required(),
-
+  // address: Joi.string()
+  //   .trim()
+  //   .min(5)
+  //   .max(100)
+  //   .pattern(/^[a-zA-Z0-9\s,.'-]{5,100}$/)
+  //   .messages({
+  //     "string.pattern.base":
+  //       "Address must contain only letters, numbers, spaces, and common symbols (, . ' -).",
+  //   })
+  //   .required(),
+    address: Joi.string().optional(),
+  lat: Joi.number().optional(),
+  lng: Joi.number().optional(),
   dietaryRestrictions: Joi.array().items(Joi.string()).default([]).optional(),
   allergies: Joi.array().items(Joi.string()).default([]).optional(),
 
   // Driver-specific fields
-  vehicleType: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
-  licensePlateNumber: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
-  vehicleCapacity: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
-  driverLicenseNumber: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
-  vehicleRegistration: Joi.string().when("role", { is: "driver", then: Joi.required(), otherwise: Joi.optional() }),
+  vehicleType: Joi.string(),
+  licensePlateNumber: Joi.string(),
+  vehicleCapacity: Joi.string(),
+  driverLicenseNumber: Joi.string(),
+  vehicleRegistration: Joi.string(),
   workingHours: Joi.string().optional(),
   daysAvailable: Joi.array().items(Joi.string()).default([]).optional(),
 

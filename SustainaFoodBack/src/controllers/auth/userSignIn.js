@@ -3,65 +3,77 @@ const userModel = require("../../models/userModel");
 const jwt = require('jsonwebtoken');
 
 async function userSignInController(req, res) {
-    try {
-        const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-        if(!email){
-            throw new Error("please provide your email")
-        }
-        if(!password){
-            throw new Error("please provide your password")
-        }
-
-        const user = await userModel.findOne({email})
-
-        if(!user){
-            throw new Error("User not found !")
-        }
-
-        // Vérifier si l'utilisateur est désactivé
-        if (user.isDisabled) {
-            throw new Error("Your account has been disabled.");
-        }
-
-        const checkPassword =await bcrypt.compare(password,user.password)
-
-        console.log("checkPassword",checkPassword)
-
-        if(checkPassword){
-            const tokenData = {
-                _id : user._id,
-                email : user.email,
-            }
-            const token =await jwt.sign(tokenData,
-                 process.env.TOKEN_SECRET_KEY,
-                 {expiresIn: 60 * 60 * 12});
-
-           
-            const tokenOption = {
-                httpOnly : true,
-                secure: process.env.NODE_ENV === "production",  // Secure in production
-                sameSite: "Strict",  // Prevent CSRF
-            }
-        
-            res.cookie("token",token,tokenOption).status(200).json({
-                message : "logged in successfully",
-                data : token,
-                success : true
-                
-            })
-
-        }else{
-            throw new Error ("please check your password")
-        }
-        
-    } catch (err) {
-        res.json({ 
-            message: err.message || err, 
-            error: true, 
-            success: false 
-        });
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide both email and password"
+      });
     }
+
+    const user = await userModel.findOne({ email });
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    if (user.isDisabled) {
+      return res.status(403).json({
+        success: false,
+        message: "Account disabled"
+      });
+    }
+
+    const checkPassword = await bcrypt.compare(password, user.password);
+    
+    if (!checkPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials"
+      });
+    }
+
+    // Token payload
+    const tokenData = {
+      _id: user._id,
+      email: user.email,
+      role: user.role // Ensure role exists in user model
+    };
+
+    // Generate token
+    const token = jwt.sign(
+      tokenData,
+      process.env.TOKEN_SECRET_KEY,
+      { expiresIn: '7d' } // Fixed expiration format
+    );
+
+    // Cookie options
+    const tokenOption = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    };
+
+    return res.cookie("token", token, tokenOption).status(200).json({
+      success: true,
+      message: "Logged in successfully",
+      user: tokenData
+    });
+
+  } catch (err) {
+    console.error("Login error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
 }
 
 module.exports = userSignInController;

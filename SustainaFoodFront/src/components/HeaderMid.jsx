@@ -1,309 +1,491 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
-import axiosInstance from '../config/axiosInstance';
-import { useEffect, useState } from 'react';
+// src/components/HeaderMid.jsx
+import { useNavigate, Link, NavLink } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext"; // use auth context
+import { useNotifications } from "../context/NotificationContext";
+import axiosInstance from "../config/axiosInstance";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FiBell,
+  FiLogOut,
+  FiUser,
+  FiMenu,
+  FiX,
+  FiChevronDown,
+  FiTrash2,
+} from "react-icons/fi";
 
 function HeaderMid() {
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate(); // Define navigate
+  const navigate = useNavigate();
+  const { user, logout, checkAuthStatus } = useAuth();
+  const { notifications, unreadCount, setNotifications } = useNotifications();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Fetch user details
+  // Track scroll for navbar appearance change
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      try {
-        const response = await axiosInstance.get("/user-details");
-        setUser(response.data.data);
-         
-      // Update state with user details
-      } catch (error) {
-        console.error("Error fetching user details:", error);
-      }
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
     };
-
-    fetchUserDetails();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Logout function
+  // Force refresh user data when component mounts or route changes
+  useEffect(() => {
+    checkAuthStatus();
+  }, [window.location.pathname]);
+
   const handleLogout = async () => {
     try {
-      console.log("Attempting to log out...");
-      const response = await axiosInstance.post("/userLogout");
-      console.log("Logout response:", response.data);
-  
-      setUser(null); // Clear user state
-      navigate("/login"); // Redirect to login page
+      await axiosInstance.post("/userLogout");
+      logout();
+      toast.success("Logged out successfully");
+      navigate("/login");
     } catch (error) {
-      console.error("Error logging out:", error);
+      toast.error("Error logging out");
+    }
+  };
+
+  const clearAll = async () => {
+    try {
+      await axiosInstance.delete(`/notification/clear-all/${user._id}`);
+      setNotifications([]);
+      toast.success("All notifications cleared");
+    } catch {
+      toast.error("Error clearing notifications");
+    }
+  };
+
+  const deleteOne = async (id) => {
+    try {
+      await axiosInstance.delete(`/notification/${id}`);
+      setNotifications((prev) => prev.filter((n) => n._id !== id));
+    } catch {
+      toast.error("Failed to delete notification");
     }
   };
 
   return (
-    <div className="ltn__header-middle-area ltn__header-sticky ltn__sticky-bg-white ltn__logo-right-menu-option plr--9---">
-      <div className="container">
-        <div className="row">
-          <div className="col">
-            <div className="site-logo-wrap">
-              <div className="site-logo">
-                <Link to="/">
-                  <img src="broccoli/img/logo.png" alt="Logo" />
+    <>
+      <motion.header
+        initial={{ y: -20 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.3 }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled ? "bg-white/95 shadow-md backdrop-blur-sm" : "bg-white"
+        }`}
+      >
+        <div className="max-w-6xl mx-auto flex justify-between items-center py-3 px-4">
+          
+                <NavLink to="/" className="flex items-center gap-2">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg"
+                >
+                  S
+                </motion.div>
+                <span className="text-xl font-bold text-primary hidden sm:block">
+                  SustainaFood
+                </span>
+                </NavLink>
+
+                {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-2">
+            {[
+              { to: "/", label: "Home" },
+              { to: "/features", label: "Features" },
+              { to: "/about", label: "About" },
+              { to: "/contact", label: "Contact" },
+            ].map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className={({ isActive }) =>
+                  `btn btn-sm ${
+                    isActive
+                      ? "btn-primary text-white"
+                      : "btn-ghost text-gray-700"
+                  }`
+                }
+              >
+                {link.label}
+              </NavLink>
+            ))}
+
+            {/* Role-specific links with dropdown */}
+            {user && (
+              <div className="dropdown dropdown-end">
+                <label tabIndex={0} className="btn btn-sm btn-ghost m-1">
+                  Actions
+                  <FiChevronDown className="ml-1" />
+                </label>
+                <ul
+                  tabIndex={0}
+                  className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-30"
+                >
+                  {user?.role === "charity" && (
+                    <>
+                      <li>
+                        <NavLink to="/donationForm">Create Campaign</NavLink>
+                      </li>
+                      <li>
+                        <NavLink to="/my-campaigns">My Campaigns</NavLink>
+                      </li>
+                    </>
+                  )}
+                  {user?.role === "volunteer" && (
+                    <li>
+                      <NavLink to="/volunteer">Volunteer Dashboard</NavLink>
+                    </li>
+                  )}
+                  {user?.role === "restaurant" && (
+                    <li>
+                      <NavLink to="/donations">Donate</NavLink>
+                    </li>
+                  )}
+                  {user?.role === "supermarket" && (
+                    <li>
+                      <NavLink to="/my-pickups">Confirm Pickups</NavLink>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </nav>
+
+          {/* User Actions Section */}
+          <div className="hidden md:flex items-center gap-2">
+            {user ? (
+              <div className="flex items-center gap-2">
+                {/* Notification Bell */}
+                <div className="dropdown dropdown-end">
+                  <motion.div
+                    whileTap={{ scale: 0.95 }}
+                    tabIndex={0}
+                    role="button"
+                    className="btn btn-ghost btn-sm btn-circle"
+                  >
+                    <div className="indicator">
+                      <FiBell className="h-5 w-5" />
+                      <AnimatePresence>
+                        {unreadCount > 0 && (
+                          <motion.span
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0 }}
+                            className="badge badge-xs badge-primary indicator-item"
+                          >
+                            {unreadCount}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </motion.div>
+                  <div
+                    tabIndex={0}
+                    className="dropdown-content card card-compact w-64 p-2 shadow bg-base-100"
+                  >
+                    <div className="card-body">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-medium">Notifications</h3>
+                        {notifications.length > 0 && (
+                          <button
+                            className="btn btn-xs btn-ghost text-error"
+                            onClick={clearAll}
+                          >
+                            <FiTrash2 className="w-3 h-3" />
+                            <span className="ml-1">Clear</span>
+                          </button>
+                        )}
+                      </div>
+                      <div className="divider my-1"></div>
+                      <div className="max-h-48 overflow-y-auto">
+                        {notifications.length > 0 ? (
+                          notifications.slice(0, 5).map((n, i) => (
+                            <motion.div
+                              key={n._id || i}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="py-2 border-b last:border-0 border-base-200 relative group"
+                            >
+                              <p className="text-sm">{n.message}</p>
+                              <span className="text-xs text-gray-500">
+                                {new Date(n.createdAt).toLocaleDateString()}
+                              </span>
+                              <button
+                                className="absolute right-0 top-2 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => deleteOne(n._id)}
+                              >
+                                <FiX size={16} />
+                              </button>
+                            </motion.div>
+                          ))
+                        ) : (
+                          <div className="text-center py-4">
+                            <FiBell className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-500">
+                              No notifications
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      {notifications.length > 5 && (
+                        <Link
+                          to="/notifications"
+                          className="btn btn-xs btn-primary w-full mt-2"
+                        >
+                          View All ({notifications.length})
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Avatar dropdown */}
+                <div className="dropdown dropdown-end">
+                  <motion.div
+                    whileTap={{ scale: 0.95 }}
+                    tabIndex={0}
+                    className="btn btn-primary btn-sm gap-2 normal-case"
+                  >
+                    <div className="avatar">
+                      <div className="w-6 rounded-full ring ring-primary ring-offset-base-100 ring-offset-1">
+                        <div className="flex items-center justify-center bg-white text-primary h-full w-full">
+                          {user?.fullName?.charAt(0).toUpperCase() || "U"}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="hidden sm:inline">
+                      {user?.fullName?.split(" ")[0] || "User"}
+                    </span>
+                  </motion.div>
+                  <ul
+                    tabIndex={0}
+                    className="dropdown-content menu menu-sm p-2 shadow bg-base-100 rounded-box w-52 mt-2"
+                  >
+                    <li className="menu-title">
+                      <span className="text-xs text-gray-500 truncate">
+                        {user?.email}
+                      </span>
+                    </li>
+                    <li>
+                      <Link to="/profile" className="flex items-center">
+                        <FiUser className="w-4 h-4" />
+                        Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <button
+                        onClick={handleLogout}
+                        className="text-error flex items-center"
+                      >
+                        <FiLogOut className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link to="/login">
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    className="btn btn-sm btn-ghost"
+                  >
+                    Login
+                  </motion.button>
+                </Link>
+                <Link to="/role">
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    className="btn btn-sm btn-primary"
+                  >
+                    Sign Up
+                  </motion.button>
                 </Link>
               </div>
-            </div>
+            )}
           </div>
-          <div className="col header-menu-column menu-color-white---">
-            <div className="header-menu d-none d-xl-block">
-              <nav>
-                <div className="ltn__main-menu">
-                  <ul>
-                    <li>
-                      <Link to="/">Home</Link>
-                    </li>
-                    {user ? (
-                      <li>
-                        <p>Welcome, {user.fullName}!</p>
-                      </li>
-                    ) : (
-                      <li>Loading user details...</li>
-                    )}
-                    <li>
-                      <a href="#">About</a>
-                      <ul>
-                        <li>
-                          <a href="">Services</a>
-                        </li>
-                        <li>
-                          <a href="">Service Details</a>
-                        </li>
-                        <li>
-                          <a href="">Gallery</a>
-                        </li>
-                        <li>
-                          <a href="">Gallery - 02</a>
-                        </li>
-                      </ul>
-                    </li>
-                    <li>
-                      <a href="#">Shop</a>
-                      <ul>
-                        <li>
-                          <a href="">Shop</a>
-                        </li>
-                        <li>
-                          <a href="">Shop Grid</a>
-                        </li>
-                        <li>
-                          <a href="">Shop Left sidebar</a>
-                        </li>
-                        <li>
-                          <a href="">Shop right sidebar</a>
-                        </li>
-                        <li>
-                          <a href="">Shop details </a>
-                        </li>
-                        <li>
-                          <a href="">Shop details no sidebar </a>
-                        </li>
-                        <li>
-                          <a href="#">
-                            Other Pages <span className="float-end">&gt;&gt;</span>
-                          </a>
-                          <ul>
-                            <li>
-                              <a href="">Cart</a>
-                            </li>
-                            <li>
-                              <a href="">Wishlist</a>
-                            </li>
-                            <li>
-                              <a href="">Checkout</a>
-                            </li>
-                            <li>
-                              <a href="">Order Tracking</a>
-                            </li>
-                            <li>
-                              <a href="">My Account</a>
-                            </li>
-                            <li>
-                              <a href="">Sign in</a>
-                            </li>
-                            <li>
-                              <a href="">Register</a>
-                            </li>
-                          </ul>
-                        </li>
-                      </ul>
-                    </li>
-                    <li>
-                      <a href="#">Pages</a>
-                      <ul className="mega-menu">
-                        <li>
-                          <a href="#">Inner Pages</a>
-                          <ul>
-                            <li>
-                              <a href="">Gallery</a>
-                            </li>
-                            <li>
-                              <a href="">Gallery - 02</a>
-                            </li>
-                            <li>
-                              <a href="">Gallery Details</a>
-                            </li>
-                            <li>
-                              <a href="">Team</a>
-                            </li>
-                            <li>
-                              <a href="">Team Details</a>
-                            </li>
-                            <li>
-                              <a href="">FAQ</a>
-                            </li>
-                          </ul>
-                        </li>
-                        <li>
-                          <a href="#">Inner Pages</a>
-                          <ul>
-                            <li>
-                              <a href="">History</a>
-                            </li>
-                            <li>
-                              <a href="l">Appointment</a>
-                            </li>
-                            <li>
-                              <a href="">Google Map Locations</a>
-                            </li>
-                            <li>
-                              <a href="">404</a>
-                            </li>
-                            <li>
-                              <a href="">Contact</a>
-                            </li>
-                            <li>
-                              <a href="">Coming Soon</a>
-                            </li>
-                          </ul>
-                        </li>
-                        <li>
-                          <a href="#">Shop Pages</a>
-                          <ul>
-                            <li>
-                              <a href="">Shop</a>
-                            </li>
-                            <li>
-                              <a href="">Shop Left sidebar</a>
-                            </li>
-                            <li>
-                              <a href="">Shop right sidebar</a>
-                            </li>
-                            <li>
-                              <a href="">Shop Grid</a>
-                            </li>
-                            <li>
-                              <a href="">Shop details </a>
-                            </li>
-                            <li>
-                              <a href="">Cart</a>
-                            </li>
-                          </ul>
-                        </li>
-                        <li>
-                          <a href="">
-                            <img src="broccoli/img/banner/menu-banner-1.png" alt="#" />
-                          </a>
-                        </li>
-                      </ul>
-                    </li>
-                    <li>
-                      <a href="">Contact</a>
-                    </li>
-                    <li className="special-link">
-                      <Link to="/role">Join Us Now</Link>
-                    </li>
-                  </ul>
-                </div>
-              </nav>
-            </div>
-          </div>
-          <div className="ltn__header-options ltn__header-options-2 mb-sm-20">
-            {/* header-search-1 */}
-            <div className="header-search-wrap">
-              <div className="header-search-1">
-                <div className="search-icon">
-                  <i className="icon-search for-search-show" />
-                  <i className="icon-cancel  for-search-close" />
-                </div>
-              </div>
-              <div className="header-search-1-form">
-                <form id="#" method="get" action="#">
-                  <input type="text" name="search" defaultValue placeholder="Search here..." />
-                  <button type="submit">
-                    <span>
-                      <i className="icon-search" />
-                    </span>
-                  </button>
-                </form>
-              </div>
-            </div>
-            {/* user-menu */}
-            <div className="ltn__drop-menu user-menu">
-              <ul>
-                <li>
-                  <a href="#">
-                    <i className="icon-user" />
-                  </a>
-                  <ul>
-                    <li>
-                      <Link to="/Login">Sign in</Link>
-                    </li>
-                    <li>
-                      <Link to="/role">Register</Link>
-                    </li>
-                    {user && (
-                      <>
-                      <li>
-                        <Link  to="/userProfile" style={{ cursor: "pointer" }}>
-                          Profile
-                          </Link>
-                      </li>
-                      <li>
-                        <a href="" onClick={handleLogout} style={{ cursor: "pointer" }}>
-                          Logout
-                        </a>
-                      </li>
-                      </>
-                    )}
-                  </ul>
-                </li>
-              </ul>
-            </div>
-            {/* mini-cart */}
-            <div className="mini-cart-icon">
-              <a href="#ltn__utilize-cart-menu" className="ltn__utilize-toggle">
-                <i className="icon-shopping-cart" />
-                <sup>2</sup>
-              </a>
-            </div>
-            {/* mini-cart */}
-            {/* Mobile Menu Button */}
-            <div className="mobile-menu-toggle d-xl-none">
-              <a href="#ltn__utilize-mobile-menu" className="ltn__utilize-toggle">
-                <svg viewBox="0 0 800 600">
-                  <path
-                    d="M300,220 C300,220 520,220 540,220 C740,220 640,540 520,420 C440,340 300,200 300,200"
-                    id="top"
-                  />
-                  <path d="M300,320 L540,320" id="middle" />
-                  <path
-                    d="M300,210 C300,210 520,210 540,210 C740,210 640,530 520,410 C440,330 300,190 300,190"
-                    id="bottom"
-                    transform="translate(480, 320) scale(1, -1) translate(-480, -318) "
-                  />
-                </svg>
-              </a>
-            </div>
-          </div>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden btn btn-sm btn-ghost btn-circle"
+          >
+            {mobileMenuOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+          </button>
         </div>
-      </div>
-    </div>
+      </motion.header>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="fixed top-16 left-0 right-0 z-40 bg-white shadow-lg md:hidden overflow-hidden"
+          >
+            <ul className="menu menu-sm p-4">
+              <li>
+                <NavLink
+                  to="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                >
+                  Home
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/features"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                >
+                  Features
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/about"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                >
+                  About
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/contact"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                >
+                  Contact
+                </NavLink>
+              </li>
+
+              {/* Role specific links */}
+              {user?.role === "charity" && (
+                <>
+                  <li>
+                    <NavLink
+                      to="/donationForm"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      Create Campaign
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/my-campaigns"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      My Campaigns
+                    </NavLink>
+                  </li>
+                </>
+              )}
+              {user?.role === "volunteer" && (
+                <li>
+                  <NavLink
+                    to="/volunteer"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) => (isActive ? "active" : "")}
+                  >
+                    Volunteer Dashboard
+                  </NavLink>
+                </li>
+              )}
+              {user?.role === "restaurant" && (
+                <li>
+                  <NavLink
+                    to="/donations"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) => (isActive ? "active" : "")}
+                  >
+                    Donate
+                  </NavLink>
+                </li>
+              )}
+              {user?.role === "supermarket" && (
+                <li>
+                  <NavLink
+                    to="/my-pickups"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) => (isActive ? "active" : "")}
+                  >
+                    Confirm Pickups
+                  </NavLink>
+                </li>
+              )}
+
+              <div className="divider"></div>
+
+              {user ? (
+                <>
+                  <div className="flex items-center p-2 bg-base-200 rounded-lg mb-3">
+                    <div className="avatar">
+                      <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+                        {user?.fullName?.charAt(0).toUpperCase() || "U"}
+                      </div>
+                    </div>
+                    <div className="ml-3">
+                      <p className="font-medium">{user?.fullName}</p>
+                      <p className="text-xs text-gray-500">{user?.email}</p>
+                    </div>
+                  </div>
+                  <li>
+                    <Link
+                      to="/profile"
+                      className="flex items-center"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <FiUser className="mr-2" /> Profile
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="text-error"
+                    >
+                      <FiLogOut className="mr-2" /> Logout
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    to="/login"
+                    className="btn btn-outline"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    to="/role"
+                    className="btn btn-primary"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Spacer to prevent content from hiding under fixed header */}
+      <div className="h-16"></div>
+    </>
   );
 }
 

@@ -1,7 +1,7 @@
 import React from 'react'
 import HeaderMid from '../HeaderMid'
 import BreadCrumb from '../BreadCrumb'
-import TabArea from './TabArea'
+// import TabArea from './TabArea'
 function Account() {
   return (
    <>
