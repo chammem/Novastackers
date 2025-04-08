@@ -1,16 +1,22 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { useState } from "react";
-import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
-import TabArea from "./components/user/TabArea";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+// import AdminNavbar from "./components/AdminNavbar";
+// import Sidebar from "./components/Sidebar";
+//  import Header from "./components/Header";
+// import TabArea from "./components/user/TabArea";
+import { Outlet } from 'react-router-dom';
 
 
 const App = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <></>
+    <div>
+    {/* Add header/navigation here if needed */}
+    <Outlet /> {/* This renders child routes (Home, Login, etc.) */}
+  </div>
     // <Router>
     //   <div style={{ display: "flex" }}>
     //   {/* Sidebar */}

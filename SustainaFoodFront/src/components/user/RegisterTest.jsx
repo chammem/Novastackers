@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../config/axiosInstance";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import AddressAutoComplete from "../AddressAutoComplete";
 
 // Yup Validation Schema
 const registerSchema = yup.object().shape({
@@ -27,21 +28,21 @@ const registerSchema = yup.object().shape({
     .max(15, "Phone number must contain at most 15 digits")
     .matches(/^\d+$/, "Phone number must be numeric")
     .required("Phone number is required"),
-  address: yup
-    .string()
-    .min(5, "Minimum of 5 characters")
-    .matches(/^[a-zA-Z0-9\s,.'-]{5,100}$/),
+  address: yup.string().required("Address is required"),
 });
 
-function UserForm() {
+function RegisterForm() {
   const { role } = useParams();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState("");
+  const [coordinates, setCoordinates] = useState({ lat: null, lng: null });
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({ mode: "onChange", resolver: yupResolver(registerSchema) });
 
@@ -52,11 +53,13 @@ function UserForm() {
 
       const payload = {
         ...otherFields,
-        role, // Ensure role is explicitly added
-        fullName, // Map name to fullName
+        role,
+        fullName,
+        address: selectedAddress,
+        lat: coordinates.lat,
+        lng: coordinates.lng,
       };
 
-      // Debugging step
       console.log("Payload:", payload);
 
       const response = await axiosInstance.post("/sign-up", payload);
@@ -73,62 +76,153 @@ function UserForm() {
   };
 
   return (
-    <div className="ltn__login-area pb-110">
-      <div className="container">
-        <div className="row">
-          <div className="col-lg-12">
-            <div className="section-title-area text-center">
-              <h1 className="section-title">Register as {role.charAt(0).toUpperCase() + role.slice(1)}</h1>
+    <div className="h-screen flex items-center justify-center bg-gray-100">
+      <div className="flex w-full max-w-4xl bg-white rounded-lg shadow-lg">
+        {/* Form Section */}
+        <div className="w-1/2 p-8">
+          <h2 className="text-3xl font-bold mb-6 text-center">
+            Register as {role.charAt(0).toUpperCase() + role.slice(1)}
+          </h2>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Full Name Field */}
+            <div>
+              <label htmlFor="fullName" className="block text-sm font-medium">
+                Full Name
+              </label>
+              <input
+                type="text"
+                id="fullName"
+                placeholder="Enter your full name"
+                className="input input-bordered w-full"
+                {...register("fullName")}
+              />
+              {errors.fullName && (
+                <p className="text-sm text-red-500">{errors.fullName.message}</p>
+              )}
             </div>
+
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                placeholder="Enter your email"
+                className="input input-bordered w-full"
+                {...register("email")}
+              />
+              {errors.email && (
+                <p className="text-sm text-red-500">{errors.email.message}</p>
+              )}
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium">
+                Password
+              </label>
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                placeholder="Enter your password"
+                className="input input-bordered w-full"
+                {...register("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-sm text-blue-500 hover:underline mt-2"
+              >
+                {showPassword ? "Hide" : "Show"} Password
+              </button>
+              {errors.password && (
+                <p className="text-sm text-red-500">{errors.password.message}</p>
+              )}
+            </div>
+
+            {/* Confirm Password Field */}
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium">
+                Confirm Password
+              </label>
+              <input
+                type={showPassword ? "text" : "password"}
+                id="confirmPassword"
+                placeholder="Confirm your password"
+                className="input input-bordered w-full"
+                {...register("confirmPassword")}
+              />
+              {errors.confirmPassword && (
+                <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+              )}
+            </div>
+
+            {/* Phone Number Field */}
+            <div>
+              <label htmlFor="phoneNumber" className="block text-sm font-medium">
+                Phone Number
+              </label>
+              <input
+                type="text"
+                id="phoneNumber"
+                placeholder="Enter your phone number"
+                className="input input-bordered w-full"
+                {...register("phoneNumber")}
+              />
+              {errors.phoneNumber && (
+                <p className="text-sm text-red-500">{errors.phoneNumber.message}</p>
+              )}
+            </div>
+
+            {/* Address Autocomplete Field */}
+            <div>
+              <label className="block text-sm font-medium">Address</label>
+              <AddressAutoComplete
+                onSelect={(place) => {
+                  const address = place.display_name;
+                  setSelectedAddress(address);
+                  setValue("address", address); // for yup
+                  setCoordinates({ lat: parseFloat(place.lat), lng: parseFloat(place.lon) }); // store lat/lng
+                }}
+              />
+
+              {errors.address && (
+                <p className="text-sm text-red-500">{errors.address.message}</p>
+              )}
+            </div>
+
+            {/* Hidden address value to trigger validation */}
+            <input type="hidden" {...register("address")} value={selectedAddress} />
+
+            {/* Submit Button */}
+            <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "CREATE ACCOUNT"}
+            </button>
+          </form>
+
+          {/* Already Have an Account Link */}
+          <div className="mt-4 text-center">
+            <p>
+              Already have an account?{" "}
+              <a href="/login" className="text-blue-500 hover:underline">
+                Login here.
+              </a>
+            </p>
           </div>
         </div>
-        <div className="row">
-          <div className="col-lg-6 offset-lg-3">
-            <div className="account-login-inner">
-              <form noValidate onSubmit={handleSubmit(onSubmit)} className="ltn__form-box contact-form-box">
-                {/* Full Name Field */}
-                <input
-                  type="text"
-                  {...register("fullName", { required: "Full Name is required" })}
-                  placeholder="Full Name"
-                />
-                {errors.fullName && <p className="error">{errors.fullName.message}</p>}
 
-                <input type="email" {...register("email", { required: "Email is required" })} placeholder="Email" />
-                {errors.email && <p className="error">{errors.email.message}</p>}
-
-                <input type={showPassword ? "text" : "password"} {...register("password")} placeholder="Password" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}>Show</button>
-                {errors.password && <p className="error">{errors.password.message}</p>}
-
-                <input type={showPassword ? "text" : "password"} {...register("confirmPassword")} placeholder="Confirm Password" />
-                {errors.confirmPassword && <p className="error">{errors.confirmPassword.message}</p>}
-
-                <input type="text" {...register("address")} placeholder="Address" />
-                {errors.address && <p className="error">{errors.address.message}</p>}
-
-                <input type="text" {...register("phoneNumber")} placeholder="Phone Number" />
-                {errors.phoneNumber && <p className="error">{errors.phoneNumber.message}</p>}
-
-                <button disabled={isSubmitting} className="theme-btn-1 btn reverse-color btn-block" type="submit">
-                  {isSubmitting ? "Submitting..." : "CREATE ACCOUNT"}
-                </button>
-              </form>
-              <div className="by-agree text-center">
-                <p>By creating an account, you agree to our:</p>
-                <p>
-                  <a href="#">TERMS OF CONDITIONS | PRIVACY POLICY</a>
-                </p>
-                <div className="go-to-btn mt-50">
-                  <a href="/login">ALREADY HAVE AN ACCOUNT?</a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Image Section */}
+        <div
+          className="w-1/2 bg-cover bg-center"
+          style={{
+            backgroundImage: 'url("/images/register.svg")',
+          }}
+        ></div>
       </div>
     </div>
   );
 }
 
-export default UserForm;
+export default RegisterForm;

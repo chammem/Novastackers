@@ -1,5 +1,64 @@
 const mongoose = require('mongoose');
 const userModel = require("../models/userModel");
+const bcrypt = require('bcryptjs');
+const FoodItem = require("../models/foodItem");
+
+//get User details by Id
+
+async function getUserById(req,res){
+    const {id} = req.params;
+  try {
+    const user = await userModel.findById(id);
+
+    if(user){
+      res.status(200).json(user);
+    }
+  }catch{
+    res.status(400).json({
+      message: err.message || err,
+      error : true,
+      success : false
+  })
+  }
+
+}
+async function getAssignedFoodForVolunteer(req,res){
+  const { volunteerId } = req.params;
+
+  try {
+    const assignedFoods = await FoodItem.find({
+      assignedVolunteer: volunteerId,
+    }).sort({ created_at: -1 });
+
+    res.status(200).json(assignedFoods);
+  } catch (err) {
+    console.error("Error fetching assigned food:", err);
+    res.status(500).json({ message: "Error fetching assignments", error: err.message });
+  }
+};
+
+
+
+
+
+
+
+
+
+async function getAllVolunteers(req,res){
+    try {
+      const { role } = req.query;
+
+      const filter = role ? { role } : {}; // Only filter by role if provided
+      const users = await userModel.find(filter).select('fullName email role'); // You can project only needed fields
+
+      res.status(200).json(users);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch users', error });
+    }
+}
+
+
 
 async function allUsers(req,res) {
     try {
@@ -26,22 +85,70 @@ async function allUsers(req,res) {
 // Update user by ID 
 async function updateUser(req, res) {
     try {
-        const { fullName, phoneNumber, address, email, role,facebook } = req.body;
-        let updateData = { fullName, phoneNumber, address, email, role ,facebook};
+        const { fullName, phoneNumber, address, email, role } = req.body;
+        let updateData = { fullName, phoneNumber, address, email };
 
         const updatedUser = await userModel.findByIdAndUpdate(req.params.id, updateData, { new: true });
 
         if (!updatedUser) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        res.status(200).json(updatedUser);
+        res.status(200).json({ success: true, data: updatedUser });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Error updating user');
+        res.status(500).json({ success: false, message: 'Error updating user' });
     }
 }
 
+
+async function updateLogedInUser(req,res){
+    const {userId} = req.params; 
+    const updatedData = req.body; 
+    console.log(userId)
+    console.log(updatedData);
+    try {
+     
+      const updatedUser = await userModel.findByIdAndUpdate(userId, updatedData, {
+        new: true, 
+      });
+  
+    
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      
+      res.status(200).json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user", error: error.message });
+    }
+}
+async function updateLogedInPassword(req,res){
+    const {currentPassword,newPassword} = req.body;
+    const {userId} = req.params;
+    try {
+        const user = await userModel.findById(userId);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+    
+        const isMatch = await bcrypt.compare(currentPassword,user.password);
+        if (!isMatch) {
+          return res.status(400).json({ message: "Current password is incorrect" });
+        }
+        user.password = newPassword;
+        await user.save();
+    
+        res.status(200).json({ message: "Password changed successfully" });   
+    } catch (error) {
+        console.error("Error updating users Password:", error);
+        res.status(500).json({ message: "Failed to update user", error: error.message }); 
+    }
+
+
+}
 
 // Get a single user by ID
 const getUser = async (req, res) => {
@@ -70,42 +177,80 @@ const getUser = async (req, res) => {
 // Delete user by ID
 async function deleteUser(req, res) {
     try {
-        const deletedUser = await userModel.findByIdAndDelete(req.params.id);
-        if (!deletedUser) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        res.status(200).json({ message: 'User deleted successfully' });
+      const deletedUser = await userModel.findByIdAndDelete(req.params.id);
+      if (!deletedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+      res.status(200).json({ success: true, message: "User deleted successfully" });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Error deleting user');
+      console.error(err);
+      res.status(500).json({ success: false, message: "Error deleting user" });
     }
-}
+  }
 
 async function disableUser(req, res) {
     try {
         const { id } = req.params;
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'ID invalide' });
+            return res.status(400).json({ message: 'Invalid ID' });
         }
 
-        const updatedUser = await userModel.findByIdAndUpdate(id, { isDisabled: true }, { new: true });
-
-        if (!updatedUser) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        // Fetch user
+        const user = await userModel.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        res.clearCookie("token").status(200).json({
-            message: 'Utilisateur désactivé avec succès. Déconnexion forcée.',
-            user: updatedUser
+        // Toggle isDisabled field
+        user.isDisabled = !user.isDisabled;
+        await user.save();
+
+        res.status(200).json({
+            message: `User ${user.isDisabled ? 'disabled' : 'enabled'} successfully.`,
+            user
         });
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Erreur serveur' });
+        res.status(500).json({ message: 'Server error' });
     }
+}
+
+async function updateNgoProfile (req,res){
+  console.log("🟢 updateNgoProfile endpoint hit");
+
+  try {
+
+    const userId = req.userId || req.body.userId || req.query.userId || req.params.id;
+    const {mission,description,website,facebook,instagram,twitter,} = req.body;
+
+    const updates = {mission,description,website,facebook,instagram,twitter,};
+
+    if (req.file) {
+      updates.logoUrl = `/uploads/${req.file.filename}`;
+    }
+
+    const updatedUser = await userModel.findByIdAndUpdate(userId, updates, {
+      new: true,
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "NGO profile updated", user: updatedUser });
+
+
+  } catch (error) {
+    console.error("Error updating NGO profile:", error);
+    res.status(500).json({ message: "Failed to update NGO profile" });
+  }
+
+
 }
 
 
 
-module.exports = {allUsers,updateUser,getUser,deleteUser,disableUser};
+
+module.exports = {updateNgoProfile,getAssignedFoodForVolunteer,getAllVolunteers,getUserById,allUsers,updateUser,getUser,deleteUser,disableUser,updateLogedInUser,updateLogedInPassword};
