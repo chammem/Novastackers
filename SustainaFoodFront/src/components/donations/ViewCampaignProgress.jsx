@@ -19,6 +19,9 @@ import {
   FiMapPin,
   FiClock,
   FiUserPlus,
+  FiLayers,
+  FiRefreshCw,
+  FiMap,
 } from "react-icons/fi";
 
 const ViewCampaignProgress = () => {
@@ -37,6 +40,11 @@ const ViewCampaignProgress = () => {
   const [availableVolunteers, setAvailableVolunteers] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [batches, setBatches] = useState([]);
+  const [batchModalOpen, setBatchModalOpen] = useState(false);
+  const [selectedBatch, setSelectedBatch] = useState(null);
+  const [availableBatchVolunteers, setAvailableBatchVolunteers] = useState([]);
+  const [selectedBatchVolunteer, setSelectedBatchVolunteer] = useState("");
 
   const fetchCampaign = async () => {
     setIsLoading(true);
@@ -67,6 +75,61 @@ const ViewCampaignProgress = () => {
       toast.error("Failed to load food items");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchBatches = async () => {
+    setIsLoading(true);
+    try {
+      const res = await axiosInstance.get(`/donations/${id}/batches`);
+      setBatches(res.data || []);
+    } catch (err) {
+      toast.error("Failed to load batches");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const generateNewBatches = async () => {
+    try {
+      setIsLoading(true);
+      await axiosInstance.post(`/donations/${id}/batches/generate`);
+      toast.success("Batch suggestions generated");
+      fetchBatches();
+    } catch (err) {
+      toast.error("Failed to generate batch suggestions");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const openBatchAssignModal = async (batchId) => {
+    setSelectedBatch(batchId);
+    setSelectedBatchVolunteer("");
+
+    try {
+      const res = await axiosInstance.get(`/donations/batches/${batchId}/available-volunteers`);
+      setAvailableBatchVolunteers(res.data.volunteers || []);
+      setBatchModalOpen(true);
+    } catch (err) {
+      toast.error("Failed to fetch compatible volunteers");
+    }
+  };
+
+  const assignVolunteerToBatch = async () => {
+    if (!selectedBatchVolunteer) {
+      return toast.warning("Please select a volunteer");
+    }
+    
+    try {
+      await axiosInstance.post(`/donations/batches/${selectedBatch}/assign`, {
+        volunteerId: selectedBatchVolunteer
+      });
+      toast.success("Batch assignment requested! Volunteer will need to accept or decline.");
+      setBatchModalOpen(false);
+      fetchBatches();
+    } catch (err) {
+      toast.error("Failed to request batch assignment");
     }
   };
 
@@ -101,6 +164,8 @@ const ViewCampaignProgress = () => {
           toast.error("Failed to load businesses");
           setIsLoading(false);
         });
+    } else if (view === "batches") {
+      fetchBatches();
     }
   }, [view, id, page, filterStatus, searchTerm]);
 
@@ -304,6 +369,15 @@ const ViewCampaignProgress = () => {
             >
               <FiUsers /> Volunteers
             </motion.button>
+            <motion.button
+              variants={tabVariants}
+              animate={view === "batches" ? "active" : "inactive"}
+              whileTap={{ scale: 0.95 }}
+              className={`tab gap-2 ${view === "batches" ? "tab-active" : ""}`}
+              onClick={() => setView("batches")}
+            >
+              <FiLayers /> Batch Pickup
+            </motion.button>
           </div>
         </div>
       </motion.section>
@@ -390,7 +464,7 @@ const ViewCampaignProgress = () => {
                             <th className="bg-primary/10">Item</th>
                             <th className="bg-primary/10">Qty</th>
                             <th className="bg-primary/10">Category</th>
-                            <th className="bg-primary/10">Size</th> {/* Add this new column */}
+                            <th className="bg-primary/10">Size</th> 
                             <th className="bg-primary/10">Business</th>
                             <th className="bg-primary/10">Status</th>
                             <th className="bg-primary/10">Volunteer</th>
@@ -618,7 +692,7 @@ const ViewCampaignProgress = () => {
           >
             <motion.h2
               initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
+              animate={{ y: 0 }}
               className="text-2xl font-bold mb-8 flex items-center gap-2"
             >
               <FiUsers className="text-primary" />
@@ -711,6 +785,163 @@ const ViewCampaignProgress = () => {
             </AnimatePresence>
           </motion.section>
         )}
+
+        {/* Batch View */}
+        {view === "batches" && (
+          <motion.div
+            key="batch-view"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <section className="bg-base-100 py-6">
+              <div className="max-w-6xl mx-auto px-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    <FiLayers className="text-primary" />
+                    <span>Smart Batching</span>
+                  </h2>
+                  
+                  <button
+                    className="btn btn-primary mt-4 sm:mt-0"
+                    onClick={generateNewBatches}
+                  >
+                    <FiRefreshCw className="mr-2" /> Generate Batch Suggestions
+                  </button>
+                </div>
+                
+                <p className="text-base-content/70 mb-6">
+                  Smart batches group nearby food items for efficient pickup. One volunteer can handle multiple items in a single trip.
+                </p>
+              </div>
+            </section>
+
+            <section className="py-6 px-4 max-w-6xl mx-auto">
+              <AnimatePresence mode="wait">
+                {isLoading ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex justify-center py-12"
+                  >
+                    <span className="loading loading-spinner loading-lg text-primary"></span>
+                  </motion.div>
+                ) : batches.length > 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="space-y-8"
+                  >
+                    {batches.map((batch, index) => (
+                      <motion.div
+                        key={batch._id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1, duration: 0.3 }}
+                        className="card bg-base-100 shadow-lg border border-base-300 overflow-hidden"
+                      >
+                        <div className="card-body">
+                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                            <h3 className="card-title text-lg">
+                              <span className="flex items-center gap-2">
+                                <FiLayers className="text-primary" />
+                                Batch #{index + 1}
+                              </span>
+                              <div className="badge badge-primary">{batch.items.length} items</div>
+                              <div className={`badge ${
+                                batch.requiredCapacity === 'large' ? 'badge-warning' : 
+                                batch.requiredCapacity === 'medium' ? 'badge-info' : 'badge-success'
+                              }`}>
+                                {batch.requiredCapacity} capacity
+                              </div>
+                            </h3>
+                            
+                            <div className="mt-4 md:mt-0">
+                              {batch.assignedVolunteer ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm">Assigned to:</span>
+                                  <span className="badge badge-outline badge-success">
+                                    {batch.assignedVolunteer.fullName}
+                                  </span>
+                                </div>
+                              ) : (
+                                <button
+                                  className="btn btn-sm btn-primary"
+                                  onClick={() => openBatchAssignModal(batch._id)}
+                                >
+                                  Assign Volunteer
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="divider my-2"></div>
+                          
+                          <div className="overflow-x-auto">
+                            <table className="table table-compact w-full">
+                              <thead>
+                                <tr>
+                                  <th>Item</th>
+                                  <th>Business</th>
+                                  <th>Category</th>
+                                  <th>Size</th>
+                                  <th>Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {batch.items.map((item) => (
+                                  <tr key={item._id} className="hover:bg-base-200">
+                                    <td>{item.name}</td>
+                                    <td>{item.buisiness_id?.fullName}</td>
+                                    <td>{item.category}</td>
+                                    <td>
+                                      <span className="badge badge-outline badge-info">
+                                        {item.size}
+                                      </span>
+                                    </td>
+                                    <td>
+                                      <span className={`badge badge-outline ${getStatusColor(item.status)}`}>
+                                        {item.status}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center py-12"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-base-300 flex items-center justify-center mx-auto">
+                      <FiLayers className="w-8 h-8 text-base-content/50" />
+                    </div>
+                    <h3 className="mt-4 text-xl font-bold">
+                      No batches available
+                    </h3>
+                    <p className="text-base-content/70 mt-2 mb-6">
+                      Generate batches to group nearby food items for efficient pickup.
+                    </p>
+                    <button 
+                      className="btn btn-primary"
+                      onClick={generateNewBatches}
+                    >
+                      Generate Batches
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </section>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Volunteer Assignment Modal */}
@@ -768,6 +999,65 @@ const ViewCampaignProgress = () => {
                   >
                     Assign
                   </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Batch Assignment Modal */}
+      <AnimatePresence>
+        {batchModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="modal-box p-0 overflow-hidden max-w-md w-full"
+            >
+              <div className="bg-primary text-primary-content p-4">
+                <h3 className="font-bold text-lg">Assign Volunteer to Batch</h3>
+              </div>
+
+              <div className="p-6">
+                <p className="mb-4 text-sm text-base-content/70">
+                  Select a volunteer with suitable transport capacity for this batch of items.
+                </p>
+
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Choose Volunteer</span>
+                  </label>
+                  <select
+                    className="select select-bordered w-full"
+                    value={selectedBatchVolunteer}
+                    onChange={(e) => setSelectedBatchVolunteer(e.target.value)}
+                  >
+                    <option value="">Select a volunteer</option>
+                    {availableBatchVolunteers.map((vol) => (
+                      <option key={vol._id} value={vol._id}>
+                        {vol.fullName} - {vol.transportCapacity} capacity
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="modal-action">
+                  <button
+                    onClick={() => setBatchModalOpen(false)}
+                    className="btn btn-ghost"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={assignVolunteerToBatch}
+                    className="btn btn-primary"
+                    disabled={!selectedBatchVolunteer}
+                  >
+                    Assign
+                  </button>
                 </div>
               </div>
             </motion.div>
