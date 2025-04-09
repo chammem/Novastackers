@@ -2,6 +2,7 @@ const express = require('express');
 const upload = require('../middleware/upload');
 const donationRouter = express.Router();
 const donationController = require('../controllers/donations/donationController');
+const batchController = require("../controllers/batchController")
 
 donationRouter.post('/create-donation',upload.fields([{name:"image",maxCount:1}]),donationController.createDonation);
 donationRouter.post('/add-food-to-donation/:donationId',donationController.addFoodToDonation);
@@ -22,4 +23,26 @@ donationRouter.get("/:campaignId/businesses",donationController.getBusinessesFor
 donationRouter.get("/:campaignId/foods/paginated", donationController.getPaginatedFoodsByCampaign);
 donationRouter.get("/food/:id", donationController.getFoodById);
 donationRouter.get('/campaign/:campaignId/available-volunteers', donationController.getAvailableVolunteersForCampaign);
+
+// Add these routes to your existing donations router
+
+// Generate batches
+donationRouter.post('/:campaignId/batches/generate', batchController.generateBatches);
+
+// Get batches
+donationRouter.get('/:campaignId/batches', batchController.getBatchesForCampaign);
+
+// Get volunteers for batch
+donationRouter.get('/batches/:batchId/available-volunteers', batchController.getAvailableVolunteersForBatch);
+
+// Assign volunteer to batch
+donationRouter.post('/batches/:batchId/assign', batchController.assignVolunteerToBatch);
+
+// Add these routes
+
+donationRouter.patch('/accept-batch-assignment/:batchId',batchController.acceptBatchAssignment);
+donationRouter.patch('/decline-batch-assignment/:batchId',batchController.declineBatchAssignment);
+// Add this route
+
+donationRouter.get('/:volunteerId/batch-assignments', batchController.getVolunteerBatchAssignments);
 module.exports = donationRouter;
