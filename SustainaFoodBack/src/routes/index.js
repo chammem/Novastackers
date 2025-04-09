@@ -276,4 +276,8 @@ router.post("/route", async (req, res) => {
 });
 
 
+
+router.get('/volunteer/availability/:userId',allUsers.getVolunteerAvailability);
+router.post('/volunteer/availability/:userId',allUsers.updateVolunteerAvailability);
+
 module.exports = router

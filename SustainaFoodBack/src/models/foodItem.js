@@ -41,8 +41,13 @@ const foodSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'accepted', 'declined'],
     default: 'pending',
-  }
-  
+  },
+  size: { 
+    type: String,
+    enum: ['small', 'medium', 'large'],
+    default: 'small',
+    required: true
+  },
 });
 
 const FoodItem = mongoose.model("FoodItem", foodSchema);

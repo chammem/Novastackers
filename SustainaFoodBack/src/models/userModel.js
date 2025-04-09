@@ -73,6 +73,28 @@ const userSchema = new Schema(
    facebook: { type: String },
     twitter: { type: String },
 
+    transportType: {
+      type: String,
+      enum: ['walking', 'bicycle', 'car', 'van', 'truck'],
+      default: 'walking'
+    },
+    transportCapacity: {
+      type: String,
+      enum: ['small', 'medium', 'large'],
+      default: 'small'
+    },
+
+
+    // volunteer/driver maybe 
+    availability: {
+      type: Map,
+      of: [{
+        start: String,
+        end: String
+      }],
+      default: {}
+    },
+
   },
   { timestamps: true }
 );

@@ -34,7 +34,7 @@ const ViewCampaignProgress = () => {
   const [selectedFoodId, setSelectedFoodId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [availableVolunteers, setAvailableVolunteers] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -105,11 +105,12 @@ const ViewCampaignProgress = () => {
   }, [view, id, page, filterStatus, searchTerm]);
 
   const openAssignModal = async (foodId) => {
+    console.log("Opening modal for food ID:", foodId);
     setSelectedFoodId(foodId);
     setSelectedVolunteer("");
     try {
-      const res = await axiosInstance.get(`/donations/${id}/volunteer`);
-      setVolunteers(res.data.volunteers || []);
+      const res = await axiosInstance.get(`/donations/campaign/${id}/available-volunteers?foodId=${foodId}`);
+      setAvailableVolunteers(res.data.volunteers || []);
       setModalOpen(true);
     } catch {
       toast.error("Failed to fetch volunteers");
@@ -389,6 +390,7 @@ const ViewCampaignProgress = () => {
                             <th className="bg-primary/10">Item</th>
                             <th className="bg-primary/10">Qty</th>
                             <th className="bg-primary/10">Category</th>
+                            <th className="bg-primary/10">Size</th> {/* Add this new column */}
                             <th className="bg-primary/10">Business</th>
                             <th className="bg-primary/10">Status</th>
                             <th className="bg-primary/10">Volunteer</th>
@@ -412,6 +414,14 @@ const ViewCampaignProgress = () => {
                               <td className="font-medium">{item.name}</td>
                               <td>{item.quantity}</td>
                               <td>{item.category}</td>
+                              {/* Add this new cell for size */}
+                              <td>
+                                <span className={`badge ${item.size ? "badge-outline badge-info" : ""}`}>
+                                  {item.size ? 
+                                    item.size.charAt(0).toUpperCase() + item.size.slice(1) : 
+                                    "N/A"}
+                                </span>
+                              </td>
                               <td>
                                 {item.buisiness_id?.fullName || "Unknown"}
                               </td>
@@ -734,7 +744,7 @@ const ViewCampaignProgress = () => {
                     onChange={(e) => setSelectedVolunteer(e.target.value)}
                   >
                     <option value="">Select a volunteer</option>
-                    {volunteers.map((vol) => (
+                    {availableVolunteers.map((vol) => (
                       <option key={vol._id} value={vol._id}>
                         {vol.fullName || vol.email}
                       </option>

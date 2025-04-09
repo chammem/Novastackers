@@ -250,7 +250,70 @@ async function updateNgoProfile (req,res){
 
 }
 
+async function updateVolunteerAvailability (req, res){
+  try {
+    const userId = req.params.userId;
+    const availabilityData = req.body;
+    
+    // Validate input
+    if (!availabilityData || Object.keys(availabilityData).length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "No availability data provided" 
+      });
+    }
+    
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    
+    // Update availability
+    user.availability = availabilityData;
+    await user.save();
+    
+    return res.status(200).json({
+      success: true,
+      message: "Availability updated successfully",
+      data: availabilityData
+    });
+  } catch (error) {
+    console.error("Error updating volunteer availability:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error updating volunteer availability",
+      error: error.message
+    });
+  }
+};
+
+async function getVolunteerAvailability(req, res){
+  try {
+    const userId = req.params.userId;
+    
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    
+    // Convert Map to object for API response
+    const availability = user.availability ? Object.fromEntries(user.availability) : {};
+    
+    return res.status(200).json({
+      success: true,
+      data: availability
+    });
+  } catch (error) {
+    console.error("Error fetching volunteer availability:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching volunteer availability",
+      error: error.message
+    });
+  }
+};
 
 
 
-module.exports = {updateNgoProfile,getAssignedFoodForVolunteer,getAllVolunteers,getUserById,allUsers,updateUser,getUser,deleteUser,disableUser,updateLogedInUser,updateLogedInPassword};
+
+module.exports = {getVolunteerAvailability,updateVolunteerAvailability,updateNgoProfile,getAssignedFoodForVolunteer,getAllVolunteers,getUserById,allUsers,updateUser,getUser,deleteUser,disableUser,updateLogedInUser,updateLogedInPassword};
