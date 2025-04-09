@@ -38,6 +38,7 @@ import MapView from './components/MapView.jsx'
 import RouteDetailsPage from './components/donations/RouteDetailsPage.jsx'
 import RequestedAssignments from './components/donations/RequestedAssignments.jsx'
 import { AuthProvider } from "./context/AuthContext";
+import VolunteerAvailability from './components/VolunteerAvailability.jsx'
 const router = createBrowserRouter([
   {
     path: "/",
@@ -68,6 +69,7 @@ const router = createBrowserRouter([
       {path:"/adress",element:<AddressAutoComplete/>},
       {path:"/route/:foodId",element:<RouteDetailsPage/>},
       {path:"/requested-assignments",element:<RequestedAssignments/>},
+      {path:"/volunteer-availability",element:<VolunteerAvailability/>},
       {
         element: <ProtectedRoute />,
         children: [
