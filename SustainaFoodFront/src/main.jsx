@@ -40,6 +40,7 @@ import RequestedAssignments from './components/donations/RequestedAssignments.js
 import { AuthProvider } from "./context/AuthContext";
 import AdminFoodTab from './components/AdminFoodTab.jsx'
 import VerificationImages from './components/VerificationImages.jsx'
+import Admin from './components/Admin.jsx'
 const router = createBrowserRouter([
   {
     path: "/",
@@ -73,7 +74,9 @@ const router = createBrowserRouter([
       {path:"/admin/Food" ,element:<AdminFoodTab/>},
       {path:"/admin/roles-verification",element:<VerificationImages />},
       {path:"/admin/users",element:<AdminDashboard />},
-      
+      {path:"/adminOpen",element:<Admin/>},
+
+
       {
         element: <ProtectedRoute />,
         children: [
