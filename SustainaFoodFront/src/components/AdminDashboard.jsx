@@ -4,7 +4,7 @@ import AdminNavbar from './AdminNavbar'
 import { useState,useEffect} from 'react';
 import AdminFoodTab from './AdminFoodTab';
 import axiosInstance from '../config/axiosInstance';
-import AdminRoleVerificationTab from './AdminRoleVerificationTab';
+import AdminRoleVerificationTab from './VerificationImages';
 function AdminDashboard() {
 
 
