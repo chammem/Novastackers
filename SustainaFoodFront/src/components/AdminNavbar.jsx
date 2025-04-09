@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { FiLogOut, FiUser, FiSettings, FiMenu, FiX } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import axiosInstance from "../config/axiosInstance";
+import { FiChevronLeft, FiChevronRight, FiUser, FiLogOut, FiX, FiMenu, FiHome, FiUsers, FiShield, FiPackage, FiTruck, FiPieChart, FiSettings } from "react-icons/fi";
 
-const AdminNavbar = ({ activeTab, setActiveTab }) => {
+const AdminNavbar = ({
+  sidebarOpen,
+  setSidebarOpen,
+  user,
+  notifications,
+  onLogout
+}) => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -21,7 +26,7 @@ const AdminNavbar = ({ activeTab, setActiveTab }) => {
   const handleLogout = async () => {
     try {
       await axiosInstance.post("/userLogout");
-      logout();
+      onLogout();
       toast.success("Logged out successfully");
       navigate("/login");
     } catch (error) {
@@ -31,52 +36,55 @@ const AdminNavbar = ({ activeTab, setActiveTab }) => {
 
   return (
     <>
+      {/* Sidebar */}
+      <div className={`fixed left-0 top-0 h-full bg-blue-900 text-white z-50 transition-all duration-300 ease-in-out ${
+        sidebarOpen ? "w-80" : "w-20"
+      }`}>
+        <div className={`p-4 ${sidebarOpen ? "min-w-[320px]" : "min-w-[80px]"}`}>
+          <div className="flex items-center justify-between h-12">
+            <h1 className="text-2xl font-bold whitespace-nowrap">
+              {sidebarOpen ? "SaistainaFood Admin" : "FS"}
+            </h1>
+            <button
+          onClick={() => setSidebarOpen(!sidebarOpen)} // Utilisation correcte
+          className="p-1.5 rounded-full hover:bg-blue-700 transition-colors"
+        >
+              {sidebarOpen ? (
+                <FiChevronLeft className="w-5 h-5" />
+              ) : (
+                <FiChevronRight className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+  
+          <nav className="mt-6 space-y-1">
+            <NavItem icon={<FiHome />} text="Dashboard" to="/admin/dashboard" sidebarOpen={sidebarOpen} />
+            <NavItem icon={<FiUsers />} text="Users" to="/admin/users" sidebarOpen={sidebarOpen} />
+            <NavItem icon={<FiShield />} text="Roles" to="/admin/roles" sidebarOpen={sidebarOpen} />
+            <NavItem icon={<FiPackage />} text="Donations" to="/donations" sidebarOpen={sidebarOpen} />
+            <NavItem icon={<FiTruck />} text="Food" to="/admin/food" sidebarOpen={sidebarOpen} />
+            <NavItem icon={<FiPieChart />} text="Reports" to="/reports" sidebarOpen={sidebarOpen} />
+            <NavItem icon={<FiSettings />} text="Settings" to="/settings" sidebarOpen={sidebarOpen} />
+          </nav>
+        </div>
+      </div>
+  
+      {/* Top Navigation */}
       <motion.header
         initial={{ y: -20 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.3 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 right-0 z-50 transition-all duration-300 ${
           scrolled ? "bg-white/90 shadow-md backdrop-blur-sm" : "bg-white"
-        }`}
+        } ${sidebarOpen ? "left-80" : "left-20"}`}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-3">
-          {/* Logo */}
-          <Link to="/admin" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">
-              A
-            </div>
-            <span className="text-xl font-semibold text-primary hidden sm:block">
-              Admin Panel
-            </span>
-          </Link>
+  
+        <div className="flex justify-between items-center px-4 py-3">
+          <div className="flex items-center gap-4">
+         
+          </div>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-4">
-            {[ 
-              { to: "/admin/dashboard", label: "Dashboard" },
-              { to: "/admin/users", label: "Users" },
-              { to: "/admin/Food", label: "Food" },
-              { to: "/admin/roles-verification", label: "Role Verification" }
-            ].map((item) => (
-              <NavLink
-              
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `btn btn-sm ${
-                    isActive ? "btn-primary text-white" : "btn-ghost text-gray-700"
-                  }`
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-
-           
-          </nav>
-
-          {/* User Avatar & Logout */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <div className="dropdown dropdown-end">
               <label tabIndex={0} className="btn btn-sm btn-primary normal-case gap-2">
                 <div className="avatar">
@@ -91,7 +99,7 @@ const AdminNavbar = ({ activeTab, setActiveTab }) => {
                 className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 mt-2"
               >
                 <li>
-                  <Link to="/admin/profile">
+                  <Link to="/profile">
                     <FiUser className="w-4 h-4" />
                     Profile
                   </Link>
@@ -104,60 +112,92 @@ const AdminNavbar = ({ activeTab, setActiveTab }) => {
                 </li>
               </ul>
             </div>
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="md:hidden btn btn-sm btn-ghost btn-circle"
+            >
+              {mobileOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+            </button>
           </div>
-
-          {/* Mobile Menu Toggle */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden btn btn-sm btn-ghost btn-circle"
-          >
-            {mobileOpen ? <FiX size={20} /> : <FiMenu size={20} />}
-          </button>
         </div>
       </motion.header>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileOpen && (
+      {mobileOpen && (
+        <div className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setMobileOpen(false)}>
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="fixed top-16 left-0 right-0 bg-white z-40 shadow-md md:hidden overflow-hidden"
+            initial={{ x: -300 }}
+            animate={{ x: 0 }}
+            className="h-full bg-white w-3/4 max-w-xs shadow-lg"
+            onClick={(e) => e.stopPropagation()}
           >
-            <ul className="menu menu-sm p-4">
+            <div className="p-4 border-b">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+                  {user?.fullName?.charAt(0)}
+                </div>
+                <span className="font-semibold">{user?.fullName}</span>
+              </div>
+            </div>
+
+            <nav className="mt-4">
+              <MobileNavItem icon={<FiHome />} text="Dashboard" to="/admin/dashboard" />
+              <MobileNavItem icon={<FiUsers />} text="Users" to="/admin/users" />
+              <MobileNavItem icon={<FiShield />} text="Roles" to="/admin/roles" />
+              <MobileNavItem icon={<FiPackage />} text="Donations" to="/donations" />
+              <MobileNavItem icon={<FiTruck />} text="Food" to="/admin/food" />
+              <MobileNavItem icon={<FiPieChart />} text="Reports" to="/reports" />
+              <MobileNavItem icon={<FiSettings />} text="Settings" to="/settings" />
+              <div className="divider my-2" />
               <li>
-                <NavLink to="/admin" onClick={() => setMobileOpen(false)}>
-                  Dashboard
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/admin/users" onClick={() => setMobileOpen(false)}>
-                  Users
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/admin/roles" onClick={() => setMobileOpen(false)}>
-                  Roles
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/admin/settings" onClick={() => setMobileOpen(false)}>
-                  Settings
-                </NavLink>
-              </li>
-              <li className="divider" />
-              <li>
-                <button onClick={handleLogout} className="text-error">
-                  Logout
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center p-4 text-error hover:bg-red-50 w-full"
+                >
+                  <FiLogOut className="mr-3" /> Logout
                 </button>
               </li>
-            </ul>
+            </nav>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </>
   );
 };
+
+const NavItem = ({ icon, text, to, sidebarOpen }) => {
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `flex items-center p-3 rounded-md transition-all duration-200 ${
+          isActive ? "bg-blue-700 font-medium" : "hover:bg-blue-700/50"
+        } ${!sidebarOpen ? "justify-center" : "px-4"}`
+      }
+    >
+      <span className="text-xl">{icon}</span>
+      {sidebarOpen && <span className="ml-3 whitespace-nowrap overflow-hidden">{text}</span>}
+    </NavLink>
+  );
+};
+
+const MobileNavItem = ({ icon, text, to }) => {
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `flex items-center p-4 text-base ${
+          isActive ? "bg-blue-50 text-primary" : "hover:bg-gray-100"
+        }`
+      }
+    >
+      <span className="text-xl mr-3">{icon}</span>
+      {text}
+    </NavLink>
+  );
+};
+
+
+
 
 export default AdminNavbar;
