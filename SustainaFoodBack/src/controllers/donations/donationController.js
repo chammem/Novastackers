@@ -2,7 +2,8 @@ const FoodDonation = require("../../models/foodDonation");
 const FoodItem = require("../../models/foodItem");
 const UserModel = require("../../models/userModel");
 const Notification = require("../../models/notification");
-
+const mongoose = require('mongoose');
+// ou en ES6
 exports.createDonation = async (req, res) => {
   try {
     const { name, location, endingDate, ngoId, description } = req.body;
@@ -61,30 +62,7 @@ exports.addFoodToDonation = async (req,res) => {
 
 }
 
-exports.getAllDonations = async (req, res) => {
-    try {
-      const search = req.query.search || '';
-      const sanitizedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      
-      let query = {};
-      
-      if (sanitizedSearch) {
-        const ngos = await UserModel.find({
-          fullName: { $regex: new RegExp(`\\b${sanitizedSearch}`, 'i') },
-          role: "charity"
-        });
-        query.ngoId = { $in: ngos.map(n => n._id) };
-      }
-  
-      const donations = await FoodDonation.find(query)
-        .populate('foods')
-        .populate('ngoId', 'fullName');
-  
-      res.status(200).json(donations);
-    } catch (error) {
-      res.status(500).json({ message: 'Error fetching donations', error });
-    }
-  };
+
 
   exports.getDonationsByNgo = async (req, res) => {  
     try {
@@ -454,9 +432,57 @@ exports.getFoodById = async (req, res) => {
   }
 }
 
+exports.getAllDonations = async (req, res) => {
+  try {
+    const search = req.query.search || '';
+    const sanitizedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    let query = {};
+    
+    if (sanitizedSearch) {
+      const ngos = await UserModel.find({
+        fullName: { $regex: new RegExp(`\\b${sanitizedSearch}`, 'i') },
+        role: "charity"
+      });
+      query.ngoId = { $in: ngos.map(n => n._id) };
+    }
 
+    const donations = await FoodDonation.find(query)
+      .populate('foods')
+      .populate('ngoId', 'fullName');
 
+    res.status(200).json(donations);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching donations', error });
+  }
+};
 
+exports.deleteDonation = async (req, res) => {
+  try {
+  const deletedDonation = await FoodDonation.findByIdAndDelete(req.params.id);
+      if (!deletedDonation) {
+        return res.status(404).json({ success: false, message: "donation not found" });
+      }
+       
+    if (!deletedDonation) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Donation introuvable'
+      });
+    }
 
+    res.status(200).json({
+      success: true,
+      message: 'Donation supprimée définitivement',
+      data: deletedDonation
+    });
 
-
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la suppression',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};

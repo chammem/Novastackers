@@ -38,6 +38,12 @@ import MapView from './components/MapView.jsx'
 import RouteDetailsPage from './components/donations/RouteDetailsPage.jsx'
 import RequestedAssignments from './components/donations/RequestedAssignments.jsx'
 import { AuthProvider } from "./context/AuthContext";
+import AdminFoodTab from './components/AdminFoodTab.jsx'
+import VerificationImages from './components/VerificationImages.jsx'
+import Admin from './components/Admin.jsx'
+import Dashboard from './components/Dashboard.jsx'
+import AdminUsersTab from './components/AdminUserTab.jsx'
+import AdminDonationsList from './components/AdminDonationsList.jsx'
 const router = createBrowserRouter([
   {
     path: "/",
@@ -48,7 +54,6 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "/login", element: <Connect /> },
       { path: "register/:role", element: <UserForm /> },
-      { path: "roleVerification", element: <AdminVerificationComponent /> },
       { path: "activateAccount", element: <ActivateAccount /> },
       { path: "forgot-password", element: <ForgotPasswordFlow /> }, 
       { path: "role", element: <RoleChoice /> },
@@ -68,6 +73,15 @@ const router = createBrowserRouter([
       {path:"/adress",element:<AddressAutoComplete/>},
       {path:"/route/:foodId",element:<RouteDetailsPage/>},
       {path:"/requested-assignments",element:<RequestedAssignments/>},
+      {path:"/admin/Food" ,element:<AdminFoodTab/>},
+      { path: "/admin/roles-verification", element: <AdminVerificationComponent /> },
+      {path:"/adminOpen",element:<Admin/>},
+      {path:"/admin/users",element:<AdminDashboard />},
+      {path:"/admin/dashboard",element:<AdminDashboard/>},
+      {path:"/admin/campaigns",element:<AdminDonationsList/>},
+
+
+
       {
         element: <ProtectedRoute />,
         children: [
