@@ -1,7 +1,7 @@
 const FoodItem = require("../../models/foodItem");
 const User = require("../../models/userModel");
 const Notification = require("../../models/notification");
-
+const Recommendation = require("../../models/recommandation");
 exports.addFoodItem = async (req,res) => {
 
     const {foodInput} = req.body;
@@ -170,7 +170,16 @@ exports.startPickup = async (req, res) => {
       res.status(500).json({ message: "Error confirming delivery", error: error.message });
     }
   };
+  exports.getRecommendations = async (req, res) => {
+    try {
+      const recommendations = await Recommendation.findOne({ user_id: req.user.id }).populate("recommended_foods");
+      if (!recommendations) return res.status(404).json({ message: "Aucune recommandation trouvée." });
   
+      res.json(recommendations.recommended_foods);
+    } catch (error) {
+      res.status(500).json({ message: "Erreur serveur", error });
+    }
+  };
   
   
   
