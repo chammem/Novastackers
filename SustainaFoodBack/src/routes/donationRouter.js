@@ -6,6 +6,7 @@ const donationController = require('../controllers/donations/donationController'
 donationRouter.post('/create-donation',upload.fields([{name:"image",maxCount:1}]),donationController.createDonation);
 donationRouter.post('/add-food-to-donation/:donationId',donationController.addFoodToDonation);
 donationRouter.get('/get-all-donations',donationController.getAllDonations);
+donationRouter.delete('/deleteDonation/:id',donationController.deleteDonation);
 donationRouter.get('/get-donations-by-ngo',donationController.getDonationsByNgo);
 donationRouter.get('/get-donation-by-id/:ngoId',donationController.getDonationByNgoId);
 donationRouter.get('/:id/details', donationController.getDonationDetails);

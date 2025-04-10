@@ -4,20 +4,39 @@ import AdminNavbar from './AdminNavbar'
 import { useState,useEffect} from 'react';
 import AdminFoodTab from './AdminFoodTab';
 import axiosInstance from '../config/axiosInstance';
-import AdminRoleVerificationTab from './AdminRoleVerificationTab';
-function AdminDashboard() {
+import AdminRoleVerificationTab from './VerificationImages';
+import Dashboard from './Dashboard';
 
+import { useLocation } from 'react-router-dom';
+import AdminDonationsList from './AdminDonationsList';
 
+const AdminDashboard = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const location = useLocation();
 
-    const [activeTab, setActiveTab] = useState('users'); 
+  const activeTab = location.pathname.split('/').pop() || 'dashboard';
+
   return (
     <div className="min-h-screen bg-gray-100">
-      <AdminNavbar activeTab={activeTab} setActiveTab={setActiveTab} />
-      {activeTab === 'users' && <AdminUserTab />}
-       {activeTab === 'food' && <AdminFoodTab />} 
-       {activeTab === "verifications" && <AdminRoleVerificationTab />}
+      <AdminNavbar 
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
+      
+      <div className="pt-16">
+        {activeTab === 'dashboard' && <Dashboard sidebarOpen={sidebarOpen} />}
+        {activeTab === 'users' && <AdminUserTab sidebarOpen={sidebarOpen} />}
+        {activeTab === "roles-verification" && <AdminVerificationComponent sidebarOpen={sidebarOpen} />}
+        {activeTab === 'campaigns' && (
+          <AdminDonationsList 
+            sidebarOpen={sidebarOpen} 
+            setSidebarOpen={setSidebarOpen} 
+          />
+        )}
+        {activeTab === 'food' && <AdminFoodTab sidebarOpen={sidebarOpen} />}
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default AdminDashboard
+export default AdminDashboard;
