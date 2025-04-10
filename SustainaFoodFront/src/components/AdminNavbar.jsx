@@ -61,8 +61,12 @@ const AdminNavbar = ({
             <NavItem icon={<FiHome />} text="Dashboard" to="/admin/dashboard" sidebarOpen={sidebarOpen} />
             <NavItem icon={<FiUsers />} text="Users" to="/admin/users" sidebarOpen={sidebarOpen} />
             <NavItem icon={<FiShield />} text="Roles" to="/admin/roles-verification" sidebarOpen={sidebarOpen} />
-            <NavItem icon={<FiPackage />} text="Donations" to="/donations" sidebarOpen={sidebarOpen} />
-            <NavItem icon={<FiTruck />} text="Food" to="/admin/food" sidebarOpen={sidebarOpen} />
+            <NavItem 
+  icon={<FiPackage />} 
+  text="Campaigns" 
+  to="/admin/campaigns" 
+  sidebarOpen={sidebarOpen} 
+/>            <NavItem icon={<FiTruck />} text="Food" to="/admin/food" sidebarOpen={sidebarOpen} />
             <NavItem icon={<FiPieChart />} text="Reports" to="/reports" sidebarOpen={sidebarOpen} />
             <NavItem icon={<FiSettings />} text="Settings" to="/settings" sidebarOpen={sidebarOpen} />
           </nav>
@@ -148,7 +152,7 @@ const AdminNavbar = ({
               icon={<ShieldIcon />}
               text="Verifications"
               to="/admin/roles-verification"
-            />              <MobileNavItem icon={<FiPackage />} text="Donations" to="/donations" />
+            />              <MobileNavItem icon={<FiPackage />} text="Compaings" to="/admin/campaigns" />
               <MobileNavItem icon={<FiTruck />} text="Food" to="/admin/food" />
               <MobileNavItem icon={<FiPieChart />} text="Reports" to="/reports" />
               <MobileNavItem icon={<FiSettings />} text="Settings" to="/settings" />

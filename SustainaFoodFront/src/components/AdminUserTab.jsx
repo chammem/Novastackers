@@ -179,9 +179,7 @@ const AdminUsersTab = ({ sidebarOpen }) => {
   }
 
   return (
-    <div className={`mt-12 p-8 bg-white rounded-xl shadow-sm transition-all duration-300 ${
-      sidebarOpen ? 'ml-80' : 'ml-20'
-    }`}>
+<div className={`mt-12 p-8 transition-all duration-300 ${sidebarOpen ? 'ml-80' : 'ml-20'}`}>  
       <h2 className="text-3xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-200">
       User Management      </h2>
 
