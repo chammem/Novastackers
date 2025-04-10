@@ -16,8 +16,7 @@ const userSchema = new Schema(
 
     role: {
       type: String,
-
-      enum: ["user", "driver", "restaurant", "supermarket", "charity","volunteer"],
+      enum: ["user", "driver", "restaurant", "supermarket", "charity", "volunteer"],
     },
     fullName: { type: String, required: false, trim: true },
     phoneNumber: { type: String, trim: true },
@@ -28,14 +27,11 @@ const userSchema = new Schema(
     facebook: { type: String, optional: true },
     isDisabled: { type: Boolean, default: false }, // Désactivé = true
     googleId: { type: String, unique: true },
-   
-   
-   
-   
+
     dietaryRestrictions: { type: [String], default: [] },
     allergies: { type: [String], default: [] },
 
-    //Driver specific fields//
+    // Driver specific fields
     vehicleType: { type: String },
     licensePlateNumber: { type: String },
     vehicleCapacity: { type: String },
@@ -44,7 +40,7 @@ const userSchema = new Schema(
     driverLicenseNumber: { type: String },
     vehicleRegistration: { type: String },
 
-    //Restaurant-specific fields//
+    // Restaurant-specific fields
     restaurantName: { type: String },
     businessType: { type: String },
     foodTypesDonated: { type: [String], default: [] },
@@ -53,15 +49,17 @@ const userSchema = new Schema(
     businessLicenseNumber: { type: String },
     taxId: { type: String },
 
-    //
+    // Supermarket
     supermarketName: { type: String },
-    ///NonUser-specific attribute //
+
+    // NonUser-specific attribute
     isActive: { type: Boolean, default: false },
     verificationStatus: {
       type: String,
       enum: ["pending", "verified", "rejected"],
       default: "pending",
     },
+
     // Charity (NGO) specific fields
     organizationName: { type: String, trim: true },
     mission: { type: String },
@@ -70,13 +68,17 @@ const userSchema = new Schema(
     logoUrl: { type: String },
     donationNeeds: { type: [String], default: [] },
     instagram: { type: String },
-   facebook: { type: String },
+    facebook: { type: String },
     twitter: { type: String },
 
+    // 🔐 Two-Factor Authentication (2FA)
+    secret2FA: { type: String },
+    is2FAEnabled: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
+// Hash password before save
 userSchema.pre("save", async function (next) {
   const user = this;
 

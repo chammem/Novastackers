@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../../config/axiosInstance'; // Ensure you have this configured
-import HeaderMid from '../HeaderMid';
-import BreadCrumb from '../BreadCrumb';
-import axios from 'axios';
+import axiosInstance from '../../config/axiosInstance';
 import { Link } from 'react-router-dom';
-import { useCookies } from "react-cookie";
+import Verify2FA from './Verify2FA';
 
 function Connect() {
   const [email, setEmail] = useState("");
@@ -13,7 +10,9 @@ function Connect() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const [showPassword,setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [require2FA, setRequire2FA] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,8 +22,11 @@ function Connect() {
     try {
       const response = await axiosInstance.post("/login", { email, password });
 
-      if (response.data.success) {
-        navigate("/"); // Redirect to home page after login
+      if (response.data.require2FA) {
+        setUserId(response.data.userId);
+        setRequire2FA(true);
+      } else if (response.data.success) {
+        navigate("/");
       } else {
         setError(response.data.message || "Invalid credentials");
       }
@@ -35,6 +37,12 @@ function Connect() {
     }
   };
 
+  // 🟡 Si l'utilisateur doit entrer le code 2FA, on n'affiche que ce composant
+  if (require2FA) {
+    return <Verify2FA userId={userId} onSuccess={() => navigate("/")} />;
+  }
+
+  // Sinon, on affiche le formulaire classique
   return (
     <div className="h-screen flex items-center justify-center bg-gray-100">
       <div className="flex w-full max-w-4xl bg-white rounded-lg shadow-lg">
@@ -67,10 +75,12 @@ function Connect() {
               />
             </div>
             <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="text-sm text-blue-500 hover:underline mt-2"
-              >Show Password</button>
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="text-sm text-blue-500 hover:underline mt-2"
+            >
+              Show Password
+            </button>
             {error && <p className="text-red-500 text-sm">{error}</p>}
             <div className="flex items-center justify-between">
               <a
@@ -106,7 +116,7 @@ function Connect() {
               }}
             >
               <img
-                src="/images/google.png" // Ensure this image is in your public folder
+                src="/images/google.png"
                 alt="Google"
                 className="h-6 w-6"
               />
@@ -118,10 +128,7 @@ function Connect() {
           <div className="mt-4 text-center">
             <p>
               Don't have an account?{" "}
-              <Link
-                to="/register"
-                className="text-blue-500 hover:underline"
-              >
+              <Link to="/register" className="text-blue-500 hover:underline">
                 Create one here.
               </Link>
             </p>
@@ -131,9 +138,7 @@ function Connect() {
         {/* Image Section */}
         <div
           className="w-1/2 bg-cover bg-center"
-          style={{
-            backgroundImage: 'url("/images/login.svg")',
-          }}
+          style={{ backgroundImage: 'url("/images/login.svg")' }}
         ></div>
       </div>
     </div>
