@@ -85,8 +85,7 @@ import {
     if (stats.error) return <ErrorAlert message={stats.error} retry={fetchDashboardData} />;
   
     return (
-      <div className={`mt-12 p-8 transition-all duration-300 ${sidebarOpen ? 'ml-80' : 'ml-20'}`}>
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
+        <div className={`mt-12 p-8 transition-all duration-300 ${sidebarOpen ? 'ml-80' : 'ml-20'}`}>        <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
         
         <StatCards stats={stats} />
         

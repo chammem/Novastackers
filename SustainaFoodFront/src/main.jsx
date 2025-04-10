@@ -43,6 +43,7 @@ import VerificationImages from './components/VerificationImages.jsx'
 import Admin from './components/Admin.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import AdminUsersTab from './components/AdminUserTab.jsx'
+import AdminDonationsList from './components/AdminDonationsList.jsx'
 const router = createBrowserRouter([
   {
     path: "/",
@@ -77,6 +78,7 @@ const router = createBrowserRouter([
       {path:"/adminOpen",element:<Admin/>},
       {path:"/admin/users",element:<AdminDashboard />},
       {path:"/admin/dashboard",element:<AdminDashboard/>},
+      {path:"/admin/campaigns",element:<AdminDonationsList/>},
 
 
 

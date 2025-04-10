@@ -8,31 +8,35 @@ import AdminRoleVerificationTab from './VerificationImages';
 import Dashboard from './Dashboard';
 
 import { useLocation } from 'react-router-dom';
+import AdminDonationsList from './AdminDonationsList';
 
 const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
-  
-  // Détermine l'onglet actif basé sur l'URL
+
   const activeTab = location.pathname.split('/').pop() || 'dashboard';
 
   return (
     <div className="min-h-screen bg-gray-100">
       <AdminNavbar 
-        activeTab={activeTab} 
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
       />
       
       <div className="pt-16">
-        {activeTab === 'users' && <AdminUserTab sidebarOpen={sidebarOpen} />}
         {activeTab === 'dashboard' && <Dashboard sidebarOpen={sidebarOpen} />}
-        {activeTab === 'food' && <AdminFoodTab sidebarOpen={sidebarOpen} />}
+        {activeTab === 'users' && <AdminUserTab sidebarOpen={sidebarOpen} />}
         {activeTab === "roles-verification" && <AdminVerificationComponent sidebarOpen={sidebarOpen} />}
+        {activeTab === 'campaigns' && (
+          <AdminDonationsList 
+            sidebarOpen={sidebarOpen} 
+            setSidebarOpen={setSidebarOpen} 
+          />
+        )}
+        {activeTab === 'food' && <AdminFoodTab sidebarOpen={sidebarOpen} />}
       </div>
     </div>
   );
 };
 
-// Export par défaut ESSENTIEL
 export default AdminDashboard;
