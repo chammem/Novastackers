@@ -39,6 +39,8 @@ import RouteDetailsPage from './components/donations/RouteDetailsPage.jsx'
 import RequestedAssignments from './components/donations/RequestedAssignments.jsx'
 import { AuthProvider } from "./context/AuthContext";
 import VolunteerAvailability from './components/VolunteerAvailability.jsx'
+import BatchRouteDetails from './components/donations/BatchRouteDetails.jsx';
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -65,11 +67,13 @@ const router = createBrowserRouter([
       {path:"/notifications",element:<NotificationsPage/>},
       { path: "/ngo-profile", element: <NGOProfileUpdate /> },
       {path:"/my-donations",element:<MyFoodDonations/>},
-      {path:"/test-map",element:<MapView/>},
+      {path:"/test-map/:batchId",element:<MapView/>},
       {path:"/adress",element:<AddressAutoComplete/>},
       {path:"/route/:foodId",element:<RouteDetailsPage/>},
       {path:"/requested-assignments",element:<RequestedAssignments/>},
       {path:"/volunteer-availability",element:<VolunteerAvailability/>},
+      {path:"/batch/:batchId/route", element: <BatchRouteDetails />},
+      
       {
         element: <ProtectedRoute />,
         children: [

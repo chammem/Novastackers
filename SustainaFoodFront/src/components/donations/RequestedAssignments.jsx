@@ -86,7 +86,9 @@ const RequestedAssignments = () => {
   const handleAccept = async (foodId) => {
     setProcessingId(foodId);
     try {
-      await axiosInstance.patch(`/donations/accept-assignment/${foodId}`);
+      await axiosInstance.patch(`/donations/accept-assignment/${foodId}`,{
+        volunteerId: user._id // Send volunteer ID from context
+      });
       toast.success("Assignment accepted");
       fetchRequested();
     } catch (err) {
@@ -99,7 +101,9 @@ const RequestedAssignments = () => {
   const handleDecline = async (foodId) => {
     setProcessingId(foodId);
     try {
-      await axiosInstance.patch(`/donations/decline-assignment/${foodId}`);
+      await axiosInstance.patch(`/donations/decline-assignment/${foodId}`,{
+        volunteerId: user._id // Send volunteer ID from context
+      });
       toast.info("Assignment declined");
       fetchRequested();
     } catch (err) {

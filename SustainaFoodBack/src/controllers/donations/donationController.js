@@ -376,34 +376,34 @@ exports.getBuisnessFoodDonations = async (req, res) => {
 };
 
 exports.getBusinessesForCampaign = async (req, res) => {
-  const { campaignId } = req.params;
-
   try {
-    const campaign = await FoodDonation.findById(campaignId).populate({
-      path: "foods",
-      populate: {
-        path: "buisiness_id",
-        model: "User",
-      },
-    });
+    const { campaignId } = req.params; // ← Changed from "id" to "campaignId"
+    console.log("Fetching businesses for campaign:", campaignId);
 
-    if (!campaign) {
-      return res.status(404).json({ message: "Campaign not found" });
+    const foods = await FoodItem.find({ donationId: campaignId }).populate(
+      "buisiness_id"
+    );
+    console.log(`Found ${foods.length} food items for this campaign`);
+
+    // Rest of your function...
+    // Make sure to change any other instances of "id" to "campaignId"
+
+    let businesses = [];
+    for (const food of foods) {
+      if (
+        food.buisiness_id &&
+        businesses.findIndex(
+          (b) => b._id.toString() === food.buisiness_id._id.toString()
+        ) === -1
+      ) {
+        businesses.push(food.buisiness_id);
+      }
     }
 
-    const businesses = campaign.foods
-      .map((food) => food.buisiness_id)
-      .filter(
-        (value, index, self) =>
-          value &&
-          self.findIndex((v) => v._id.toString() === value._id.toString()) ===
-            index
-      );
-    console.log(businesses);
-    res.status(200).json({ businesses });
+    return res.status(200).json({ businesses });
   } catch (err) {
     console.error("Error fetching businesses:", err);
-    res.status(500).json({ message: "Failed to retrieve businesses" });
+    return res.status(500).json({ error: "Failed to fetch businesses" });
   }
 };
 
@@ -472,7 +472,7 @@ exports.getAvailableVolunteersForCampaign = async (req, res) => {
   try {
     const { campaignId } = req.params;
     const { foodId } = req.query;
-    console.log(foodId)
+    console.log(foodId);
     // Get current date and time for availability check
     const now = new Date();
     const currentHours = now.getHours();

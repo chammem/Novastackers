@@ -1,48 +1,129 @@
-const express = require('express');
-const upload = require('../middleware/upload');
+const express = require("express");
+const upload = require("../middleware/upload");
 const donationRouter = express.Router();
-const donationController = require('../controllers/donations/donationController');
-const batchController = require("../controllers/batchController")
+const donationController = require("../controllers/donations/donationController");
+const batchController = require("../controllers/batchController");
 
-donationRouter.post('/create-donation',upload.fields([{name:"image",maxCount:1}]),donationController.createDonation);
-donationRouter.post('/add-food-to-donation/:donationId',donationController.addFoodToDonation);
-donationRouter.get('/get-all-donations',donationController.getAllDonations);
-donationRouter.get('/get-donations-by-ngo',donationController.getDonationsByNgo);
-donationRouter.get('/get-donation-by-id/:ngoId',donationController.getDonationByNgoId);
-donationRouter.get('/:id/details', donationController.getDonationDetails);
-donationRouter.post('/assign-volunteer/:foodId', donationController.assignFoodToVolunteer);
-donationRouter.patch('/accept-assignment/:foodId', donationController.acceptAssignment);
-donationRouter.patch('/decline-assignment/:foodId', donationController.declineAssignment);
+donationRouter.post(
+  "/create-donation",
+  upload.fields([{ name: "image", maxCount: 1 }]),
+  donationController.createDonation
+);
+donationRouter.post(
+  "/add-food-to-donation/:donationId",
+  donationController.addFoodToDonation
+);
+donationRouter.get("/get-all-donations", donationController.getAllDonations);
+donationRouter.get(
+  "/get-donations-by-ngo",
+  donationController.getDonationsByNgo
+);
+donationRouter.get(
+  "/get-donation-by-id/:ngoId",
+  donationController.getDonationByNgoId
+);
+donationRouter.get("/:id/details", donationController.getDonationDetails);
+donationRouter.post(
+  "/assign-volunteer/:foodId",
+  donationController.assignFoodToVolunteer
+);
+donationRouter.patch(
+  "/accept-assignment/:foodId",
+  donationController.acceptAssignment
+);
+donationRouter.patch(
+  "/decline-assignment/:foodId",
+  donationController.declineAssignment
+);
 
 // donationRouter.put('/pickup/volunteer/:foodId', donationController.markAsPickedUpByVolunteer);
-donationRouter.put('/pickup/buisness/:foodId',donationController.confirmPickupByBuisness);
-donationRouter.post("/:campaignId/volunteer", donationController.volunteerForCampaign);
-donationRouter.get("/:campaignId/volunteer",donationController.getVolunteersForCampaign);
-donationRouter.get("/get-donations-by-buisiness/:businessId",donationController.getBuisnessFoodDonations);
-donationRouter.get("/:campaignId/businesses",donationController.getBusinessesForCampaign);
-donationRouter.get("/:campaignId/foods/paginated", donationController.getPaginatedFoodsByCampaign);
+donationRouter.put(
+  "/pickup/buisness/:foodId",
+  donationController.confirmPickupByBuisness
+);
+donationRouter.post(
+  "/:campaignId/volunteer",
+  donationController.volunteerForCampaign
+);
+donationRouter.get(
+  "/:campaignId/volunteer",
+  donationController.getVolunteersForCampaign
+);
+donationRouter.get(
+  "/get-donations-by-buisiness/:businessId",
+  donationController.getBuisnessFoodDonations
+);
+donationRouter.get(
+  "/:campaignId/businesses",
+  donationController.getBusinessesForCampaign
+);
+donationRouter.get(
+  "/:campaignId/foods/paginated",
+  donationController.getPaginatedFoodsByCampaign
+);
 donationRouter.get("/food/:id", donationController.getFoodById);
-donationRouter.get('/campaign/:campaignId/available-volunteers', donationController.getAvailableVolunteersForCampaign);
+donationRouter.get(
+  "/campaign/:campaignId/available-volunteers",
+  donationController.getAvailableVolunteersForCampaign
+);
 
 // Add these routes to your existing donations router
 
 // Generate batches
-donationRouter.post('/:campaignId/batches/generate', batchController.generateBatches);
+donationRouter.post(
+  "/:campaignId/batches/generate",
+  batchController.generateBatches
+);
 
 // Get batches
-donationRouter.get('/:campaignId/batches', batchController.getBatchesForCampaign);
+donationRouter.get(
+  "/:campaignId/batches",
+  batchController.getBatchesForCampaign
+);
 
 // Get volunteers for batch
-donationRouter.get('/batches/:batchId/available-volunteers', batchController.getAvailableVolunteersForBatch);
+donationRouter.get(
+  "/batches/:batchId/available-volunteers",
+  batchController.getAvailableVolunteersForBatch
+);
 
 // Assign volunteer to batch
-donationRouter.post('/batches/:batchId/assign', batchController.assignVolunteerToBatch);
+donationRouter.post(
+  "/batches/:batchId/assign",
+  batchController.assignVolunteerToBatch
+);
 
 // Add these routes
 
-donationRouter.patch('/accept-batch-assignment/:batchId',batchController.acceptBatchAssignment);
-donationRouter.patch('/decline-batch-assignment/:batchId',batchController.declineBatchAssignment);
+donationRouter.patch(
+  "/accept-batch-assignment/:batchId",
+  batchController.acceptBatchAssignment
+);
+donationRouter.patch(
+  "/decline-batch-assignment/:batchId",
+  batchController.declineBatchAssignment
+);
 // Add this route
 
-donationRouter.get('/:volunteerId/batch-assignments', batchController.getVolunteerBatchAssignments);
+donationRouter.get(
+  "/:volunteerId/batch-assignments",
+  batchController.getVolunteerBatchAssignments
+);
+// donationRouter.get('/:batchId',  batchController.getBatchById);
+// donationRouter.post('/:batchId/complete',  batchController.completeBatch);
+
+// Add this route
+donationRouter.patch(
+  "/batches/:batchId/check-status",
+  batchController.checkBatchCompletion
+);
+
+// Add this route to donationRouter:
+
+// Get optimized route for batch
+// donationRouter.post(
+//   "/batches/:batchId/route",
+//   batchController.calculateBatchRoute
+// );
+donationRouter.get("/batch-route-data/:batchId",batchController.batchRouteData);
 module.exports = donationRouter;

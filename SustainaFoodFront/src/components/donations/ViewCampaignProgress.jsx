@@ -842,6 +842,7 @@ const ViewCampaignProgress = () => {
                         transition={{ delay: index * 0.1, duration: 0.3 }}
                         className="card bg-base-100 shadow-lg border border-base-300 overflow-hidden"
                       >
+                       
                         <div className="card-body">
                           <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
                             <h3 className="card-title text-lg">
@@ -856,7 +857,35 @@ const ViewCampaignProgress = () => {
                               }`}>
                                 {batch.requiredCapacity} capacity
                               </div>
+                              
+                              {/* Add batch status badge */}
+                              {(() => {
+                                // Determine batch status
+                                let status = "pending";
+                                let badgeClass = "badge-neutral";
+                                
+                                if (batch.assignedVolunteer) {
+                                  status = "assigned";
+                                  badgeClass = "badge-info";
+                                  
+                                  // Check if all items are delivered
+                                  const allDelivered = batch.items.every(item => item.status === "delivered");
+                                  if (allDelivered) {
+                                    status = "completed";
+                                    badgeClass = "badge-success";
+                                  }
+                                }
+                                
+                                return (
+                                  <div className={`badge ${badgeClass}`}>
+                                    {status}
+                                  </div>
+                                );
+                              })()}
                             </h3>
+                            
+                            
+
                             
                             <div className="mt-4 md:mt-0">
                               {batch.assignedVolunteer ? (
