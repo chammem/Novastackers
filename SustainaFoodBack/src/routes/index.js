@@ -20,7 +20,7 @@ const { addFoodItem } = require('../controllers/food/foodItem');
 const { uploadDriverDocuments } = require('../controllers/roleVerification');
 const upload = require("../middleware/upload");
 const notificationController = require('../controllers/notifications/notificationController');
-
+const Batch = require('../models/batch')
 router.get("/auth-endpoint",authToken,(request, response) => {
   response.json({ message: "You are authorized to access me" });
 });
@@ -227,27 +227,46 @@ router.put( "/update-ngo-profile",upload.single("logo"),allUsers.updateNgoProfil
 ////MAP THINGS /////
 
 router.get("/search", async (req, res) => {
+  console.log("🔍 Address search endpoint hit");
   const { q } = req.query;
-
+  
+  console.log(`🔍 Search query: "${q}"`);
+  
+  if (!q) {
+    console.log("❌ Empty search query received");
+    return res.status(400).json({ message: "Search query is required" });
+  }
+  
   try {
+    console.log(`🔍 Building Nominatim URL for query: "${q}"`);
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
       q
     )}&addressdetails=1&limit=5&countrycodes=tn`;
-
+    
+    console.log(`🔍 Making external API request to: ${url}`);
     const response = await axios.get(url, {
       headers: {
         "User-Agent": "SustainaFoodApp/1.0 (ahmedkacem.jebari@esprit.tn)",
         "Accept-Language": "en",
       },
     });
+    
     const data = response.data;
+    console.log(`✅ Nominatim API response received: ${data.length} results found`);
+    
+    if (data.length === 0) {
+      console.log("⚠️ No results found for this query");
+    } else {
+      console.log(`✅ First result: ${JSON.stringify(data[0].display_name)}`);
+    }
+    
     res.json(data);
   } catch (err) {
-    console.error("Nominatim error:", err);
+    console.error("❌ Nominatim API error:", err);
+    console.error("❌ Error details:", err.response ? err.response.data : "No response data");
     res.status(500).json({ message: "Failed to fetch address suggestions." });
   }
 });
-
 
 // routes/map.js
 router.post("/route", async (req, res) => {
@@ -275,9 +294,110 @@ router.post("/route", async (req, res) => {
   }
 });
 
+router.post("/route-multi", async (req, res) => {
+  const { coordinates, mode = "driving-car" } = req.body;
+
+  try {
+    const orsRes = await axios.post("https://api.openrouteservice.org/v2/directions/" + mode, {
+      coordinates
+    }, {
+      headers: {
+        Authorization: process.env.ORS_API_KEY,
+        "Content-Type": "application/json",
+      }
+    });
+
+    res.status(200).json(orsRes.data);
+  } catch (error) {
+    console.error("ORS route error:", error);
+    res.status(500).json({ message: "Error fetching route", error });
+  }
+});
+
 
 
 router.get('/volunteer/availability/:userId',allUsers.getVolunteerAvailability);
 router.post('/volunteer/availability/:userId',allUsers.updateVolunteerAvailability);
+
+
+
+router.post("/optimized-route", async (req, res) => {
+  try {
+    const { start, end, pickups } = req.body;
+
+    if (
+      !Array.isArray(start) || start.length !== 2 ||
+      !Array.isArray(end) || end.length !== 2 ||
+      !Array.isArray(pickups) || pickups.some(p => !Array.isArray(p) || p.length !== 2)
+    ) {
+      return res.status(400).json({ message: "Invalid coordinate format" });
+    }
+
+    // 👉 STEP 1: Send to ORS /optimization (NO profile here)
+    const jobs = pickups.map((point, i) => ({
+      id: i + 1,
+      service: 300,
+      amount: [1],
+      location: point, // [lng, lat]
+    }));
+
+    const vehicles = [{
+      id: 1,
+      profile: "driving-car", // This is OK here
+      start,
+      end,
+      capacity: [pickups.length],
+    }];
+
+    const optimizationRes = await axios.post(
+      "https://api.openrouteservice.org/optimization",
+      { jobs, vehicles },
+      {
+        headers: {
+          Authorization: process.env.ORS_API_KEY,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const route = optimizationRes.data.routes[0];
+
+    const orderedWaypoints = route.steps
+      .filter(step => step.type === "job")
+      .map(step => step.location);
+
+    const coordinates = [start, ...orderedWaypoints, end];
+
+    // 👉 STEP 2: Get polyline route using ORS Directions API
+    const directionsRes = await axios.post(
+      "https://api.openrouteservice.org/v2/directions/driving-car",
+      { coordinates },
+      {
+        headers: {
+          Authorization: process.env.ORS_API_KEY,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const encodedPolyline = directionsRes.data.routes[0].geometry;
+
+    return res.status(200).json({
+      orderedWaypoints,
+      encodedPolyline,
+    });
+
+  } catch (err) {
+    console.error("ORS optimization error:", err.response?.data || err.message);
+    return res.status(500).json({
+      message: "Failed to optimize route",
+      error: err.response?.data || err.message,
+    });
+  }
+});
+
+
+
+
 
 module.exports = router

@@ -34,6 +34,11 @@ const batchSchema = new mongoose.Schema({
     ref: 'User',
     default: null
   },
+  // Add pickup and delivery code fields
+  pickupCode: { type: String },
+  pickupCodeGeneratedAt: { type: Date },
+  deliveryCode: { type: String },
+  deliveryCodeGeneratedAt: { type: Date },
   createdAt: { 
     type: Date, 
     default: Date.now 
