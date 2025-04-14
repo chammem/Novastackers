@@ -103,6 +103,56 @@ const ViewCampaignProgress = () => {
     }
   };
 
+  async function generateAndAssignBatches(campaignId) {
+    try {
+      // Step 1: Generate batches
+      const generateResponse = await axiosInstance.post(
+        `/donations/${campaignId}/batches/generate`
+      );
+
+      console.log("Batches generated:", generateResponse.data);
+
+      // Step 2: Immediately call auto-assign if batches were generated
+      if (generateResponse.data.batches && generateResponse.data.batches.length > 0) {
+        const assignResponse = await axiosInstance.post(
+          `/donations/campaigns/${campaignId}/auto-assign`
+        );
+
+        console.log("Auto-assignment results:", assignResponse.data);
+
+        // Return combined results
+        return {
+          batchesGenerated: generateResponse.data.batches.length,
+          batchesAssigned: assignResponse.data.assignedCount,
+          message: `Generated ${generateResponse.data.batches.length} batches and assigned ${assignResponse.data.assignedCount} to volunteers.`,
+        };
+      } else {
+        return {
+          batchesGenerated: 0,
+          batchesAssigned: 0,
+          message: generateResponse.data.message,
+        };
+      }
+    } catch (error) {
+      console.error("Error in batch generation and assignment:", error);
+      throw error;
+    }
+  }
+
+  const handleGenerateBatches = async () => {
+    setIsLoading(true);
+    try {
+      const result = await generateAndAssignBatches(id);
+      toast.success(result.message);
+      // Refresh your data or update UI as needed
+      fetchBatches(); // assuming you have a function to refresh batch data
+    } catch (error) {
+      toast.error(`Error: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const openBatchAssignModal = async (batchId) => {
     setSelectedBatch(batchId);
     setSelectedBatchVolunteer("");
@@ -120,10 +170,10 @@ const ViewCampaignProgress = () => {
     if (!selectedBatchVolunteer) {
       return toast.warning("Please select a volunteer");
     }
-    
+
     try {
       await axiosInstance.post(`/donations/batches/${selectedBatch}/assign`, {
-        volunteerId: selectedBatchVolunteer
+        volunteerId: selectedBatchVolunteer,
       });
       toast.success("Batch assignment requested! Volunteer will need to accept or decline.");
       setBatchModalOpen(false);
@@ -464,7 +514,7 @@ const ViewCampaignProgress = () => {
                             <th className="bg-primary/10">Item</th>
                             <th className="bg-primary/10">Qty</th>
                             <th className="bg-primary/10">Category</th>
-                            <th className="bg-primary/10">Size</th> 
+                            <th className="bg-primary/10">Size</th>
                             <th className="bg-primary/10">Business</th>
                             <th className="bg-primary/10">Status</th>
                             <th className="bg-primary/10">Volunteer</th>
@@ -802,15 +852,15 @@ const ViewCampaignProgress = () => {
                     <FiLayers className="text-primary" />
                     <span>Smart Batching</span>
                   </h2>
-                  
+
                   <button
                     className="btn btn-primary mt-4 sm:mt-0"
-                    onClick={generateNewBatches}
+                    onClick={handleGenerateBatches}
                   >
-                    <FiRefreshCw className="mr-2" /> Generate Batch Suggestions
+                    <FiRefreshCw className="mr-2" /> Generate and Assign Batches
                   </button>
                 </div>
-                
+
                 <p className="text-base-content/70 mb-6">
                   Smart batches group nearby food items for efficient pickup. One volunteer can handle multiple items in a single trip.
                 </p>
@@ -842,7 +892,6 @@ const ViewCampaignProgress = () => {
                         transition={{ delay: index * 0.1, duration: 0.3 }}
                         className="card bg-base-100 shadow-lg border border-base-300 overflow-hidden"
                       >
-                       
                         <div className="card-body">
                           <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
                             <h3 className="card-title text-lg">
@@ -857,17 +906,17 @@ const ViewCampaignProgress = () => {
                               }`}>
                                 {batch.requiredCapacity} capacity
                               </div>
-                              
+
                               {/* Add batch status badge */}
                               {(() => {
                                 // Determine batch status
                                 let status = "pending";
                                 let badgeClass = "badge-neutral";
-                                
+
                                 if (batch.assignedVolunteer) {
                                   status = "assigned";
                                   badgeClass = "badge-info";
-                                  
+
                                   // Check if all items are delivered
                                   const allDelivered = batch.items.every(item => item.status === "delivered");
                                   if (allDelivered) {
@@ -875,7 +924,7 @@ const ViewCampaignProgress = () => {
                                     badgeClass = "badge-success";
                                   }
                                 }
-                                
+
                                 return (
                                   <div className={`badge ${badgeClass}`}>
                                     {status}
@@ -883,10 +932,7 @@ const ViewCampaignProgress = () => {
                                 );
                               })()}
                             </h3>
-                            
-                            
 
-                            
                             <div className="mt-4 md:mt-0">
                               {batch.assignedVolunteer ? (
                                 <div className="flex items-center gap-2">
@@ -905,9 +951,9 @@ const ViewCampaignProgress = () => {
                               )}
                             </div>
                           </div>
-                          
+
                           <div className="divider my-2"></div>
-                          
+
                           <div className="overflow-x-auto">
                             <table className="table table-compact w-full">
                               <thead>
@@ -961,9 +1007,9 @@ const ViewCampaignProgress = () => {
                     </p>
                     <button 
                       className="btn btn-primary"
-                      onClick={generateNewBatches}
+                      onClick={handleGenerateBatches}
                     >
-                      Generate Batches
+                      Generate and Assign Batches
                     </button>
                   </motion.div>
                 )}

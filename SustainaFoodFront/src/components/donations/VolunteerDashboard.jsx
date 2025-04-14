@@ -740,7 +740,7 @@ const VolunteerDashboard = () => {
                             <motion.button
                               whileTap={{ scale: 0.95 }}
                               className="btn btn-sm btn-primary gap-1"
-                              onClick={() => navigate(`/batch-route/${batch._id}`)}
+                              onClick={() => navigate(`/test-map/${batch._id}`)}
                             >
                               <FiMap className="h-4 w-4" /> View Optimized Route
                             </motion.button>

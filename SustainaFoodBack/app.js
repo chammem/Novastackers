@@ -8,7 +8,7 @@ const connectDB = require('./src/config/db');
 const router = require('./src/routes');
 const donationRouter = require('./src/routes/donationRouter');
 const path = require("path");
-
+const { initScheduler } = require('./src/utils/scheduler');
 // Create Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
@@ -67,5 +67,5 @@ const startServer = async () => {
 };
 
 startServer();
-
+initScheduler();
 module.exports = app;
