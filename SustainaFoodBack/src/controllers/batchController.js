@@ -3,7 +3,7 @@ const FoodItem = require("../models/foodItem");
 const FoodDonation = require("../models/foodDonation");
 const { createBatches } = require("../utils/clustering");
 const Notification = require("../models/notification");
-
+const geolib = require("geolib");
 // Generate batches for a campaign
 exports.generateBatches = async (req, res) => {
   try {
@@ -69,6 +69,206 @@ exports.generateBatches = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error generating batches", error: error.message });
+  }
+};
+
+// Automatically assign the best volunteer to each batch
+exports.autoAssignVolunteers = async (req, res) => {
+  try {
+    const { campaignId } = req.params;
+    
+    // Get all unassigned batches for this campaign
+    const batches = await Batch.find({
+      campaignId,
+      status: "suggested",
+      assignedVolunteer: null
+    });
+    
+    if (batches.length === 0) {
+      return res.status(200).json({
+        message: "No unassigned batches found for auto-assignment",
+        assignedCount: 0
+      });
+    }
+    
+    // Get current time details for availability check
+    const now = new Date();
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+    const currentTime = `${currentHours.toString().padStart(2, "0")}:${currentMinutes.toString().padStart(2, "0")}`;
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const currentDayName = dayNames[now.getDay()];
+    
+    // Get all volunteers for this campaign
+    const campaign = await FoodDonation.findById(campaignId).populate({
+      path: "volunteers",
+      select: "fullName email phone availability transportCapacity lat lng"
+    });
+    
+    if (!campaign || !campaign.volunteers || campaign.volunteers.length === 0) {
+      return res.status(200).json({
+        message: "No volunteers available for auto-assignment",
+        assignedCount: 0
+      });
+    }
+    
+    // Transport ranking for capacity comparison
+    const transportRanking = {
+      small: 1,
+      medium: 2,
+      large: 3
+    };
+    
+    // Track assignments to avoid double-booking volunteers
+    const assignedVolunteers = new Set();
+    const assignmentResults = [];
+    
+    // Process each batch
+    for (const batch of batches) {
+      // Filter available volunteers who aren't already assigned
+      const availableVolunteers = campaign.volunteers.filter(volunteer => {
+        // Skip if already assigned to another batch
+        if (assignedVolunteers.has(volunteer._id.toString())) {
+          return false;
+        }
+        
+        // Check availability for current time
+        if (!volunteer.availability || volunteer.availability.size === 0) {
+          return false;
+        }
+        
+        const timeSlots = volunteer.availability.get(currentDayName);
+        if (!timeSlots || timeSlots.length === 0) {
+          return false;
+        }
+        
+        const isAvailableNow = timeSlots.some(slot => 
+          slot.start <= currentTime && slot.end >= currentTime
+        );
+        
+        if (!isAvailableNow) {
+          return false;
+        }
+        
+        // Check transport capacity is sufficient
+        const volunteerCapacity = volunteer.transportCapacity || "small";
+        return transportRanking[volunteerCapacity] >= transportRanking[batch.requiredCapacity];
+      });
+      
+      if (availableVolunteers.length === 0) {
+        assignmentResults.push({
+          batchId: batch._id,
+          assigned: false,
+          reason: "No available volunteers with sufficient capacity"
+        });
+        continue;
+      }
+      
+      // Calculate proximity scores
+      const volunteersWithScores = availableVolunteers.map(volunteer => {
+        // Calculate distance score if coordinates available
+        let proximityScore = 0;
+        if (volunteer.lat && volunteer.lng && batch.centerPoint) {
+          const distance = geolib.getDistance(
+            { latitude: volunteer.lat, longitude: volunteer.lng },
+            { latitude: batch.centerPoint[0], longitude: batch.centerPoint[1] }
+          ) / 1000; // in km
+          
+          // Convert distance to a score (closer = higher score)
+          proximityScore = Math.max(0, 10 - distance); // 0-10 scale, 10 being closest
+        }
+        
+        // Calculate capacity match score (closer match = higher score)
+        const capacityScore = 5 - Math.abs(
+          transportRanking[volunteer.transportCapacity || "small"] - 
+          transportRanking[batch.requiredCapacity]
+        );
+        
+        // Combined score (proximity + capacity match)
+        const totalScore = proximityScore + capacityScore;
+        
+        return {
+          volunteer,
+          score: totalScore
+        };
+      });
+      
+      // Sort by score (highest first)
+      volunteersWithScores.sort((a, b) => b.score - a.score);
+      
+      // Assign the highest-scoring volunteer
+      if (volunteersWithScores.length > 0) {
+        const bestMatch = volunteersWithScores[0].volunteer;
+        
+        // Update batch with the assigned volunteer
+        batch.assignedVolunteer = bestMatch._id;
+        batch.status = "requested";
+        batch.assignmentStatus = "pending";
+        batch.assignmentRequestedAt = new Date();
+        await batch.save();
+        
+        // Update food items status
+        await FoodItem.updateMany(
+          { _id: { $in: batch.items } },
+          {
+            assignedVolunteer: bestMatch._id,
+            status: "requested",
+            assignmentStatus: "pending"
+          }
+        );
+        
+        // Create notification for the volunteer
+        const notification = await Notification.create({
+          user_id: bestMatch._id,
+          message: `You have been automatically assigned to a batch with ${batch.items.length} food items for pickup.`,
+          type: "assignment-request",
+          read: false
+        });
+        
+        // Send real-time notification if socket available
+        if (req.io) {
+          req.io.to(bestMatch._id.toString()).emit("new-notification", {
+            message: `New batch auto-assignment: ${batch.items.length} items`,
+            _id: notification._id,
+            type: "assignment-request",
+            created: notification.createdAt
+          });
+        }
+        
+        // Mark volunteer as assigned to prevent double-booking
+        assignedVolunteers.add(bestMatch._id.toString());
+        
+        assignmentResults.push({
+          batchId: batch._id,
+          assigned: true,
+          volunteerId: bestMatch._id,
+          volunteerName: bestMatch.fullName
+        });
+      } else {
+        assignmentResults.push({
+          batchId: batch._id,
+          assigned: false,
+          reason: "No suitable volunteer found"
+        });
+      }
+    }
+    
+    // Return results summary
+    const successCount = assignmentResults.filter(r => r.assigned).length;
+    
+    res.status(200).json({
+      message: `Auto-assigned ${successCount} out of ${batches.length} batches`,
+      assignedCount: successCount,
+      totalBatches: batches.length,
+      results: assignmentResults
+    });
+    
+  } catch (error) {
+    console.error("Auto-assignment error:", error);
+    res.status(500).json({ 
+      message: "Error during auto-assignment", 
+      error: error.message 
+    });
   }
 };
 
@@ -215,6 +415,7 @@ exports.assignVolunteerToBatch = async (req, res) => {
     batch.assignedVolunteer = volunteerId;
     batch.status = "requested";
     batch.assignmentStatus = "pending";
+    batch.assignmentRequestedAt = new Date();
     await batch.save();
     console.log(
       `[BATCH ASSIGN] Batch saved with assignedVolunteer=${volunteerId}, status=requested, assignmentStatus=pending`
@@ -540,7 +741,7 @@ exports.batchRouteData = async (req,res) => {
   } catch (err) {
     return res.status(500).json({ message: "Failed to load batch route data", error: err.message });
   }
-}
+};
 
 
 

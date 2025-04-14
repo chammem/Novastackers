@@ -126,4 +126,5 @@ donationRouter.patch(
 //   batchController.calculateBatchRoute
 // );
 donationRouter.get("/batch-route-data/:batchId",batchController.batchRouteData);
+donationRouter.post("/campaigns/:campaignId/auto-assign", batchController.autoAssignVolunteers);
 module.exports = donationRouter;

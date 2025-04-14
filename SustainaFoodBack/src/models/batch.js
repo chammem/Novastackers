@@ -42,7 +42,11 @@ const batchSchema = new mongoose.Schema({
   createdAt: { 
     type: Date, 
     default: Date.now 
-  }
+  },
+  assignmentRequestedAt: { 
+    type: Date,
+    default: null 
+  },
 });
 
 module.exports = mongoose.model("Batch", batchSchema);
