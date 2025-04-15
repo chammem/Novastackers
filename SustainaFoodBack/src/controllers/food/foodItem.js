@@ -1,6 +1,8 @@
 const FoodItem = require("../../models/foodItem");
 const User = require("../../models/userModel");
 const Notification = require("../../models/notification");
+const Batch = require('../../models/batch');
+const batchController = require('../batchController');
 
 exports.addFoodItem = async (req,res) => {
 
@@ -143,7 +145,10 @@ exports.startPickup = async (req, res) => {
     const { code } = req.body;
   
     try {
-      const food = await FoodItem.findById(foodId).populate("buisiness_id assignedVolunteer").populate("donationId");;
+      const food = await FoodItem.findById(foodId)
+        .populate("buisiness_id assignedVolunteer")
+        .populate("donationId");
+        
       if (!food) return res.status(404).json({ message: "Food item not found" });
   
       if (food.deliveryCode !== code) {
@@ -154,6 +159,17 @@ exports.startPickup = async (req, res) => {
       food.status = "delivered";
       await food.save();
   
+      // Check if food item is part of a batch and update batch status if needed
+      const batch = await Batch.findOne({
+        items: food._id
+      });
+      
+      if (batch) {
+        // Use the correct path to batchController
+        const batchController = require('../batchController');
+        await batchController.checkAndUpdateBatchStatus(batch._id);
+      }
+  
       // Notify NGO
       const notification = await Notification.create({
         user_id: food.donationId.ngoId,
@@ -162,7 +178,11 @@ exports.startPickup = async (req, res) => {
         read: false
       });
   
-      req.io.to(food.buisiness_id._id.toString()).emit("new-notification", notification);
+      // Check if socket is available before emitting
+      if (req.io) {
+        // Send notification to NGO instead of business
+        req.io.to(food.donationId.ngoId.toString()).emit("new-notification", notification);
+      }
   
       res.status(200).json({ message: "Delivery confirmed", food });
     } catch (error) {
@@ -170,8 +190,8 @@ exports.startPickup = async (req, res) => {
       res.status(500).json({ message: "Error confirming delivery", error: error.message });
     }
   };
-  
-  
-  
-  
+
+
+
+
 

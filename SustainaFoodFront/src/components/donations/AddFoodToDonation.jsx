@@ -1,20 +1,26 @@
-import React, { useState } from 'react';
-import axiosInstance from '../../config/axiosInstance';
-import { toast } from 'react-toastify';
+import React, { useState } from "react";
+import axiosInstance from "../../config/axiosInstance";
+import { toast } from "react-toastify";
 
-const AddFoodToDonation = ({ donationId, businessId, onClose, onFoodAdded }) => {
+const AddFoodToDonation = ({
+  donationId,
+  businessId,
+  onClose,
+  onFoodAdded,
+}) => {
   const [formData, setFormData] = useState({
-    name: '',
-    quantity: '',
-    category: '',
-    buisiness_id: businessId // Initialize with prop
+    name: "",
+    quantity: "",
+    category: "",
+    buisiness_id: businessId, // Initialize with prop
+    size: "", // Added size field
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -28,12 +34,12 @@ const AddFoodToDonation = ({ donationId, businessId, onClose, onFoodAdded }) => 
         formData
       );
 
-      toast.success('Food item added successfully!');
+      toast.success("Food item added successfully!");
       onFoodAdded(response.data);
       onClose();
     } catch (error) {
-      console.error('Error adding food:', error);
-      toast.error(error.response?.data?.message || 'Failed to add food item');
+      console.error("Error adding food:", error);
+      toast.error(error.response?.data?.message || "Failed to add food item");
     } finally {
       setIsSubmitting(false);
     }
@@ -43,7 +49,7 @@ const AddFoodToDonation = ({ donationId, businessId, onClose, onFoodAdded }) => 
     <div className="modal modal-open">
       <div className="modal-box">
         <h3 className="font-bold text-lg mb-4">Add Food Item</h3>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-control">
             <label className="label">
@@ -107,6 +113,32 @@ const AddFoodToDonation = ({ donationId, businessId, onClose, onFoodAdded }) => 
             />
           </div>
 
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Size/Volume</span>
+            </label>
+            <select
+              className="select select-bordered w-full"
+              value={formData.size}
+              onChange={(e) =>
+                setFormData({ ...formData, size: e.target.value })
+              }
+              required
+            >
+              <option value="" disabled>
+                Select size
+              </option>
+              <option value="small">Small (fits in backpack)</option>
+              <option value="medium">Medium (requires car)</option>
+              <option value="large">Large (requires van/truck)</option>
+            </select>
+            <label className="label">
+              <span className="label-text-alt">
+                Select based on volume and weight
+              </span>
+            </label>
+          </div>
+
           <div className="modal-action">
             <button
               type="button"
@@ -118,10 +150,10 @@ const AddFoodToDonation = ({ donationId, businessId, onClose, onFoodAdded }) => 
             </button>
             <button
               type="submit"
-              className={`btn btn-primary ${isSubmitting ? 'loading' : ''}`}
+              className={`btn btn-primary ${isSubmitting ? "loading" : ""}`}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Adding...' : 'Add Food'}
+              {isSubmitting ? "Adding..." : "Add Food"}
             </button>
           </div>
         </form>
@@ -131,3 +163,5 @@ const AddFoodToDonation = ({ donationId, businessId, onClose, onFoodAdded }) => 
 };
 
 export default AddFoodToDonation;
+
+
