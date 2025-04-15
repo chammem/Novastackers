@@ -27,25 +27,40 @@ function Connect() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+  
     try {
       const response = await axiosInstance.post("/login", { email, password });
+  
       if (response.data.success) {
-        await login(response.data.data);
+        const user = response.data.user; // <- accès direct au user
+        await login(user);
         toast.success("Login successful!");
-        setTimeout(() => {
+        console.log("Réponse complète :", response.data);
+        const role = user?.role;
+        console.log("Role reçu :", role);
+  
+        if (role === "admin") {
+          const redirectPath = location.state?.from || "/admin/dashboard";
+          navigate(redirectPath, { replace: true });
+        } else {
           navigate("/", { replace: true });
-        }, 100);
+        }
       } else {
-        setError(response.data.message || "Invalid credentials");
+        const errorMsg = response.data.message || "Invalid credentials";
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
-      toast.error("Login failed. Please try again.");
+      const errorMsg =
+        err.response?.data?.message || "Login failed. Please try again.";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }
   };
-
+  
+  
   return (
     <motion.div
       initial={{ opacity: 0 }}

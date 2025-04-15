@@ -44,58 +44,59 @@ import Admin from './components/Admin.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import AdminUsersTab from './components/AdminUserTab.jsx'
 import AdminDonationsList from './components/AdminDonationsList.jsx'
+import { Navigate } from 'react-router-dom';
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    errorElement: <Error404 />, 
+    errorElement: <Error404 />,
     children: [
-      
+      // Routes publiques
       { index: true, element: <Home /> },
-      { path: "/login", element: <Connect /> },
+      { path: "login", element: <Connect /> },
       { path: "register/:role", element: <UserForm /> },
       { path: "activateAccount", element: <ActivateAccount /> },
-      { path: "forgot-password", element: <ForgotPasswordFlow /> }, 
+      { path: "forgot-password", element: <ForgotPasswordFlow /> },
       { path: "role", element: <RoleChoice /> },
       { path: "verify", element: <VerifyAccount /> },
-      {path:"/donationForm",element:<CreateDonationForm/>},
-      {path:"/donations",element:<DonationsList/>},
-      {path:"/addfoodtodonation",element:<AddFoodToDonation/>},
-      {path:"/donations/:id",element:<CharityEventDetails/>},
-      {path:"/test",element:<TestCharityPage/>},
-      {path:"/my-campaigns" ,element:<DonationListNgo/>},
-      {path:"/my-campaigns/:id",element:<ViewCampaignProgress/>},
-      {path:"/volunteer",element:<VolunteerDashboard/>},
-      {path:"/notifications",element:<NotificationsPage/>},
-      { path: "/ngo-profile", element: <NGOProfileUpdate /> },
-      {path:"/my-donations",element:<MyFoodDonations/>},
-      {path:"/test-map",element:<MapView/>},
-      {path:"/adress",element:<AddressAutoComplete/>},
-      {path:"/route/:foodId",element:<RouteDetailsPage/>},
-      {path:"/requested-assignments",element:<RequestedAssignments/>},
-      {path:"/admin/Food" ,element:<AdminFoodTab/>},
-      { path: "/admin/roles-verification", element: <AdminVerificationComponent /> },
-      {path:"/adminOpen",element:<Admin/>},
-      {path:"/admin/users",element:<AdminDashboard />},
-      {path:"/admin/dashboard",element:<AdminDashboard/>},
-      {path:"/admin/campaigns",element:<AdminDonationsList/>},
+      { path: "donationForm", element: <CreateDonationForm /> },
+      { path: "donations", element: <DonationsList /> },
+      { path: "addfoodtodonation", element: <AddFoodToDonation /> },
+      { path: "donations/:id", element: <CharityEventDetails /> },
+      { path: "test", element: <TestCharityPage /> },
+      { path: "my-campaigns", element: <DonationListNgo /> },
+      { path: "my-campaigns/:id", element: <ViewCampaignProgress /> },
+      { path: "volunteer", element: <VolunteerDashboard /> },
+      { path: "notifications", element: <NotificationsPage /> },
+      { path: "ngo-profile", element: <NGOProfileUpdate /> },
+      { path: "my-donations", element: <MyFoodDonations /> },
+      { path: "test-map", element: <MapView /> },
+      { path: "adress", element: <AddressAutoComplete /> },
+      { path: "route/:foodId", element: <RouteDetailsPage /> },
+      { path: "requested-assignments", element: <RequestedAssignments /> },
 
-
-
+      // Routes protégées normales
       {
         element: <ProtectedRoute />,
         children: [
           { path: "account", element: <Account /> },
-          { path: "profile", element: <Profile /> },
-          { path: "admin", element: <AdminDashboard /> }
+          { path: "profile", element: <Profile /> }
+          // Retiré 'admin' de ici car il doit être dans AdminProtectedRoute
         ]
       },
 
-      
+      // Routes admin - structure corrigée
       {
+        path: "admin", // Préfixe commun pour toutes les routes admin
         element: <AdminProtectedRoute />,
         children: [
-         // { path: "admin", element: <AdminDashboard /> }
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          { path: "dashboard", element: <AdminDashboard /> },
+          { path: "users", element: <AdminDashboard /> },
+          { path: "Food", element: <AdminFoodTab /> },
+          { path: "roles-verification", element: <AdminVerificationComponent /> },
+          { path: "campaigns", element: <AdminDonationsList /> },
+          { path: "adminOpen", element: <Admin /> }
         ]
       }
     ]
@@ -105,11 +106,10 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-    <NotificationProvider>
-    <ToastContainer/>
-
-    <RouterProvider router={router} /> {/* Fix: router1 => router */}
-    </NotificationProvider>
+      <NotificationProvider>
+        <ToastContainer />
+        <RouterProvider router={router} />
+      </NotificationProvider>
     </AuthProvider>
   </StrictMode>
 );
