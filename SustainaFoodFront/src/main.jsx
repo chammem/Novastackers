@@ -45,6 +45,9 @@ import Dashboard from './components/Dashboard.jsx'
 import AdminUsersTab from './components/AdminUserTab.jsx'
 import AdminDonationsList from './components/AdminDonationsList.jsx'
 import { Navigate } from 'react-router-dom';
+import VolunteerAvailability from './components/VolunteerAvailability.jsx'
+import BatchRouteDetails from './components/donations/BatchRouteDetails.jsx';
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -59,23 +62,26 @@ const router = createBrowserRouter([
       { path: "forgot-password", element: <ForgotPasswordFlow /> },
       { path: "role", element: <RoleChoice /> },
       { path: "verify", element: <VerifyAccount /> },
-      { path: "donationForm", element: <CreateDonationForm /> },
-      { path: "donations", element: <DonationsList /> },
-      { path: "addfoodtodonation", element: <AddFoodToDonation /> },
-      { path: "donations/:id", element: <CharityEventDetails /> },
-      { path: "test", element: <TestCharityPage /> },
-      { path: "my-campaigns", element: <DonationListNgo /> },
-      { path: "my-campaigns/:id", element: <ViewCampaignProgress /> },
-      { path: "volunteer", element: <VolunteerDashboard /> },
-      { path: "notifications", element: <NotificationsPage /> },
-      { path: "ngo-profile", element: <NGOProfileUpdate /> },
-      { path: "my-donations", element: <MyFoodDonations /> },
-      { path: "test-map", element: <MapView /> },
-      { path: "adress", element: <AddressAutoComplete /> },
-      { path: "route/:foodId", element: <RouteDetailsPage /> },
-      { path: "requested-assignments", element: <RequestedAssignments /> },
 
       // Routes protégées normales
+      {path:"/donationForm",element:<CreateDonationForm/>},
+      {path:"/donations",element:<DonationsList/>},
+      {path:"/addfoodtodonation",element:<AddFoodToDonation/>},
+      {path:"/donations/:id",element:<CharityEventDetails/>},
+      {path:"/test",element:<TestCharityPage/>},
+      {path:"/my-campaigns" ,element:<DonationListNgo/>},
+      {path:"/my-campaigns/:id",element:<ViewCampaignProgress/>},
+      {path:"/volunteer",element:<VolunteerDashboard/>},
+      {path:"/notifications",element:<NotificationsPage/>},
+      { path: "/ngo-profile", element: <NGOProfileUpdate /> },
+      {path:"/my-donations",element:<MyFoodDonations/>},
+      {path:"/test-map/:batchId",element:<MapView/>},
+      {path:"/adress",element:<AddressAutoComplete/>},
+      {path:"/route/:foodId",element:<RouteDetailsPage/>},
+      {path:"/requested-assignments",element:<RequestedAssignments/>},
+      {path:"/volunteer-availability",element:<VolunteerAvailability/>},
+      {path:"/batch/:batchId/route", element: <BatchRouteDetails />},
+      
       {
         element: <ProtectedRoute />,
         children: [
