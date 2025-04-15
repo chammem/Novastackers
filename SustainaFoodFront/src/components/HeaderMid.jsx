@@ -136,9 +136,14 @@ function HeaderMid() {
                     </>
                   )}
                   {user?.role === "volunteer" && (
+                    <>
                     <li>
                       <NavLink to="/volunteer">Volunteer Dashboard</NavLink>
                     </li>
+                     <li>
+                     <NavLink to="/volunteer-availability">Manage Availability</NavLink>
+                   </li>
+                   </>
                   )}
                   {user?.role === "restaurant" && (
                     <li>
@@ -391,15 +396,26 @@ function HeaderMid() {
                 </>
               )}
               {user?.role === "volunteer" && (
-                <li>
-                  <NavLink
-                    to="/volunteer"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={({ isActive }) => (isActive ? "active" : "")}
-                  >
-                    Volunteer Dashboard
-                  </NavLink>
-                </li>
+                  <>
+                  <li>
+                    <NavLink
+                      to="/volunteer"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      Volunteer Dashboard
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/volunteer/availability"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      Manage Availability
+                    </NavLink>
+                  </li>
+                </>
               )}
               {user?.role === "restaurant" && (
                 <li>
