@@ -42,57 +42,7 @@ const Profile = () => {
     formState: { errors: allergiesPreferencesErrors },
   } = useForm();
 
-  const [showModal, setShowModal] = useState(false);
-  const [modalAction, setModalAction] = useState(null);
-
-  const handleShowModal = (action) => {
-    setModalAction(action);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => setShowModal(false);
-
-  const handleConfirmAction = () => {
-    if (modalAction === 'updateProfile') {
-      handleSubmitProfile(onSubmitProfile)();
-    } else if (modalAction === 'changePassword') {
-      handleSubmitPassword(onSubmitPassword)();
-    }
-    handleCloseModal();
-  };
-
-  const onSubmitProfile = async (data) => {
-    try {
-      const response = await axiosInstance.put(`/update-profile/${user._id}`, data);
-      toast.success("Profile updated successfully!");
-      setUser(response.data.data);
-    } catch (error) {
-      toast.error("Failed to update profile.");
-    }
-  };
-
-  const onSubmitPassword = async (data) => {
-    console.log("Data sent to backend:", data);
-    // Vérifie ici que data.currentPassword et data.newPassword existent
-  
-    try {
-      await axiosInstance.put(`/change-password/${user._id}`, data);
-      toast.success("Password changed successfully!");
-    } catch (error) {
-      console.error("Error changing password:", error);
-      toast.error(error.response?.data?.message || error.message);
-    }
-  };
-  
-
-  // Toggle password visibility
-  const togglePasswordVisibility = (field) => {
-    setShowPassword((prevState) => ({
-      ...prevState,
-      [field]: !prevState[field],
-    }));
-  };
-
+  // Fetch user details
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
@@ -184,7 +134,6 @@ const Profile = () => {
     );
   }
 
-  
   return (
     <>
       <HeaderMid />
