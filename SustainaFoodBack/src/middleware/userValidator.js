@@ -14,7 +14,7 @@ const userValidatorSchema = Joi.object({
     "any.only": "Confirm password must match password",
   }),
   role: Joi.string()
-    .valid("user", "driver", "restaurant", "supermarket", "charity")
+    .valid("user", "driver", "restaurant", "supermarket", "charity", "admin")
     .required(),
   fullName: Joi.string().trim().when("role",{
     is : Joi.valid('driver','user'),
