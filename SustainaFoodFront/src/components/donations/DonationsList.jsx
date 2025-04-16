@@ -18,6 +18,7 @@ const DonationsList = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [selectedDonationId, setSelectedDonationId] = useState(null);
   const [businessId, setBusinessId] = useState("");
+  const [volunteeredCampaigns, setVolunteeredCampaigns] = useState([]);
   const navigate = useNavigate();
   const [user, setUser] = useState();
   // Debounced search function
@@ -60,6 +61,8 @@ const DonationsList = () => {
         setBusinessId(userResponse.data?.data?._id || "");
         setUserRole(userResponse.data?.data?.role || "");
         setUser(userResponse.data?.data);
+        
+        // Get donations data
         const donationsResponse = await axiosInstance.get(
           "/donations/get-donations-by-ngo",
           {
@@ -68,6 +71,13 @@ const DonationsList = () => {
         );
         setDonations(donationsResponse.data);
         setFilteredDonations(donationsResponse.data);
+        
+        // If user is a volunteer, fetch campaigns they've volunteered for
+        if (userResponse.data?.data?.role === "volunteer") {
+          const userId = userResponse.data?.data?._id;
+          const volunteeredResponse = await axiosInstance.get(`/volunteer/${userId}/campaigns`);
+          setVolunteeredCampaigns(volunteeredResponse.data.map(campaign => campaign._id));
+        }
       } catch (error) {
         toast.error("Failed to load initial data");
       } finally {
@@ -84,6 +94,9 @@ const DonationsList = () => {
         userId: user._id,
       });
       toast.success("You've volunteered for this campaign!");
+      
+      // Add this campaign to volunteeredCampaigns state
+      setVolunteeredCampaigns(prev => [...prev, donationId]);
     } catch (error) {
       toast.error("Failed to volunteer for this campaign.");
       console.error(error);
@@ -276,11 +289,19 @@ const DonationsList = () => {
                         )}
                         {userRole === "volunteer" && (
                           <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            className="btn btn-success btn-sm"
+                            whileTap={{ scale: volunteeredCampaigns.includes(donation._id) ? 1 : 0.95 }}
+                            className={`btn btn-sm ${
+                              volunteeredCampaigns.includes(donation._id)
+                                ? "btn-disabled bg-success/20 text-success border-success/30"
+                                : "btn-success"
+                            }`}
                             onClick={() => handleVolunteer(donation._id)}
+                            disabled={volunteeredCampaigns.includes(donation._id)}
                           >
-                            <FiUsers className="mr-1" /> Volunteer
+                            <FiUsers className="mr-1" />
+                            {volunteeredCampaigns.includes(donation._id)
+                              ? "Already Volunteered"
+                              : "Volunteer"}
                           </motion.button>
                         )}
                       </div>

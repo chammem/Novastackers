@@ -1,45 +1,160 @@
-import React from 'react'
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  FiFacebook,
+  FiInstagram,
+  FiTwitter,
+  FiLinkedin,
+  FiMail,
+  FiPhone,
+  FiMapPin,
+  FiHeart,
+} from "react-icons/fi";
 
 function Footer() {
   return (
-    <footer className="bg-white shadow-md py-6">
-    <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center px-6">
-      
-      {/* Left: Brand */}
-      <div className="text-center md:text-left mb-4 md:mb-0">
-        <h2 className="text-2xl font-bold text-gray-900">SustainaFood</h2>
-        <p className="text-gray-600 text-sm">Bringing innovation to your fingertips.</p>
-      </div>
-  
-      {/* Center: Navigation Links */}
-      <nav className="flex space-x-6 text-gray-700">
-        <a href="#" className="hover:text-gray-900">Home</a>
-        <a href="#" className="hover:text-gray-900">Features</a>
-        <a href="#" className="hover:text-gray-900">About</a>
-        <a href="#" className="hover:text-gray-900">Contact</a>
-      </nav>
-  
-      {/* Right: Social Media Icons */}
-      <div className="flex space-x-4 mt-4 md:mt-10">
-        <a href="#" className="text-gray-700 hover:text-gray-900">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/6/6f/Facebook_Logo_2023.png" alt="Facebook" className="h-6 w-6" />
-        </a>
-        <a href="#" className="text-gray-700 hover:text-gray-900">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/Instagram_logo_2016.svg" alt="Instagram" className="h-6 w-6" />
-        </a>
-        <a href="#" className="text-gray-700 hover:text-gray-900">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/6/60/Twitter_Logo_as_of_2021.svg" alt="Twitter" className="h-6 w-6" />
-        </a>
-      </div>
-    </div>
-  
-    {/* Bottom Section */}
-    <div className="text-center text-gray-500 text-sm mt-4">
-      © {new Date().getFullYear()} MyApp. All rights reserved.
-    </div>
-  </footer>
+    <footer className="bg-base-100 footer-wrapper shadow-inner">
+      <div className="max-w-6xl mx-auto px-6 pt-10 pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Brand Section */}
+          <div className="md:col-span-1">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg">
+                S
+              </div>
+              <h2 className="text-2xl font-bold text-primary">SustainaFood</h2>
+            </div>
+            <p className="text-base-content/70 mt-2">
+              Connecting surplus food with those who need it most, reducing
+              waste while serving communities.
+            </p>
+            <div className="flex space-x-3 mt-4">
+              <a
+                href="#"
+                aria-label="Facebook"
+                className="btn btn-circle btn-sm btn-ghost"
+              >
+                <FiFacebook className="w-5 h-5" />
+              </a>
+              <a
+                href="#"
+                aria-label="Instagram"
+                className="btn btn-circle btn-sm btn-ghost"
+              >
+                <FiInstagram className="w-5 h-5" />
+              </a>
+              <a
+                href="#"
+                aria-label="Twitter"
+                className="btn btn-circle btn-sm btn-ghost"
+              >
+                <FiTwitter className="w-5 h-5" />
+              </a>
+              <a
+                href="#"
+                aria-label="LinkedIn"
+                className="btn btn-circle btn-sm btn-ghost"
+              >
+                <FiLinkedin className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
 
-  )
+          {/* Quick Links */}
+          <div className="md:col-span-1">
+            <h3 className="footer-title mb-4">Quick Links</h3>
+            <nav className="flex flex-col space-y-2">
+              <Link to="/" className="link link-hover">
+                Home
+              </Link>
+              <Link to="/features" className="link link-hover">
+                Features
+              </Link>
+              <Link to="/about" className="link link-hover">
+                About Us
+              </Link>
+              <Link to="/contact" className="link link-hover">
+                Contact
+              </Link>
+              <Link to="/login" className="link link-hover">
+                Login
+              </Link>
+              <Link to="/role" className="link link-hover">
+                Sign Up
+              </Link>
+            </nav>
+          </div>
+
+          {/* Contact */}
+          <div className="md:col-span-1">
+            <h3 className="footer-title mb-4">Contact Us</h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <FiMail className="text-primary" />
+                <span>info@sustainafood.com</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <FiPhone className="text-primary" />
+                <span>+1 (555) 123-4567</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <FiMapPin className="text-primary mt-1" />
+                <span>
+                  123 Green Street, Eco City,
+                  <br />
+                  Sustainability State, 12345
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Newsletter */}
+          <div className="md:col-span-1">
+            <h3 className="footer-title mb-4">Subscribe to Newsletter</h3>
+            <div className="form-control w-full">
+              <div className="relative">
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  className="input input-bordered w-full pr-16"
+                />
+                <button className="btn btn-primary absolute top-0 right-0 rounded-l-none">
+                  Subscribe
+                </button>
+              </div>
+              <label className="label">
+                <span className="label-text-alt text-base-content/70">
+                  Get updates on our latest initiatives
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="divider mt-8"></div>
+
+        {/* Bottom Section */}
+        <div className="flex flex-col md:flex-row justify-between items-center text-base-content/70 text-sm">
+          <div>
+            © {new Date().getFullYear()} SustainaFood. All rights reserved.
+          </div>
+          <div className="mt-4 md:mt-0 flex gap-4">
+            <Link to="/privacy" className="link link-hover">
+              Privacy Policy
+            </Link>
+            <Link to="/terms" className="link link-hover">
+              Terms of Service
+            </Link>
+          </div>
+          <div className="mt-4 md:mt-0 flex items-center gap-1">
+            Made with <FiHeart className="text-error" /> for a sustainable
+            future
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
 }
 
-export default Footer
+export default Footer;

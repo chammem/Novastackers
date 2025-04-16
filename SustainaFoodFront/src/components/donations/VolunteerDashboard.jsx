@@ -3,16 +3,16 @@ import axiosInstance from "../../config/axiosInstance";
 import { toast } from "react-toastify";
 import HeaderMid from "../HeaderMid";
 import Footer from "../Footer";
-import { useNavigate, Link } from "react-router-dom";
+import IndividualItemsList from "./IndividualItemsList";
+import BatchesList from "./BatchesList";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiPackage,
   FiTruck,
   FiCheck,
-  FiMap,
   FiSearch,
   FiFilter,
-  FiClock,
   FiRefreshCw,
 } from "react-icons/fi";
 
@@ -37,6 +37,7 @@ const VolunteerDashboard = () => {
   const [assignedBatches, setAssignedBatches] = useState([]);
   const [batchesLoading, setBatchesLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("individual"); // "individual" or "batches"
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -209,18 +210,21 @@ const VolunteerDashboard = () => {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "assigned":
-        return <FiPackage className="text-info" />;
-      case "picked-up":
-        return <FiTruck className="text-warning" />;
-      case "delivered":
-        return <FiCheck className="text-success" />;
-      default:
-        return <FiClock className="text-neutral" />;
-    }
+  const countItemsByStatus = (items, status) => {
+    return items?.filter((item) => item.status === status).length || 0;
   };
+
+  if (loading && !user) {
+    return (
+      <>
+        <HeaderMid />
+        <div className="min-h-screen flex justify-center items-center">
+          <span className="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -424,385 +428,22 @@ const VolunteerDashboard = () => {
         {/* Content */}
         <div className="max-w-6xl mx-auto px-4 py-8">
           {activeTab === "individual" ? (
-            filteredFoods.length > 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4 }}
-              >
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {filteredFoods.map((food, index) => (
-                    <motion.div
-                      key={food._id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05, duration: 0.3 }}
-                    >
-                      <div className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow">
-                        <div className="card-body p-5">
-                          <div className="flex justify-between">
-                            <h3 className="card-title text-lg">
-                              {food.name || "Unnamed Donation"}
-                            </h3>
-                            <div
-                              className={`badge badge-outline badge-${getStatusColor(
-                                food.status
-                              )}`}
-                            >
-                              {food.status}
-                            </div>
-                          </div>
-
-                          <div className="mt-2 space-y-2">
-                            <div className="text-sm flex gap-1">
-                              <span className="font-medium text-neutral">
-                                Category:
-                              </span>
-                              {food.category || "Uncategorized"}
-                            </div>
-
-                            <div className="text-sm flex gap-1">
-                              <span className="font-medium text-neutral">
-                                Quantity:
-                              </span>
-                              {food.quantity || "N/A"}
-                            </div>
-
-                            {food.restaurantId && (
-                              <div className="text-sm flex gap-1">
-                                <span className="font-medium text-neutral">
-                                  From:
-                                </span>
-                                {food.restaurantName || "Restaurant"}
-                              </div>
-                            )}
-
-                            {food.charityId && (
-                              <div className="text-sm flex gap-1">
-                                <span className="font-medium text-neutral">
-                                  To:
-                                </span>
-                                {food.charityName || "Charity"}
-                              </div>
-                            )}
-
-                            {food.volunteerPickedUpAt && (
-                              <div className="text-sm text-success">
-                                <span className="font-medium text-neutral">
-                                  Picked up:
-                                </span>
-                                {new Date(
-                                  food.volunteerPickedUpAt
-                                ).toLocaleString()}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="divider my-2"></div>
-
-                          <div className="card-actions justify-end gap-2">
-                            {!food.volunteerPickedUpAt &&
-                              food.status === "assigned" && (
-                                <motion.button
-                                  whileTap={{ scale: 0.95 }}
-                                  className="btn btn-sm btn-primary gap-1"
-                                  onClick={() =>
-                                    handleStartAction(food, "pickup")
-                                  }
-                                  disabled={inProgress}
-                                >
-                                  <FiTruck className="h-4 w-4" /> Start Pickup
-                                </motion.button>
-                              )}
-
-                            {food.status === "picked-up" && (
-                              <motion.button
-                                whileTap={{ scale: 0.95 }}
-                                className="btn btn-sm btn-success gap-1"
-                                onClick={() =>
-                                  handleStartAction(food, "delivery")
-                                }
-                                disabled={inProgress}
-                              >
-                                <FiCheck className="h-4 w-4" /> Deliver
-                              </motion.button>
-                            )}
-
-                            <motion.button
-                              whileTap={{ scale: 0.95 }}
-                              className="btn btn-sm btn-outline gap-1"
-                              onClick={() => navigate(`/route/${food._id}`)}
-                            >
-                              <FiMap className="h-4 w-4" /> Route
-                            </motion.button>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {filteredFoods.length > 0 && (
-                  <div className="text-center mt-8 text-base-content/70">
-                    Showing {filteredFoods.length} of {assignedFoods.length}{" "}
-                    assignments
-                  </div>
-                )}
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="card bg-base-100 shadow-lg mx-auto max-w-md"
-              >
-                <div className="card-body items-center text-center">
-                  <div className="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center mb-4">
-                    <FiPackage size={28} className="text-base-content/50" />
-                  </div>
-                  <h2 className="card-title">No Assignments Found</h2>
-                  <p className="text-base-content/70 mb-4">
-                    Try changing your filter settings or check back later
-                  </p>
-                  <div className="card-actions">
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        setSearchTerm("");
-                        setFilterStatus("all");
-                        refreshFoodList();
-                      }}
-                      className="btn btn-primary"
-                    >
-                      Reset Filters
-                    </motion.button>
-                  </div>
-                </div>
-              </motion.div>
-            )
+            <IndividualItemsList
+              filteredFoods={filteredFoods}
+              assignedFoods={assignedFoods}
+              handleStartAction={handleStartAction}
+              inProgress={inProgress}
+              getStatusColor={getStatusColor}
+            />
           ) : (
-            <div className="max-w-6xl mx-auto px-4">
-              {batchesLoading ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <span className="loading loading-spinner loading-lg text-primary mb-4"></span>
-                  <p className="text-lg font-medium">
-                    Loading your batch assignments...
-                  </p>
-                </div>
-              ) : assignedBatches.length > 0 ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1">
-                    {assignedBatches.map((batch, index) => (
-                      <motion.div
-                        key={batch._id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05, duration: 0.3 }}
-                      >
-                        <div className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow">
-                          <div className="card-body p-5">
-                            <div className="flex justify-between items-center">
-                              <h3 className="card-title text-lg">
-                                Batch #{index + 1} - {batch.items?.length || 0}{" "}
-                                Items
-                              </h3>
-                              <div
-                                className={`badge badge-outline badge-${
-                                  batch.status === "assigned"
-                                    ? "info"
-                                    : batch.status === "requested"
-                                    ? "warning"
-                                    : batch.status === "completed"
-                                    ? "success"
-                                    : batch.status === "in-progress"
-                                    ? "primary"
-                                    : "neutral"
-                                }`}
-                              >
-                                {batch.status}
-                              </div>
-                            </div>
-
-                            {batch.status === "completed" && (
-                              <div className="flex items-center mt-2 text-success text-sm">
-                                <FiCheck className="mr-1" /> All items
-                                successfully delivered!
-                              </div>
-                            )}
-
-                            <div className="mt-4 mb-2">
-                              <div className="font-semibold mb-2">
-                                Pickup Locations:
-                              </div>
-                              <div className="space-y-4 max-h-80 overflow-y-auto p-3 bg-base-200 rounded-md">
-                                {batch.items?.map((item, i) => (
-                                  <div
-                                    key={item._id}
-                                    className="bg-base-100 rounded-md p-3 shadow-sm"
-                                  >
-                                    <div className="flex gap-3 items-start">
-                                      <span className="bg-primary text-primary-content w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0">
-                                        {i + 1}
-                                      </span>
-                                      <div className="flex-1">
-                                        <div className="flex justify-between">
-                                          <div className="font-medium">
-                                            {item.name || "Item"}
-                                          </div>
-                                          <div
-                                            className={`badge badge-outline badge-${getStatusColor(
-                                              item.status || "assigned"
-                                            )}`}
-                                          >
-                                            {item.status || "assigned"}
-                                          </div>
-                                        </div>
-                                        <div className="text-xs mt-1">
-                                          {item.buisiness_id?.address ||
-                                            "No address"}
-                                        </div>
-
-                                        {/* Item category and quantity */}
-                                        <div className="grid grid-cols-2 gap-1 mt-2 text-xs">
-                                          <div>
-                                            <span className="font-medium">
-                                              Category:{" "}
-                                            </span>
-                                            {item.category || "Uncategorized"}
-                                          </div>
-                                          <div>
-                                            <span className="font-medium">
-                                              Quantity:{" "}
-                                            </span>
-                                            {item.quantity || "N/A"}
-                                          </div>
-                                        </div>
-
-                                        {/* Action buttons */}
-                                        <div className="flex justify-end gap-2 mt-3">
-                                          {!item.volunteerPickedUpAt &&
-                                            item.status === "assigned" && (
-                                              <motion.button
-                                                whileTap={{ scale: 0.95 }}
-                                                className="btn btn-xs btn-primary gap-1"
-                                                onClick={() =>
-                                                  handleStartAction(
-                                                    item,
-                                                    "pickup"
-                                                  )
-                                                }
-                                                disabled={inProgress}
-                                              >
-                                                <FiTruck className="h-3 w-3" />{" "}
-                                                Start Pickup
-                                              </motion.button>
-                                            )}
-
-                                          {item.status === "picked-up" && (
-                                            <motion.button
-                                              whileTap={{ scale: 0.95 }}
-                                              className="btn btn-xs btn-success gap-1"
-                                              onClick={() =>
-                                                handleStartAction(
-                                                  item,
-                                                  "delivery"
-                                                )
-                                              }
-                                              disabled={inProgress}
-                                            >
-                                              <FiCheck className="h-3 w-3" />{" "}
-                                              Deliver
-                                            </motion.button>
-                                          )}
-
-                                          <motion.button
-                                            whileTap={{ scale: 0.95 }}
-                                            className="btn btn-xs btn-outline gap-1"
-                                            onClick={() =>
-                                              navigate(`/route/${item._id}`)
-                                            }
-                                          >
-                                            <FiMap className="h-3 w-3" /> Route
-                                          </motion.button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-
-                            <div className="card-actions justify-end mt-4">
-                            <motion.button
-                              whileTap={{ scale: 0.95 }}
-                              className="btn btn-sm btn-primary gap-1"
-                              onClick={() => navigate(`/test-map/${batch._id}`)}
-                            >
-                              <FiMap className="h-4 w-4" /> View Optimized Route
-                            </motion.button>
-
-                              {batch.status === "requested" &&
-                                batch.assignmentStatus === "pending" && (
-                                  <>
-                                    <motion.button
-                                      whileTap={{ scale: 0.95 }}
-                                      className="btn btn-sm btn-success gap-1"
-                                      onClick={() =>
-                                        handleAcceptBatch(batch._id)
-                                      }
-                                    >
-                                      <FiCheck className="h-4 w-4" /> Accept
-                                    </motion.button>
-                                    <motion.button
-                                      whileTap={{ scale: 0.95 }}
-                                      className="btn btn-sm btn-error gap-1"
-                                      onClick={() =>
-                                        handleDeclineBatch(batch._id)
-                                      }
-                                    >
-                                      Decline
-                                    </motion.button>
-                                  </>
-                                )}
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="card bg-base-100 shadow-lg mx-auto max-w-md"
-                >
-                  <div className="card-body items-center text-center">
-                    <div className="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center mb-4">
-                      <FiPackage size={28} className="text-base-content/50" />
-                    </div>
-                    <h2 className="card-title">No Batch Assignments Found</h2>
-                    <p className="text-base-content/70 mb-4">
-                      You don't have any batch assignments yet
-                    </p>
-                    <div className="card-actions">
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={refreshBatches}
-                        className="btn btn-primary"
-                      >
-                        Refresh Batches
-                      </motion.button>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
+            <BatchesList
+              assignedBatches={assignedBatches}
+              batchesLoading={batchesLoading}
+              refreshBatches={refreshBatches}
+              getStatusColor={getStatusColor}
+              countItemsByStatus={countItemsByStatus}
+              handleStartAction={handleStartAction}
+            />
           )}
         </div>
       </motion.div>

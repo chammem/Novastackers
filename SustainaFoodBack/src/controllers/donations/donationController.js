@@ -629,3 +629,27 @@ exports.getAvailableVolunteersForCampaign = async (req, res) => {
     });
   }
 };
+exports.getMyVolunteeredCampaigns = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!userId) {
+      return res.status(400).json({ 
+        message: "User ID is required" 
+      });
+    }
+    
+    // Find campaigns where this user is a volunteer
+    const campaigns = await FoodDonation.find({
+      volunteers: userId
+    }).select('_id name imageUrl description');
+    
+    res.status(200).json(campaigns);
+  } catch (error) {
+    console.error("Error fetching volunteered campaigns:", error);
+    res.status(500).json({ 
+      message: "Failed to fetch volunteered campaigns", 
+      error: error.message 
+    });
+  }
+};
