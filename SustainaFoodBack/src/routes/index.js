@@ -9,6 +9,7 @@ const axios = require('axios');
 const cors = require('cors');
 const userModel = require("../models/userModel");
 const jwt = require('jsonwebtoken');
+const donationController = require("../controllers/donations/donationController");
 const RoleVerification = require("../models/roleVerification")
 const  {registerVerification, userSendVerificationMail, generateOtp, verifyOtp, resetPassword} = require('../controllers/auth/userSignUp')
 const userSignInController = require('../controllers/auth/userSignIn')
@@ -396,7 +397,7 @@ router.post("/optimized-route", async (req, res) => {
   }
 });
 
-
+router.get('/volunteer/:userId/campaigns', donationController.getMyVolunteeredCampaigns);
 
 
 

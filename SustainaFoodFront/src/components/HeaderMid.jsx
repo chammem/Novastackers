@@ -14,6 +14,7 @@ import {
   FiX,
   FiChevronDown,
   FiTrash2,
+  FiEdit,
 } from "react-icons/fi";
 
 function HeaderMid() {
@@ -36,6 +37,43 @@ function HeaderMid() {
   useEffect(() => {
     checkAuthStatus();
   }, [window.location.pathname]);
+
+  // Check if user needs activation and show notification
+  useEffect(() => {
+    // Only run when user data changes and user exists
+    if (user) {
+      // Get the flag from sessionStorage
+      const activationToastShown = sessionStorage.getItem('activationToastShown');
+      
+      // Check if the user is a restaurant or volunteer and not active, and toast hasn't been shown
+      if ((user.role === "restaurant" || user.role === "volunteer") && 
+          !user.isActive && 
+          activationToastShown !== 'true') {
+        
+        // Set the flag before showing toast
+        sessionStorage.setItem('activationToastShown', 'true');
+        
+        toast.warning(
+          <div>
+            Your account needs activation. 
+            <button 
+              className="btn btn-xs btn-warning ml-2"
+              onClick={() => navigate("/activateAccount")}
+            >
+              Activate Now
+            </button>
+          </div>, 
+          {
+            autoClose: 10000, // Keep open longer than default
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+          }
+        );
+      }
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -78,20 +116,19 @@ function HeaderMid() {
         }`}
       >
         <div className="max-w-6xl mx-auto flex justify-between items-center py-3 px-4">
-          
-                <NavLink to="/" className="flex items-center gap-2">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg"
-                >
-                  S
-                </motion.div>
-                <span className="text-xl font-bold text-primary hidden sm:block">
-                  SustainaFood
-                </span>
-                </NavLink>
+          <NavLink to="/" className="flex items-center gap-2">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg"
+            >
+              S
+            </motion.div>
+            <span className="text-xl font-bold text-primary hidden sm:block">
+              SustainaFood
+            </span>
+          </NavLink>
 
-                {/* Desktop Navigation */}
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-2">
             {[
               { to: "/", label: "Home" },
@@ -137,23 +174,43 @@ function HeaderMid() {
                   )}
                   {user?.role === "volunteer" && (
                     <>
-                    <li>
-                      <NavLink to="/volunteer">Volunteer Dashboard</NavLink>
-                    </li>
-                     <li>
-                     <NavLink to="/volunteer-availability">Manage Availability</NavLink>
-                   </li>
-                   </>
+                      <li>
+                        <NavLink to="/volunteer">Volunteer Dashboard</NavLink>
+                      </li>
+                      <li>
+                        <NavLink to="/volunteer-availability">
+                          Manage Availability
+                        </NavLink>
+                      </li>
+                      <li>
+                        <NavLink to="/requested-assignments">
+                          Requested Assignments
+                        </NavLink>
+                      </li>
+                      <li>
+                        <NavLink to="/donations">Volunteer</NavLink>
+                      </li>
+                    </>
                   )}
                   {user?.role === "restaurant" && (
-                    <li>
-                      <NavLink to="/donations">Donate</NavLink>
-                    </li>
+                    <>
+                      <li>
+                        <NavLink to="/donations">Donate</NavLink>
+                      </li>
+                      <li>
+                        <NavLink to="/my-donations">Confirm Pickups</NavLink>
+                      </li>
+                    </>
                   )}
                   {user?.role === "supermarket" && (
-                    <li>
-                      <NavLink to="/my-pickups">Confirm Pickups</NavLink>
-                    </li>
+                    <>
+                      <li>
+                        <NavLink to="/donations">Donate</NavLink>
+                      </li>
+                      <li>
+                        <NavLink to="/my-donations">Confirm Pickups</NavLink>
+                      </li>
+                    </>
                   )}
                 </ul>
               </div>
@@ -195,15 +252,25 @@ function HeaderMid() {
                     <div className="card-body">
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-medium">Notifications</h3>
-                        {notifications.length > 0 && (
-                          <button
-                            className="btn btn-xs btn-ghost text-error"
-                            onClick={clearAll}
-                          >
-                            <FiTrash2 className="w-3 h-3" />
-                            <span className="ml-1">Clear</span>
-                          </button>
-                        )}
+                        <div className="flex gap-1">
+                          {notifications.length > 0 && (
+                            <>
+                              <button
+                                className="btn btn-xs btn-ghost text-error"
+                                onClick={clearAll}
+                              >
+                                <FiTrash2 className="w-3 h-3" />
+                                <span className="ml-1">Clear</span>
+                              </button>
+                              <Link
+                                to="/notifications"
+                                className="btn btn-xs btn-ghost text-primary"
+                              >
+                                <span>View All</span>
+                              </Link>
+                            </>
+                          )}
+                        </div>
                       </div>
                       <div className="divider my-1"></div>
                       <div className="max-h-48 overflow-y-auto">
@@ -236,7 +303,7 @@ function HeaderMid() {
                           </div>
                         )}
                       </div>
-                      {notifications.length > 5 && (
+                      {notifications.length > 0 && (
                         <Link
                           to="/notifications"
                           className="btn btn-xs btn-primary w-full mt-2"
@@ -281,6 +348,15 @@ function HeaderMid() {
                         Profile
                       </Link>
                     </li>
+                    {/* Add NGO Profile Update Link for charity/NGO users */}
+                    {user?.role === "charity" && (
+                      <li>
+                        <Link to="/ngo-profile" className="flex items-center">
+                          <FiEdit className="w-4 h-4" />
+                          NGO Profile
+                        </Link>
+                      </li>
+                    )}
                     <li>
                       <button
                         onClick={handleLogout}
@@ -396,7 +472,7 @@ function HeaderMid() {
                 </>
               )}
               {user?.role === "volunteer" && (
-                  <>
+                <>
                   <li>
                     <NavLink
                       to="/volunteer"
@@ -413,6 +489,15 @@ function HeaderMid() {
                       className={({ isActive }) => (isActive ? "active" : "")}
                     >
                       Manage Availability
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/requested-assignments"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      Requested Assignments
                     </NavLink>
                   </li>
                 </>

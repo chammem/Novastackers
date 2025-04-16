@@ -127,4 +127,31 @@ donationRouter.patch(
 // );
 donationRouter.get("/batch-route-data/:batchId",batchController.batchRouteData);
 donationRouter.post("/campaigns/:campaignId/auto-assign", batchController.autoAssignVolunteers);
+
+// Add these routes for batch pickup/delivery
+
+// Start pickup for items from a business in a batch
+donationRouter.patch(
+  "/batches/:batchId/start-pickup", 
+  batchController.startBatchPickup
+);
+
+// Verify pickup for items from a business in a batch
+donationRouter.post(
+  "/batches/:batchId/verify-pickup", 
+  batchController.verifyBatchPickup
+);
+
+// Start delivery for entire batch
+donationRouter.patch(
+  "/batches/:batchId/start-delivery", 
+  batchController.startBatchDelivery
+);
+
+// Verify delivery for entire batch
+donationRouter.post(
+  "/batches/:batchId/verify-delivery", 
+  batchController.verifyBatchDelivery
+);
+
 module.exports = donationRouter;

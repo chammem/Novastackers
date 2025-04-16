@@ -743,6 +743,276 @@ exports.batchRouteData = async (req,res) => {
   }
 };
 
+// Add these batch verification functions to your batchController.js file
+
+// Start pickup for items from a single business in a batch
+exports.startBatchPickup = async (req, res) => {
+  const { batchId } = req.params;
+  const { businessId } = req.body; // The business/restaurant ID
+
+  try {
+    // Find the batch
+    const batch = await Batch.findById(batchId)
+      .populate({
+        path: "items",
+        populate: { path: "buisiness_id", select: "_id fullName" }
+      });
+
+    if (!batch) {
+      return res.status(404).json({ message: "Batch not found" });
+    }
+
+    // Filter items that belong to this business and still need pickup
+    const itemsFromBusiness = batch.items.filter(item => 
+      item.buisiness_id && 
+      item.buisiness_id._id.toString() === businessId &&
+      (item.status === "assigned" || item.status === "pending")
+    );
+
+    if (itemsFromBusiness.length === 0) {
+      return res.status(400).json({ 
+        message: "No items from this business found in this batch or all items already picked up" 
+      });
+    }
+
+    // Generate a single pickup code for all items
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    
+    // Update all items with the same pickup code
+    const itemIds = itemsFromBusiness.map(item => item._id);
+    await FoodItem.updateMany(
+      { _id: { $in: itemIds } },
+      { 
+        pickupCode: code,
+        pickupCodeGeneratedAt: new Date()
+      }
+    );
+
+    // Send notification to business
+    const notification = await Notification.create({
+      user_id: businessId,
+      message: `Volunteer is here to pick up ${itemsFromBusiness.length} items. Pickup code: ${code}`,
+      type: 'pickup_code'
+    });
+
+    // Emit to business via socket
+    if (req.io) {
+      req.io.to(businessId.toString()).emit('new-notification', notification);
+    }
+
+    res.status(200).json({ 
+      message: `Pickup code sent for ${itemsFromBusiness.length} items from this business` 
+    });
+  } catch (error) {
+    console.error("startBatchPickup error:", error);
+    res.status(500).json({ message: "Error starting batch pickup", error: error.message });
+  }
+};
+
+// Verify pickup for multiple items from a single business
+exports.verifyBatchPickup = async (req, res) => {
+  const { batchId } = req.params;
+  const { businessId, code } = req.body;
+
+  try {
+    // Find the batch
+    const batch = await Batch.findById(batchId)
+      .populate({
+        path: "items",
+        populate: [
+          { path: "buisiness_id", select: "_id fullName" },
+          { path: "assignedVolunteer", select: "_id fullName" }
+        ]
+      });
+
+    if (!batch) {
+      return res.status(404).json({ message: "Batch not found" });
+    }
+
+    // Filter items that belong to this business
+    const itemsFromBusiness = batch.items.filter(item => 
+      item.buisiness_id && 
+      item.buisiness_id._id.toString() === businessId &&
+      (item.status === "assigned" || item.status === "pending")
+    );
+
+    if (itemsFromBusiness.length === 0) {
+      return res.status(400).json({ 
+        message: "No items from this business found in this batch or all items already picked up" 
+      });
+    }
+
+    // Verify code for first item (all items should have the same code)
+    const firstItem = itemsFromBusiness[0];
+    if (firstItem.pickupCode !== code) {
+      return res.status(400).json({ message: "Invalid pickup code" });
+    }
+
+    // Update all items status
+    const itemIds = itemsFromBusiness.map(item => item._id);
+    await FoodItem.updateMany(
+      { _id: { $in: itemIds } },
+      { 
+        volunteerPickedUpAt: new Date(),
+        supermarketConfirmedAt: new Date(),
+        status: "picked-up"
+      }
+    );
+
+    // Create notification for business
+    const notification = await Notification.create({
+      user_id: businessId,
+      message: `${itemsFromBusiness.length} items were picked up by volunteer ${firstItem.assignedVolunteer?.fullName || 'assigned volunteer'}.`,
+      type: "status_update",
+      read: false
+    });
+
+    // Emit notification
+    if (req.io) {
+      req.io.to(businessId.toString()).emit("new-notification", notification);
+    }
+
+    // Check if all batch items are picked up and update batch status if needed
+    await exports.checkAndUpdateBatchStatus(batchId);
+
+    res.status(200).json({ 
+      message: `Pickup confirmed for ${itemsFromBusiness.length} items from this business` 
+    });
+  } catch (error) {
+    console.error("verifyBatchPickup error:", error);
+    res.status(500).json({ message: "Error verifying batch pickup", error: error.message });
+  }
+};
+
+// Start delivery for the entire batch to NGO
+exports.startBatchDelivery = async (req, res) => {
+  const { batchId } = req.params;
+
+  try {
+    // Find the batch
+    const batch = await Batch.findById(batchId)
+      .populate({
+        path: "items",
+        select: "status name"
+      })
+      .populate({
+        path: "campaignId",
+        select: "ngoId",
+        populate: { path: "ngoId", select: "_id fullName" }
+      });
+
+    if (!batch) {
+      return res.status(404).json({ message: "Batch not found" });
+    }
+
+    // Check if all items are picked up
+    const allPickedUp = batch.items.every(item => item.status === "picked-up");
+    if (!allPickedUp) {
+      return res.status(400).json({ 
+        message: "Cannot start delivery - not all items in this batch have been picked up" 
+      });
+    }
+
+    // Generate a single delivery code for the entire batch
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    
+    // Store code in the batch
+    batch.deliveryCode = code;
+    batch.deliveryCodeGeneratedAt = new Date();
+    await batch.save();
+
+    // Get NGO ID from the campaign
+    const ngoId = batch.campaignId?.ngoId?._id;
+    if (!ngoId) {
+      return res.status(400).json({ message: "NGO information not found for this batch" });
+    }
+
+    // Send notification to NGO
+    const notification = await Notification.create({
+      user_id: ngoId,
+      message: `Volunteer is delivering ${batch.items.length} items. Delivery code: ${code}`,
+      type: 'delivery_code'
+    });
+
+    // Emit to NGO via socket
+    if (req.io) {
+      req.io.to(ngoId.toString()).emit('new-notification', notification);
+    }
+
+    res.status(200).json({ 
+      message: "Delivery code generated and sent to NGO" 
+    });
+  } catch (error) {
+    console.error("startBatchDelivery error:", error);
+    res.status(500).json({ message: "Error starting batch delivery", error: error.message });
+  }
+};
+
+// Verify delivery for the entire batch
+exports.verifyBatchDelivery = async (req, res) => {
+  const { batchId } = req.params;
+  const { code } = req.body;
+
+  try {
+    // Find the batch
+    const batch = await Batch.findById(batchId)
+      .populate({
+        path: "items",
+        select: "_id name status"
+      })
+      .populate({
+        path: "campaignId",
+        select: "ngoId name",
+        populate: { path: "ngoId", select: "_id fullName" }
+      })
+      .populate("assignedVolunteer", "_id fullName");
+
+    if (!batch) {
+      return res.status(404).json({ message: "Batch not found" });
+    }
+
+    // Verify delivery code
+    if (batch.deliveryCode !== code) {
+      return res.status(400).json({ message: "Invalid delivery code" });
+    }
+
+    // Update all items in the batch to delivered
+    const itemIds = batch.items.map(item => item._id);
+    await FoodItem.updateMany(
+      { _id: { $in: itemIds } },
+      { 
+        deliveryConfirmedAt: new Date(),
+        status: "delivered"
+      }
+    );
+
+    // Update batch status
+    batch.status = "completed";
+    batch.completedAt = new Date();
+    await batch.save();
+
+    // Create notification for NGO
+    const notification = await Notification.create({
+      user_id: batch.campaignId.ngoId._id,
+      message: `${batch.items.length} items have been successfully delivered by ${batch.assignedVolunteer?.fullName || 'the volunteer'}.`,
+      type: "status_update",
+      read: false
+    });
+
+    // Emit notification
+    if (req.io) {
+      req.io.to(batch.campaignId.ngoId._id.toString()).emit("new-notification", notification);
+    }
+
+    res.status(200).json({ 
+      message: `Delivery confirmed for all ${batch.items.length} items in this batch` 
+    });
+  } catch (error) {
+    console.error("verifyBatchDelivery error:", error);
+    res.status(500).json({ message: "Error verifying batch delivery", error: error.message });
+  }
+};
+
 
 
 

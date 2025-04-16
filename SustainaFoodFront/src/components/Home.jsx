@@ -44,24 +44,30 @@ function Home() {
                 Join us in the fight against food waste. Whether you're a driver, restaurant, or supermarket, together we can make a difference.
               </p>
 
-              {user?.role === "driver" && !user?.isActive && (
-                <div className="mt-6">
-                  <div className="alert alert-warning">
-                    <span>Your account is not yet active. Please submit your documents to activate your account.</span>
+              {/* Account Activation Alert - for both restaurant and volunteer users */}
+              {user && (user.role === "restaurant" || user.role === "volunteer") && !user.isActive && (
+                <div className="mt-6 bg-warning/20 p-4 rounded-lg border border-warning">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-warning-content">Account Activation Required</h3>
+                      <p className="text-gray-700">
+                        Your {user.role} account is pending activation. Please submit required documents to start using all features.
+                      </p>
+                    </div>
+                    <Link to="/activateAccount" className="btn btn-warning">
+                      Activate Account
+                    </Link>
                   </div>
-                  <Link to="/activateAccount" className="btn btn-warning mt-4">
-                    Submit Documents
-                  </Link>
                 </div>
               )}
 
-              {/* Role-based Custom Text */}
-              {user?.role === "driver" && user?.isActive && (
+              {/* Role-based Custom Text - Updated to handle activation state for multiple roles */}
+              {user?.role === "volunteer" && user?.isActive && (
                 <div className="mt-6">
                   <p className="text-lg text-gray-700">
-                    As a driver, you can start accepting food donations and deliver them to the NGOs in need. Your first step is to visit your dashboard and start making an impact.
+                    As a volunteer, you can start accepting food donations and deliver them to charities in need. Your first step is to visit your dashboard.
                   </p>
-                  <Link to="/dashboard" className="btn btn-primary mt-4">Go to Dashboard</Link>
+                  <Link to="/volunteer" className="btn btn-primary mt-4">Go to Dashboard</Link>
                 </div>
               )}
 
@@ -69,6 +75,15 @@ function Home() {
                 <div className="mt-6">
                   <p className="text-lg text-gray-700">
                     As a restaurant, you can list surplus food for donation. Start by visiting your dashboard and contributing to the fight against food waste.
+                  </p>
+                  <Link to="/donations" className="btn btn-primary mt-4">Donate Food</Link>
+                </div>
+              )}
+
+              {user?.role === "driver" && user?.isActive && (
+                <div className="mt-6">
+                  <p className="text-lg text-gray-700">
+                    As a driver, you can start accepting food donations and deliver them to the NGOs in need. Your first step is to visit your dashboard and start making an impact.
                   </p>
                   <Link to="/dashboard" className="btn btn-primary mt-4">Go to Dashboard</Link>
                 </div>
