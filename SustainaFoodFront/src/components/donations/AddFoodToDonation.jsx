@@ -12,8 +12,8 @@ const AddFoodToDonation = ({
     name: "",
     quantity: "",
     category: "",
-    buisiness_id: businessId, // Initialize with prop
-    size: "", // Added size field
+    buisiness_id: businessId, // Keep this with correct spelling to match backend
+    size: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -97,20 +97,6 @@ const AddFoodToDonation = ({
               <option value="cooked">Cooked Food</option>
               <option value="beverages">Beverages</option>
             </select>
-          </div>
-
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Business ID</span>
-            </label>
-            <input
-              type="text"
-              name="business_id"
-              value={formData.buisiness_id}
-              onChange={handleChange}
-              className="input input-bordered"
-              required
-            />
           </div>
 
           <div className="form-control">

@@ -40,6 +40,7 @@ function RoleChoice() {
                   <option value="supermarket">Supermarket</option>
                   <option value="driver">Driver</option>
                   <option value="user">User</option>
+                  <option value="charity">Charity</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>

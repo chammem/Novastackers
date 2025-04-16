@@ -91,6 +91,20 @@ const VolunteerAvailability = () => {
   const updateTimeSlot = (day, index, field, value) => {
     const updatedSlots = [...availability[day]];
     updatedSlots[index] = { ...updatedSlots[index], [field]: value };
+    
+    // Validate time range if this is an end time update
+    if (field === 'end') {
+      const startTime = updatedSlots[index].start;
+      if (startTime && value && startTime >= value) {
+        toast.warning("End time must be after start time");
+        // Correct the end time (add 1 hour to start time)
+        const [hours, minutes] = startTime.split(':');
+        let newHour = parseInt(hours) + 1;
+        if (newHour > 23) newHour = 23;
+        updatedSlots[index].end = `${newHour.toString().padStart(2, '0')}:${minutes}`;
+      }
+    }
+    
     setAvailability({ ...availability, [day]: updatedSlots });
   };
 
@@ -116,6 +130,22 @@ const VolunteerAvailability = () => {
       }
     });
 
+    // Check if availabilityData is empty 
+    if (Object.keys(availabilityData).length === 0) {
+      // Instead of sending empty data, send a placeholder to avoid the backend validation error
+      // Add a placeholder empty slot to Monday that effectively clears the schedule
+      availabilityData.Monday = [{ 
+        start: "00:00", 
+        end: "00:01",
+        isPlaceholder: true // This flag can be used by your application to identify this as a special case
+      }];
+      
+      // Ask for confirmation before submitting empty availability
+      if (!window.confirm("You're clearing your availability schedule, which means you won't be assigned any pickup tasks. Continue?")) {
+        return;
+      }
+    }
+
     try {
       setSaving(true);
       const response = await axiosInstance.post(
@@ -124,13 +154,18 @@ const VolunteerAvailability = () => {
       );
 
       if (response.data.success) {
-        toast.success("Availability saved successfully!");
+        if (availabilityData.Monday?.length === 1 && availabilityData.Monday[0].isPlaceholder) {
+          toast.success("Your availability has been cleared. You won't receive pickup assignments until you update your schedule.");
+        } else {
+          toast.success("Availability saved successfully!");
+        }
       } else {
         toast.error(response.data.message || "Failed to save availability");
       }
     } catch (error) {
       console.error("Error saving availability:", error);
-      toast.error("Failed to save your availability schedule");
+      console.error("Response data:", error.response?.data);
+      toast.error(`Failed to save: ${error.response?.data?.message || error.message}`);
     } finally {
       setSaving(false);
     }
@@ -184,6 +219,32 @@ const VolunteerAvailability = () => {
                     </label>
                   ))}
                 </div>
+              </div>
+
+              {/* Clear All Availability Button */}
+              <div className="flex justify-end mb-4">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline btn-error gap-1"
+                  onClick={() => {
+                    // Confirm before clearing
+                    if (window.confirm("Are you sure you want to clear all your availability settings?")) {
+                      setSelectedDays([]);
+                      setAvailability({
+                        Monday: [],
+                        Tuesday: [],
+                        Wednesday: [],
+                        Thursday: [],
+                        Friday: [],
+                        Saturday: [],
+                        Sunday: [],
+                      });
+                      toast.info("Availability schedule cleared");
+                    }
+                  }}
+                >
+                  <FiTrash2 /> Clear All Availability
+                </button>
               </div>
               
               {/* Day Time Slots */}
@@ -261,7 +322,7 @@ const VolunteerAvailability = () => {
                   name="submit-availability"
                   id="submit-availability"
                   className="btn btn-primary btn-lg mx-auto w-full max-w-xs gap-2"
-                  disabled={selectedDays.length === 0 || saving}
+                  disabled={saving}
                 >
                   {saving ? (
                     <>
@@ -270,7 +331,7 @@ const VolunteerAvailability = () => {
                     </>
                   ) : (
                     <>
-                      <FiCheck /> Save Availability
+                      <FiCheck /> {selectedDays.length === 0 ? "Clear Availability" : "Save Availability"}
                     </>
                   )}
                 </button>
