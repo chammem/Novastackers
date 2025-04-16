@@ -86,12 +86,18 @@ const RequestedAssignments = () => {
   const handleAccept = async (foodId) => {
     setProcessingId(foodId);
     try {
-      await axiosInstance.patch(`/donations/accept-assignment/${foodId}`,{
-        volunteerId: user._id // Send volunteer ID from context
+      // Get the current user ID first
+      const userRes = await axiosInstance.get("/user-details");
+      const volunteerId = userRes.data.data._id;
+      
+      // Then include it in the request body
+      await axiosInstance.patch(`/donations/accept-assignment/${foodId}`, {
+        volunteerId: volunteerId
       });
       toast.success("Assignment accepted");
       fetchRequested();
     } catch (err) {
+      console.error("Accept error:", err);
       toast.error("Error accepting assignment");
     } finally {
       setProcessingId(null);
@@ -101,12 +107,18 @@ const RequestedAssignments = () => {
   const handleDecline = async (foodId) => {
     setProcessingId(foodId);
     try {
-      await axiosInstance.patch(`/donations/decline-assignment/${foodId}`,{
-        volunteerId: user._id // Send volunteer ID from context
+      // Get the current user ID first
+      const userRes = await axiosInstance.get("/user-details");
+      const volunteerId = userRes.data.data._id;
+      
+      // Then include it in the request body
+      await axiosInstance.patch(`/donations/decline-assignment/${foodId}`, {
+        volunteerId: volunteerId
       });
       toast.info("Assignment declined");
       fetchRequested();
     } catch (err) {
+      console.error("Decline error:", err);
       toast.error("Error declining assignment");
     } finally {
       setProcessingId(null);
