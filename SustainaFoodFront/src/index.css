@@ -2,3 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 @import "leaflet/dist/leaflet.css";
+
+/* Add this to your CSS */
+#root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  /* This makes the content area expand to push footer down */
+  main, .min-h-screen {
+    flex: 1;
+  }
+  
+  /* Optional: only if you have layout issues */
+  .footer-wrapper {
+    margin-top: auto;
+  }

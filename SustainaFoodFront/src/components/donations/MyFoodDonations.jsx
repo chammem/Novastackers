@@ -4,7 +4,10 @@ import HeaderMid from '../HeaderMid';
 import Footer from '../Footer';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiBox, FiFilter, FiSearch, FiTruck, FiClock, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+import { 
+  FiBox, FiFilter, FiSearch, FiTruck, FiClock, FiCheckCircle, 
+  FiAlertCircle, FiCalendar, FiPackage, FiRefreshCw, FiList, FiGrid
+} from 'react-icons/fi';
 
 const MyFoodDonations = () => {
   const [foodItems, setFoodItems] = useState([]);
@@ -13,6 +16,8 @@ const MyFoodDonations = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+  const [viewMode, setViewMode] = useState('table');
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     const fetchUserAndDonations = async () => {
@@ -32,6 +37,7 @@ const MyFoodDonations = () => {
       }
     };
 
+    // Show loading animation
     fetchUserAndDonations();
   }, []);
 
@@ -82,6 +88,28 @@ const MyFoodDonations = () => {
     }
   };
 
+  const getStatusBg = (status) => {
+    switch (status) {
+      case 'picked-up':
+        return 'bg-warning/10 border-warning/30';
+      case 'delivered':
+        return 'bg-success/10 border-success/30';
+      default:
+        return 'bg-info/10 border-info/30';
+    }
+  };
+
+  const handleItemClick = (item) => {
+    setSelectedItem(item);
+  };
+
+  const statusCounts = {
+    all: foodItems.length,
+    pending: foodItems.filter(item => item.status === 'pending' || !item.status).length,
+    'picked-up': foodItems.filter(item => item.status === 'picked-up').length,
+    delivered: foodItems.filter(item => item.status === 'delivered').length
+  };
+
   return (
     <>
       <HeaderMid />
@@ -90,14 +118,14 @@ const MyFoodDonations = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
-        className="min-h-screen bg-base-200 py-10 px-4"
+        className="min-h-screen bg-base-200 pt-20 pb-16 px-4"
       >
         <div className="max-w-6xl mx-auto">
           {/* Header Section */}
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.4 }}
+            transition={{ duration: 0.5 }}
             className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
           >
             <div>
@@ -109,13 +137,86 @@ const MyFoodDonations = () => {
                 View and track the status of all food items you've donated
               </p>
             </div>
+            
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="flex gap-2"
+            >
+              <button 
+                className={`btn btn-sm ${viewMode === 'table' ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => setViewMode('table')}
+              >
+                <FiList />
+              </button>
+              <button 
+                className={`btn btn-sm ${viewMode === 'grid' ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => setViewMode('grid')}
+              >
+                <FiGrid />
+              </button>
+              <button 
+                className="btn btn-sm btn-outline gap-2"
+                onClick={() => {
+                  setIsLoading(true);
+                  setTimeout(() => {
+                    // Re-fetch data
+                    const fetchUserAndDonations = async () => {
+                      try {
+                        const res = await axiosInstance.get(`/donations/get-donations-by-buisiness/${userId}`);
+                        setFoodItems(res.data);
+                        toast.success('Donations refreshed');
+                      } catch (error) {
+                        toast.error('Failed to refresh data');
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    };
+                    fetchUserAndDonations();
+                  }, 600);
+                }}
+              >
+                <FiRefreshCw className="h-4 w-4" /> Refresh
+              </button>
+            </motion.div>
+          </motion.div>
+
+          {/* Status Tabs */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            className="tabs tabs-boxed bg-base-100 p-1 mb-6 flex justify-start overflow-x-auto"
+          >
+            {Object.entries({
+              all: 'All Items',
+              pending: 'Pending',
+              'picked-up': 'In Transit',
+              delivered: 'Delivered'
+            }).map(([status, label]) => (
+              <motion.a
+                key={status}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`tab gap-2 ${statusFilter === status ? 'tab-active' : ''}`}
+                onClick={() => setStatusFilter(status)}
+              >
+                {status === 'all' && <FiPackage />}
+                {status === 'pending' && <FiClock />}
+                {status === 'picked-up' && <FiTruck />}
+                {status === 'delivered' && <FiCheckCircle />}
+                {label} 
+                <span className="badge badge-sm">{statusCounts[status] || 0}</span>
+              </motion.a>
+            ))}
           </motion.div>
 
           {/* Filters Row */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.4 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
             className="bg-base-100 p-4 rounded-lg shadow-sm mb-6"
           >
             <div className="flex flex-col md:flex-row gap-4">
@@ -131,6 +232,14 @@ const MyFoodDonations = () => {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
+                  {searchTerm && (
+                    <button 
+                      className="btn btn-square btn-ghost"
+                      onClick={() => setSearchTerm('')}
+                    >
+                      <FiX />
+                    </button>
+                  )}
                 </div>
               </div>
               
@@ -138,25 +247,7 @@ const MyFoodDonations = () => {
                 <div className="form-control">
                   <div className="input-group">
                     <span className="bg-base-300">
-                      <FiFilter />
-                    </span>
-                    <select 
-                      className="select select-bordered"
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                      <option value="all">All Status</option>
-                      <option value="pending">Pending</option>
-                      <option value="picked-up">Picked Up</option>
-                      <option value="delivered">Delivered</option>
-                    </select>
-                  </div>
-                </div>
-                
-                <div className="form-control">
-                  <div className="input-group">
-                    <span className="bg-base-300">
-                      <FiClock />
+                      <FiCalendar />
                     </span>
                     <select 
                       className="select select-bordered"
@@ -180,10 +271,39 @@ const MyFoodDonations = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-12"
+                className="flex flex-col items-center justify-center py-16"
               >
-                <span className="loading loading-spinner loading-lg text-primary mb-4"></span>
-                <p className="text-base-content/70 text-lg">Loading your donations...</p>
+                <div className="relative w-20 h-20">
+                  <motion.span 
+                    className="loading loading-spinner loading-lg text-primary absolute inset-0"
+                    animate={{ rotate: 360 }}
+                    transition={{ 
+                      repeat: Infinity, 
+                      duration: 1.5,
+                      ease: "linear"
+                    }}
+                  ></motion.span>
+                  <motion.div
+                    className="h-full w-full flex items-center justify-center"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ 
+                      repeat: Infinity, 
+                      duration: 1,
+                      repeatType: "reverse"
+                    }}
+                  >
+                    <FiBox className="h-8 w-8 text-primary opacity-70" />
+                  </motion.div>
+                </div>
+                <motion.p 
+                  className="text-base-content/70 text-lg mt-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  Loading your donations...
+                </motion.p>
               </motion.div>
             ) : foodItems.length === 0 ? (
               <motion.div
@@ -194,20 +314,35 @@ const MyFoodDonations = () => {
                 className="card bg-base-100 shadow-lg max-w-md mx-auto text-center p-8"
               >
                 <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center">
-                    <FiBox className="w-8 h-8 text-base-content/50" />
-                  </div>
+                  <motion.div 
+                    className="w-20 h-20 rounded-full bg-base-200 flex items-center justify-center"
+                    animate={{ 
+                      boxShadow: [
+                        "0 0 0 rgba(0, 0, 0, 0)",
+                        "0 0 20px rgba(0, 0, 0, 0.1)",
+                        "0 0 0 rgba(0, 0, 0, 0)"
+                      ]
+                    }}
+                    transition={{ 
+                      repeat: Infinity, 
+                      duration: 3 
+                    }}
+                  >
+                    <FiBox className="w-10 h-10 text-primary opacity-70" />
+                  </motion.div>
                 </div>
                 <h2 className="text-xl font-bold mb-2">No Donations Yet</h2>
                 <p className="text-base-content/70 mb-6">
                   You haven't made any food donations yet. Start contributing to your community today!
                 </p>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => window.location.href = '/donations'}
-                  className="btn btn-primary btn-sm mx-auto"
+                  className="btn btn-primary gap-2 mx-auto"
                 >
-                  Find Campaigns to Support
-                </button>
+                  <FiBox /> Find Campaigns to Support
+                </motion.button>
               </motion.div>
             ) : filteredItems.length === 0 ? (
               <motion.div
@@ -215,44 +350,54 @@ const MyFoodDonations = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="card bg-base-100 shadow-lg p-6 text-center"
+                className="card bg-base-100 shadow-lg p-8 text-center"
               >
                 <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center">
-                    <FiAlertCircle className="w-6 h-6 text-base-content/50" />
-                  </div>
+                  <motion.div 
+                    className="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center"
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ 
+                      repeat: Infinity,
+                      duration: 2,
+                      repeatDelay: 1
+                    }}
+                  >
+                    <FiAlertCircle className="w-8 h-8 text-warning/70" />
+                  </motion.div>
                 </div>
                 <h3 className="font-semibold text-lg">No matching donations</h3>
                 <p className="text-base-content/70 mt-2">
                   Try adjusting your filters to see more results.
                 </p>
-                <button 
-                  className="btn btn-sm btn-outline mt-4 mx-auto"
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="btn btn-outline mt-6 gap-2 mx-auto"
                   onClick={() => {
                     setSearchTerm('');
                     setStatusFilter('all');
                   }}
                 >
-                  Clear Filters
-                </button>
+                  <FiRefreshCw className="h-4 w-4" /> Clear Filters
+                </motion.button>
               </motion.div>
-            ) : (
+            ) : viewMode === 'table' ? (
               <motion.div
-                key="results"
+                key="table-results"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
                 className="overflow-x-auto bg-base-100 rounded-lg shadow-md"
               >
-                <table className="table table-zebra w-full">
+                <table className="table w-full">
                   <thead>
                     <tr>
-                      <th className="bg-primary/10">Name</th>
-                      <th className="bg-primary/10">Quantity</th>
-                      <th className="bg-primary/10">Category</th>
-                      <th className="bg-primary/10">Donation Date</th>
-                      <th className="bg-primary/10">Status</th>
-                      <th className="bg-primary/10">Volunteer</th>
+                      <th className="bg-primary/5">Name</th>
+                      <th className="bg-primary/5">Quantity</th>
+                      <th className="bg-primary/5">Category</th>
+                      <th className="bg-primary/5">Donation Date</th>
+                      <th className="bg-primary/5">Status</th>
+                      <th className="bg-primary/5">Volunteer</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -262,12 +407,23 @@ const MyFoodDonations = () => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05, duration: 0.3 }}
-                        className="hover:bg-base-200"
+                        className="hover:bg-base-200 cursor-pointer"
+                        onClick={() => handleItemClick(item)}
+                        whileHover={{ backgroundColor: 'rgba(var(--p), 0.05)' }}
                       >
                         <td className="font-medium">{item.name}</td>
                         <td>{item.quantity}</td>
-                        <td>{item.category}</td>
-                        <td>{item.created_at ? new Date(item.created_at).toLocaleDateString() : '—'}</td>
+                        <td>
+                          <span className="badge badge-ghost">
+                            {item.category}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="flex items-center gap-1">
+                            <FiCalendar className="text-base-content/50 w-3 h-3" />
+                            {item.created_at ? new Date(item.created_at).toLocaleDateString() : '—'}
+                          </div>
+                        </td>
                         <td>
                           <span className={`badge ${getStatusColor(item.status)} flex items-center gap-1`}>
                             {getStatusIcon(item.status)}
@@ -282,6 +438,74 @@ const MyFoodDonations = () => {
                   </tbody>
                 </table>
               </motion.div>
+            ) : (
+              <motion.div
+                key="grid-results"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+              >
+                {filteredItems.map((item, index) => (
+                  <motion.div
+                    key={item._id || index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05, duration: 0.3 }}
+                    whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+                    className={`card bg-base-100 shadow-md border ${getStatusBg(item.status)} overflow-hidden`}
+                    onClick={() => handleItemClick(item)}
+                  >
+                    <div className="card-body p-5">
+                      <div className="flex justify-between items-start">
+                        <h3 className="card-title text-lg">{item.name}</h3>
+                        <span className={`badge ${getStatusColor(item.status)} flex items-center gap-1`}>
+                          {getStatusIcon(item.status)}
+                          <span className="capitalize">{item.status || 'Pending'}</span>
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 my-2 text-sm">
+                        <div className="flex flex-col">
+                          <span className="text-base-content/50">Quantity</span>
+                          <span className="font-semibold">{item.quantity}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-base-content/50">Category</span>
+                          <span className="font-semibold capitalize">{item.category}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-base-content/50">Size</span>
+                          <span className="font-semibold capitalize">{item.size || '—'}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-base-content/50">Date</span>
+                          <span className="font-semibold">
+                            {item.created_at ? new Date(item.created_at).toLocaleDateString() : '—'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="divider my-1"></div>
+                      
+                      <div className="flex items-center gap-2">
+                        <div className="avatar placeholder">
+                          <div className="bg-neutral-focus text-neutral-content rounded-full w-8">
+                            <span className="text-xs">
+                              {item.assignedVolunteer?.fullName?.charAt(0) || '?'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex-1 truncate">
+                          <span className="text-sm font-medium">
+                            {item.assignedVolunteer?.fullName || 'No volunteer assigned'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
             )}
           </AnimatePresence>
 
@@ -293,15 +517,24 @@ const MyFoodDonations = () => {
               transition={{ delay: 0.3, duration: 0.4 }}
               className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4"
             >
-              <div className="stat bg-base-100 shadow rounded-lg">
+              <motion.div 
+                className="stat bg-base-100 shadow rounded-lg border-t-4 border-primary"
+                whileHover={{ y: -5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <div className="stat-figure text-primary">
                   <FiBox className="w-8 h-8" />
                 </div>
                 <div className="stat-title">Total Donations</div>
                 <div className="stat-value text-primary">{foodItems.length}</div>
-              </div>
+                <div className="stat-desc">All food items you've donated</div>
+              </motion.div>
               
-              <div className="stat bg-base-100 shadow rounded-lg">
+              <motion.div 
+                className="stat bg-base-100 shadow rounded-lg border-t-4 border-warning"
+                whileHover={{ y: -5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <div className="stat-figure text-warning">
                   <FiTruck className="w-8 h-8" />
                 </div>
@@ -309,9 +542,14 @@ const MyFoodDonations = () => {
                 <div className="stat-value text-warning">
                   {foodItems.filter(item => item.status === 'picked-up').length}
                 </div>
-              </div>
+                <div className="stat-desc">Food items being delivered</div>
+              </motion.div>
               
-              <div className="stat bg-base-100 shadow rounded-lg">
+              <motion.div 
+                className="stat bg-base-100 shadow rounded-lg border-t-4 border-success"
+                whileHover={{ y: -5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <div className="stat-figure text-success">
                   <FiCheckCircle className="w-8 h-8" />
                 </div>
@@ -319,11 +557,125 @@ const MyFoodDonations = () => {
                 <div className="stat-value text-success">
                   {foodItems.filter(item => item.status === 'delivered').length}
                 </div>
-              </div>
+                <div className="stat-desc">Successfully delivered items</div>
+              </motion.div>
             </motion.div>
           )}
         </div>
       </motion.div>
+      
+      {/* Item Detail Modal */}
+      <AnimatePresence>
+        {selectedItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+            onClick={() => setSelectedItem(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="modal-box max-w-lg"
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                <FiPackage className="text-primary" />
+                {selectedItem.name}
+              </h3>
+              
+              <div className="py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text">Quantity</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      className="input input-bordered" 
+                      value={selectedItem.quantity} 
+                      disabled 
+                    />
+                  </div>
+                  
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text">Category</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      className="input input-bordered" 
+                      value={selectedItem.category} 
+                      disabled 
+                    />
+                  </div>
+                  
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text">Size</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      className="input input-bordered" 
+                      value={selectedItem.size || 'N/A'} 
+                      disabled 
+                    />
+                  </div>
+                  
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text">Status</span>
+                    </label>
+                    <div className={`input input-bordered flex items-center gap-2 ${getStatusColor(selectedItem.status)}`}>
+                      {getStatusIcon(selectedItem.status)}
+                      <span className="capitalize">{selectedItem.status || 'Pending'}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="divider">Delivery Information</div>
+                
+                <div className="bg-base-200 p-4 rounded-lg">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="avatar placeholder">
+                      <div className="bg-primary text-primary-content rounded-full w-12">
+                        <span>
+                          {selectedItem.assignedVolunteer?.fullName?.charAt(0) || '?'}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-medium">
+                        {selectedItem.assignedVolunteer?.fullName || 'No volunteer assigned yet'}
+                      </div>
+                      <div className="text-sm text-base-content/70">
+                        {selectedItem.assignedVolunteer?.phone || 'N/A'}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-sm">
+                    <div className="flex justify-between mb-1">
+                      <span className="text-base-content/70">Pickup Date:</span>
+                      <span>{selectedItem.pickupDate ? new Date(selectedItem.pickupDate).toLocaleDateString() : 'Not scheduled'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-base-content/70">Delivery Date:</span>
+                      <span>{selectedItem.deliveryDate ? new Date(selectedItem.deliveryDate).toLocaleDateString() : 'Not delivered'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="modal-action">
+                <button onClick={() => setSelectedItem(null)} className="btn">Close</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       <Footer />
     </>
