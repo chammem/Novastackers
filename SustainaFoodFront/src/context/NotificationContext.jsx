@@ -16,7 +16,10 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     if (!user?._id) return;
 
-    const socket = io();
+    const socket = io('http://localhost:8082', {
+      withCredentials: true,
+    });
+
     socket.on("connect", () => {
       console.log("✅ Socket connected:", socket.id);
     });
