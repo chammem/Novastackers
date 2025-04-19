@@ -1,0 +1,39 @@
+name: Frontend CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Build frontend
+        run: |
+          cd SustainaFoodFront
+          npm ci
+          npm run build
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy frontend to server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
+            rm -rf ${{ secrets.FRONTEND_REMOTE_DIR }}
+            mkdir -p ${{ secrets.FRONTEND_REMOTE_DIR }}
+          EOF
+
+          scp -r SustainaFoodFront/dist/* ${{ secrets.USERNAME }}@${{ secrets.HOST }}:${{ secrets.FRONTEND_REMOTE_DIR }}
