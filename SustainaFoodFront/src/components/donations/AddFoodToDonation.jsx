@@ -311,7 +311,7 @@ const AddFoodToDonation = ({
                 </div>
               ) : (
                 <p className="text-error text-xs mt-2">
-                  No image uploaded yet
+                  No image uploaded yet !
                 </p>
               )}
             </div>
