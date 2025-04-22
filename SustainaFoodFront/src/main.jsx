@@ -40,7 +40,8 @@ import RequestedAssignments from './components/donations/RequestedAssignments.js
 import { AuthProvider } from "./context/AuthContext";
 import VolunteerAvailability from './components/VolunteerAvailability.jsx'
 import BatchRouteDetails from './components/donations/BatchRouteDetails.jsx';
-
+import FoodSalePage from './components/foodSales/FoodSalePage.jsx';
+import AddFoodSalePage from './components/foodSales/AddFoodSalePage.jsx';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -73,6 +74,8 @@ const router = createBrowserRouter([
       {path:"/requested-assignments",element:<RequestedAssignments/>},
       {path:"/volunteer-availability",element:<VolunteerAvailability/>},
       {path:"/batch/:batchId/route", element: <BatchRouteDetails />},
+      {path:"/food-sales",element:<FoodSalePage />},
+      {path:"/add-food-sale", element: <AddFoodSalePage />},
       
       {
         element: <ProtectedRoute />,
