@@ -9,6 +9,7 @@ const router = require('./src/routes');
 const donationRouter = require('./src/routes/donationRouter');
 const path = require("path");
 const { initScheduler } = require('./src/utils/scheduler');
+const foodSaleRoutes = require('./src/routes/foodSaleRoute');
 // Create Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
@@ -57,7 +58,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Routes
 app.use('/api', router);
 app.use('/api/donations', donationRouter);
-
+app.use('/api/food-sale', foodSaleRoutes);
 // Start DB and server
 const startServer = async () => {
   await connectDB();

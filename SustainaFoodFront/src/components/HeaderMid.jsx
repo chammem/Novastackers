@@ -198,7 +198,10 @@ function HeaderMid() {
                         <NavLink to="/donations">Donate</NavLink>
                       </li>
                       <li>
-                        <NavLink to="/my-donations">Confirm Pickups</NavLink>
+                        <NavLink to="/my-donations">My donations</NavLink>
+                      </li>
+                      <li>
+                        <NavLink to="/food-sales">Food Sales</NavLink>
                       </li>
                     </>
                   )}
@@ -503,15 +506,35 @@ function HeaderMid() {
                 </>
               )}
               {user?.role === "restaurant" && (
-                <li>
-                  <NavLink
-                    to="/donations"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={({ isActive }) => (isActive ? "active" : "")}
-                  >
-                    Donate
-                  </NavLink>
-                </li>
+                <>
+                  <li>
+                    <NavLink
+                      to="/donations"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      Donate
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/my-donations"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      My donations
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/food-sales"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      Food Sales
+                    </NavLink>
+                  </li>
+                </>
               )}
               {user?.role === "supermarket" && (
                 <li>
