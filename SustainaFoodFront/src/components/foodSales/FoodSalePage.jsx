@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import { FiShoppingBag, FiClock } from 'react-icons/fi';
+
 import axiosInstance from '../../config/axiosInstance';
 import { useAuth } from '../../context/AuthContext';
 import HeaderMid from '../HeaderMid';
+import { FiShoppingBag, FiClock, FiMapPin } from 'react-icons/fi';
 
 const FoodSalePage = () => {
   const [foodItems, setFoodItems] = useState([]);
@@ -188,10 +189,42 @@ const FoodSalePage = () => {
                     {item.quantityAvailable} available
                   </span>
                 </div>
-                
-                <div className="card-actions mt-4">
-                  <button className="btn btn-primary btn-block">Order Now</button>
+                <div className="flex flex-col mt-3 pt-3 border-t border-base-200">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="avatar">
+                <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs">
+                  {item.foodItem.buisiness_id ? item.foodItem.buisiness_id.toString()[0].toUpperCase() : "R"}
                 </div>
+              </div>
+              <span className="text-sm font-medium truncate">
+                {item.businessName || "View restaurant details"}
+              </span>
+            </div>
+            <motion.button 
+              className="btn btn-sm btn-outline btn-secondary"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/restaurant/${item.foodItem.buisiness_id}`);
+              }}
+            >
+              <FiMapPin className="mr-1" /> View Business Details
+            </motion.button>
+          </div>
+
+         <div className="card-actions mt-3">
+          <button 
+            className="btn btn-primary btn-sm btn-block"
+            onClick={(e) => {
+              e.preventDefault(); // Prevent any default behavior
+              console.log("Navigating to:", `/order-confirmation/${item._id}`);
+              navigate(`/order-confirmation/${item._id}`);
+            }}
+          >
+            Order Now
+          </button>
+        </div>
               </div>
             </motion.div>
           ))}
