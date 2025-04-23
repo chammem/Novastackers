@@ -6,6 +6,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Function to check authentication status from server
   const checkAuthStatus = async () => {
@@ -14,12 +15,15 @@ export function AuthProvider({ children }) {
       const response = await axiosInstance.get("/user-details"); // Endpoint that returns current user from cookie
       if (response.data.success) {
         setUser(response.data.data);
+        setIsAuthenticated(true);
       } else {
         setUser(null);
+        setIsAuthenticated(false);
       }
     } catch (error) {
       console.error("Error checking auth status:", error);
       setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
@@ -32,6 +36,7 @@ export function AuthProvider({ children }) {
 
   const login = async (userData) => {
     setUser(userData);
+    setIsAuthenticated(true);
     return Promise.resolve(); // Return a resolved promise to allow awaiting
   };
 
@@ -39,6 +44,7 @@ export function AuthProvider({ children }) {
     try {
       await axiosInstance.post("/userLogout");
       setUser(null);
+      setIsAuthenticated(false);
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -49,6 +55,7 @@ export function AuthProvider({ children }) {
       value={{
         user,
         isLoading,
+        isAuthenticated,
         login,
         logout,
         checkAuthStatus, // Export this to allow manual refresh of auth state
