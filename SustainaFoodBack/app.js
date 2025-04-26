@@ -9,9 +9,12 @@ const router = require('./src/routes');
 const donationRouter = require('./src/routes/donationRouter');
 const path = require("path");
 const { initScheduler } = require('./src/utils/scheduler');
+const foodSaleRoutes = require('./src/routes/foodSaleRoute');
+const paymentRoutes = require('./src/routes/paymentRoutes');
 // Create Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
+const paymentController = require('./src/controllers/payment/paymentController');
 
 // Configure Socket.IO
 const io = new Server(server, {
@@ -43,6 +46,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// This line MUST come BEFORE any Express JSON parsing middleware
+app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), paymentController.handleWebhook);
+
 // Middleware and static
 app.use(cors({
   origin: process.env.FRONTEND_URL || "*",
@@ -57,7 +63,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Routes
 app.use('/api', router);
 app.use('/api/donations', donationRouter);
-
+app.use('/api/food-sale', foodSaleRoutes);
+app.use('/api/payment', paymentRoutes);
 // Start DB and server
 const startServer = async () => {
   await connectDB();

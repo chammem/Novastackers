@@ -47,7 +47,12 @@ import AdminDonationsList from './components/AdminDonationsList.jsx'
 import { Navigate } from 'react-router-dom';
 import VolunteerAvailability from './components/VolunteerAvailability.jsx'
 import BatchRouteDetails from './components/donations/BatchRouteDetails.jsx';
-
+import FoodSalePage from './components/foodSales/FoodSalePage.jsx';
+import AddFoodSalePage from './components/foodSales/AddFoodSalePage.jsx';
+import RestaurantDetailsPage from './components/foodSales/RestaurantDetailsPage';
+import OrderConfirmationPage from './components/foodSales/OrderConfirmationPage.jsx';
+import OrderSuccessPage from './components/foodSales/OrderSuccessPage.jsx';
+import OrderPaymentPage from './components/foodSales/OrderPaymentPage.jsx';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -81,6 +86,12 @@ const router = createBrowserRouter([
       {path:"/requested-assignments",element:<RequestedAssignments/>},
       {path:"/volunteer-availability",element:<VolunteerAvailability/>},
       {path:"/batch/:batchId/route", element: <BatchRouteDetails />},
+      {path:"/food-sales",element:<FoodSalePage />},
+      {path:"/add-food-sale", element: <AddFoodSalePage />},
+      {path:"/restaurant/:restaurantId", element:<RestaurantDetailsPage />},
+      {path:"/order-confirmation/:foodId", element:<OrderConfirmationPage />},
+      {path:"/order-success/:orderId", element:<OrderSuccessPage />},
+      {path:"/order-payment", element:<OrderPaymentPage />},
       
       {
         element: <ProtectedRoute />,

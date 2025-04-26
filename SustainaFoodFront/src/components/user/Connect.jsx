@@ -203,7 +203,7 @@ function Connect() {
             <div className="text-center mt-4">
               <p>
                 Don't have an account?
-                <Link to="/register" className="link link-primary ml-1">
+                <Link to="/role" className="link link-primary ml-1">
                   Create one here
                 </Link>
               </p>
