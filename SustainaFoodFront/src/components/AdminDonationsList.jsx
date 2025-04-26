@@ -221,7 +221,7 @@ import { FiSearch, FiPlus, FiX, FiEdit, FiTrash2, FiUsers, FiMapPin, FiCalendar 
       
                           <div className="flex items-center text-sm text-gray-600 mt-1">
                             <FiUsers className="mr-1" />
-                            <span>{donation.organization?.name || "Unknown organization"}</span>
+                            <span>{donation.ngoId?.fullName|| "Unknown organization"}</span>
                           </div>
       
                           <p className="mt-3 text-gray-600 line-clamp-3">
