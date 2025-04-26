@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "../config/axiosInstance";
 
-const AddressAutoComplete = ({ onSelect }) => {
-  const [query, setQuery] = useState("");
+const AddressAutoComplete = ({ onSelect, initialValue = "" }) => {
+  const [query, setQuery] = useState(initialValue);
   const [results, setResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const wrapperRef = useRef(null);
+
+  // Set initial value
+  useEffect(() => {
+    if (initialValue) {
+      setQuery(initialValue);
+    }
+  }, [initialValue]);
 
   // Fetch suggestions from backend
   useEffect(() => {

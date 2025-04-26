@@ -12,6 +12,7 @@ import {
   FiAlertCircle,
   FiLoader,
 } from "react-icons/fi";
+import AddressAutoComplete from "../AddressAutoComplete";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -19,6 +20,8 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("updateProfile");
   const [submitting, setSubmitting] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState("");
+  const [coordinates, setCoordinates] = useState({ lat: null, lng: null });
 
   const {
     register: registerProfile,
@@ -48,18 +51,23 @@ const Profile = () => {
       try {
         const response = await axiosInstance.get("/user-details");
         if (response.data?.data) {
-          setUser(response.data.data);
-          setValueProfile("fullName", response.data.data.fullName);
-          setValueProfile("email", response.data.data.email);
-          setValueProfile("phoneNumber", response.data.data.phoneNumber);
-          setValueProfile("address", response.data.data.address);
-          setValueAllergiesPreferences(
-            "allergies",
-            response.data.data.allergies || ""
-          );
+          const userData = response.data.data;
+          setUser(userData);
+          setValueProfile("fullName", userData.fullName);
+          setValueProfile("email", userData.email);
+          setValueProfile("phoneNumber", userData.phoneNumber);
+          setValueProfile("address", userData.address);
+
+          setSelectedAddress(userData.address || "");
+          setCoordinates({
+            lat: userData.lat || null,
+            lng: userData.lng || null,
+          });
+
+          setValueAllergiesPreferences("allergies", userData.allergies || "");
           setValueAllergiesPreferences(
             "preferences",
-            response.data.data.preferences || ""
+            userData.preferences || ""
           );
         }
       } catch (error) {
@@ -82,10 +90,22 @@ const Profile = () => {
     setUpdateSuccess(false);
 
     try {
+      const updatedData = {
+        ...data,
+        lat: coordinates.lat,
+        lng: coordinates.lng,
+        address: selectedAddress || data.address,
+      };
+      
+      console.log("Submitting profile update:", updatedData);
+      
       const response = await axiosInstance.put(
         `/update-profile/${user._id}`,
-        data
+        updatedData
       );
+      
+      console.log("Profile update response:", response.data);
+      
       setUser(response.data.data);
       setUpdateSuccess(true);
       toast.success("Profile updated successfully!");
@@ -94,7 +114,7 @@ const Profile = () => {
       setTimeout(() => setUpdateSuccess(false), 3000);
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error("Failed to update profile.");
+      toast.error(error.response?.data?.message || "Failed to update profile.");
     } finally {
       setSubmitting(false);
     }
@@ -316,18 +336,29 @@ const Profile = () => {
                               Address
                             </span>
                           </label>
+                          <AddressAutoComplete
+                            initialValue={selectedAddress} // Pass the initial value
+                            onSelect={(place) => {
+                              const address = place.display_name;
+                              setSelectedAddress(address);
+                              // This is important - manually update the form value
+                              setValueProfile("address", address);
+                              setCoordinates({
+                                lat: parseFloat(place.lat),
+                                lng: parseFloat(place.lon),
+                              });
+                            }}
+                          />
+                          {/* Use defaultValue instead of value to avoid React controlled component warnings */}
                           <input
-                            type="text"
+                            type="hidden"
                             {...registerProfile("address", {
                               required: "Address is required",
                               minLength: {
                                 value: 5,
-                                message:
-                                  "Address must be at least 5 characters",
+                                message: "Address must be at least 5 characters",
                               },
                             })}
-                            className="input input-bordered w-full focus:input-primary transition-all duration-300"
-                            placeholder="Enter your address"
                           />
                           {profileErrors.address && (
                             <motion.p
