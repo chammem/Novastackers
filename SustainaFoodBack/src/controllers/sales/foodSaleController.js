@@ -239,16 +239,24 @@ exports.getRestaurantFoodSales = async (req, res) => {
       isAvailable: true,
     });
 
+    // Ajoutez le chemin complet pour les images
+    const updatedFoodSales = foodSales.map((sale) => {
+      if (sale.image) {
+        sale.image = `${req.protocol}://${req.get('host')}/${sale.image}`;
+      }
+      return sale;
+    });
+
     return res.status(200).json({
       success: true,
-      count: foodSales.length,
+      count: updatedFoodSales.length,
       pagination: {
         total: totalFoodSales,
         pages: Math.ceil(totalFoodSales / limit),
         currentPage: page,
         perPage: limit,
       },
-      data: foodSales,
+      data: updatedFoodSales,
       message: "Restaurant food sales retrieved successfully",
     });
   } catch (error) {
@@ -318,10 +326,18 @@ exports.getFoodSalesByRole = async (req, res) => {
             });
         }
 
+        // Ajoutez le chemin complet pour les images
+        const updatedFoodSales = foodSales.map((sale) => {
+          if (sale.image) {
+            sale.image = `${req.protocol}://${req.get('host')}/${sale.image}`;
+          }
+          return sale;
+        });
+
         return res.status(200).json({
             success: true,
-            count: foodSales.length,
-            data: foodSales,
+            count: updatedFoodSales.length,
+            data: updatedFoodSales,
             message: `Food sales retrieved successfully for role: ${role}`,
         });
     } catch (error) {

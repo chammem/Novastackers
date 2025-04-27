@@ -8,8 +8,8 @@ import { FiUpload, FiAlertCircle, FiArrowLeft, FiMapPin } from 'react-icons/fi';
 import HeaderMid from '../HeaderMid';
 
 const AddFoodSalePage = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
+const { user } = useAuth();
+  
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -21,12 +21,14 @@ const AddFoodSalePage = () => {
     size: 'small',
     image: '',
   });
-  
+
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [preview, setPreview] = useState(null);
-  
-  // Redirect if user is not logged in or not a restaurant/supermarket
+  const navigate = useNavigate();
+
+  // Redirection sécurisée
   if (!user || (user.role !== 'restaurant' && user.role !== 'supermarket')) {
     toast.error("Only restaurants and supermarkets can add food items");
     navigate('/login');
@@ -35,39 +37,38 @@ const AddFoodSalePage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value
-    });
+    }));
   };
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
+    setSelectedFile(file);
 
-    // Create a preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target.result);
     };
     reader.readAsDataURL(file);
 
-    // Upload the image to the server
-    const formData = new FormData();
-    formData.append('image', file); // Ensure the field name is 'image'
+    const imageFormData = new FormData();
+    imageFormData.append('image', file);
 
     try {
-      const response = await axiosInstance.post('/food-sale/upload', formData, {
+      const response = await axiosInstance.post('/food-sale/upload', imageFormData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      // Save the uploaded image relative path to formData
-      setFormData({
-        ...formData,
-        image: response.data.imagePath, // Updated to use 'imagePath' from the backend response
-      });
+      setFormData((prev) => ({
+        ...prev,
+        image: response.data.imagePath,
+      }));
 
       toast.success('Image uploaded successfully!');
     } catch (error) {
@@ -77,41 +78,46 @@ const AddFoodSalePage = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
+    e.preventDefault(); // ← évite le reload automatique du form
+    
+    if (!selectedFile) {
+      toast.error("Please select an image first.");
+      return;
+    }
+  
+    const submitData = new FormData();
+    submitData.append('image', selectedFile);
+    submitData.append('name', formData.name);
+    submitData.append('price', formData.price);
+    submitData.append('discountedPrice', formData.discountedPrice);
+    submitData.append('quantityAvailable', formData.quantityAvailable);
+    submitData.append('expiresAt', formData.expiresAt);
+    submitData.append('category', formData.category);
+    submitData.append('allergens', formData.allergens);
+    submitData.append('size', formData.size);
+    submitData.append('buisinessId', user?.buisinessId || user?._id);
+    submitData.append('businessRole', user?.role);
+  
     try {
-      // Make sure we have a business ID from the logged-in user
-      if (!user._id) {
-        toast.error("User ID not available");
-        setLoading(false);
-        return;
-      }
-
-      // Include business ID and role in the form data
-      const dataToSubmit = {
-        ...formData,
-        buisinessId: user._id,
-        businessRole: user.role, // Add the role of the business (restaurant or supermarket)
-      };
-
-      const response = await axiosInstance.post(
-        `/food-sale`, 
-        dataToSubmit
-      );
-      
-      setLoading(false);
+      setLoading(true);
+  
+      const response = await axiosInstance.post('/food-sale', submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
+      console.log('Upload success:', response.data);
       toast.success('Food item added successfully!');
-      navigate('/food-sales');
-    } catch (err) {
-      console.error("Error creating food sale:", err);
+      navigate('/food-sales'); // ← ici ça marchera correctement
+    } catch (error) {
+      console.error('Upload error:', error);
+      setError(error);
+      toast.error('Failed to add food item. Please try again.');
+    } finally {
       setLoading(false);
-      setError(err.response?.data?.message || "Failed to add food item. Please try again.");
-      toast.error(err.response?.data?.message || "Failed to add food item");
     }
   };
-
   // Animation variants
   const pageVariants = {
     initial: { opacity: 0, y: 20 },
