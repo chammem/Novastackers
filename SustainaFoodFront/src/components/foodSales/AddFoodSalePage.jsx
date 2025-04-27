@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import axiosInstance from '../../config/axiosInstance';
-import { FiUpload, FiAlertCircle, FiArrowLeft } from 'react-icons/fi';
+import { FiUpload, FiAlertCircle, FiArrowLeft, FiMapPin } from 'react-icons/fi';
 import HeaderMid from '../HeaderMid';
 
 const AddFoodSalePage = () => {
@@ -19,7 +19,7 @@ const AddFoodSalePage = () => {
     category: '',
     allergens: '',
     size: 'small',
-    image_url: '',
+    image: '',
   });
   
   const [loading, setLoading] = useState(false);
@@ -52,12 +52,28 @@ const AddFoodSalePage = () => {
     };
     reader.readAsDataURL(file);
 
-    // In a real app, you would upload this to your server/cloud storage
-    // For now, we're using the object URL as a placeholder
-    setFormData({
-      ...formData,
-      image_url: URL.createObjectURL(file)
-    });
+    // Upload the image to the server
+    const formData = new FormData();
+    formData.append('image', file); // Ensure the field name is 'image'
+
+    try {
+      const response = await axiosInstance.post('/food-sale/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Save the uploaded image relative path to formData
+      setFormData({
+        ...formData,
+        image: response.data.imagePath, // Updated to use 'imagePath' from the backend response
+      });
+
+      toast.success('Image uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image. Please try again.');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -73,10 +89,11 @@ const AddFoodSalePage = () => {
         return;
       }
 
-      // Include business ID in the form data
+      // Include business ID and role in the form data
       const dataToSubmit = {
         ...formData,
         buisinessId: user._id,
+        businessRole: user.role, // Add the role of the business (restaurant or supermarket)
       };
 
       const response = await axiosInstance.post(
@@ -304,7 +321,7 @@ const AddFoodSalePage = () => {
                         className="btn btn-circle btn-xs absolute top-0 right-0 bg-error text-white"
                         onClick={() => {
                           setPreview(null);
-                          setFormData({...formData, image_url: ''});
+                          setFormData({...formData, image: ''});
                         }}
                       >
                         ✕
@@ -326,6 +343,30 @@ const AddFoodSalePage = () => {
                   )}
                 </div>
               </div>
+            </div>
+
+            <div className="flex flex-col mt-3 pt-3 border-t border-base-200">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="avatar">
+                  <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs">
+                    {user?.role?.charAt(0).toUpperCase() || "R"}
+                  </div>
+                </div>
+                <span className="text-sm font-medium truncate">
+                  {user?.businessName || "View restaurant details"}
+                </span>
+              </div>
+              <motion.button 
+                className="btn btn-sm btn-outline btn-secondary"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/restaurant/${user?._id}`);
+                }}
+              >
+                <FiMapPin className="mr-1" /> View Restaurant Details
+              </motion.button>
             </div>
 
             <div className="mt-8">

@@ -27,6 +27,15 @@ const foodSaleSchema = new mongoose.Schema({
     default: Date.now,
   },
   expiresAt: Date, // could default to foodItem.expiry_date
+  businessRole: {
+    type: String,
+    enum: ['restaurant', 'supermarket'],
+    required: true,
+  },
+  image: {
+    type: String, // URL or path to the image
+    required: false, // Optional field
+  },
 });
 
 module.exports = mongoose.model("FoodSale", foodSaleSchema);
