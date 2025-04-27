@@ -53,6 +53,9 @@ import RestaurantDetailsPage from './components/foodSales/RestaurantDetailsPage'
 import OrderConfirmationPage from './components/foodSales/OrderConfirmationPage.jsx';
 import OrderSuccessPage from './components/foodSales/OrderSuccessPage.jsx';
 import OrderPaymentPage from './components/foodSales/OrderPaymentPage.jsx';
+import AvailableFoodList from './components/AvailableFoodList.jsx';
+import FoodRecommendations from './components/FoodRecommendations.jsx';
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -67,6 +70,11 @@ const router = createBrowserRouter([
       { path: "forgot-password", element: <ForgotPasswordFlow /> },
       { path: "role", element: <RoleChoice /> },
       { path: "verify", element: <VerifyAccount /> },
+      { path: "/available-food", element: <AvailableFoodList /> },
+      {
+        path: "/recommendations",
+        element: <ProtectedRoute><FoodRecommendations /></ProtectedRoute>
+      },
 
       // Routes protégées normales
       {path:"/donationForm",element:<CreateDonationForm/>},

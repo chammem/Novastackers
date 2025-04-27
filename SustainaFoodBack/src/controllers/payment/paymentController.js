@@ -16,13 +16,16 @@ exports.createPaymentIntent = async (req, res) => {
     }
 
     // Find the food sale item
-    const foodSale = await FoodSale.findById(foodSaleId);
+    const foodSale = await FoodSale.findById(foodSaleId).populate('foodItem');
     if (!foodSale) {
-      return res.status(404).json({
-        success: false,
-        message: 'Food sale item not found'
-      });
+        return res.status(404).json({
+            success: false,
+            message: 'Food sale not found',
+        });
     }
+
+    // Log the image for debugging purposes
+    console.log('Food Sale Image:', foodSale.image);
 
     // Check if enough quantity is available
     if (foodSale.quantityAvailable < quantity) {
