@@ -12,14 +12,17 @@ import {
 } from "react-icons/fi";
 import HeaderMid from "../HeaderMid";
 import { useAuth } from "../../context/AuthContext";
+import { getRecommendations } from '../../services/recommendationService';
 
 const OrderConfirmationPage = () => {
   const { foodId } = useParams();
   const navigate = useNavigate();
   const { user, isLoading, isAuthenticated } = useAuth();
 
+  const [recommendations, setRecommendations] = useState([]);
   const [foodSale, setFoodSale] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [deliveryAddress, setDeliveryAddress] = useState({
     street: "",
@@ -29,36 +32,59 @@ const OrderConfirmationPage = () => {
     country: "USA",
   });
   const [specialInstructions, setSpecialInstructions] = useState("");
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      console.log("Auth state:", { isAuthenticated, isLoading, user });
-      toast.error("Please log in to place an order");
-      navigate("/login", { state: { from: `/order-confirmation/${foodId}` } });
-    }
-  }, [isAuthenticated, isLoading, foodId, navigate]);
+    console.log('OrderConfirmationPage mounted');
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      const fetchFoodSaleDetails = async () => {
-        try {
-          const response = await axiosInstance.get(`/food-sale/${foodId}`);
-          setFoodSale(response.data.data);
-          setLoading(false);
-        } catch (err) {
-          console.error("Error fetching food sale details:", err);
-          setError(
-            err.response?.data?.message || "Failed to load food item details"
+    const fetchRecommendations = async () => {
+      try {
+        if (user && user._id) {
+          console.log('Fetching recommendations for userId:', user._id);
+          const recommendationData = await getRecommendations(user._id);
+          console.log('Recommendations received:', recommendationData);
+
+          // Fetch product details for each recommended productId
+          const productDetails = await Promise.all(
+            recommendationData.map(async (item) => {
+              try {
+                const response = await axiosInstance.get(`/food-sale/${item.foodSaleId}`); // Adjusted to use foodSale ID
+                return { ...response.data.data, similarity: item.similarity };
+              } catch (error) {
+                if (error.response && error.response.status === 404) {
+                  console.warn(`Food sale with ID ${item.foodSaleId} not found.`);
+                  return null; // Skip this product
+                } else {
+                  throw error; // Re-throw other errors
+                }
+              }
+            })
           );
-          setLoading(false);
-          toast.error("Could not load food item details");
-        }
-      };
 
-      fetchFoodSaleDetails();
-    }
-  }, [foodId, isAuthenticated, isLoading]);
+          // Filter out null values (missing products)
+          setRecommendations(productDetails.filter((item) => item !== null));
+        }
+      } catch (error) {
+        console.error('Error fetching recommendations:', error);
+      }
+    };
+
+    const fetchFoodSaleDetails = async () => {
+      try {
+        const response = await axiosInstance.get(`/food-sale/${foodId}`);
+        setFoodSale(response.data.data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching food sale details:', err);
+        setError(
+          err.response?.data?.message || 'Failed to load food item details'
+        );
+        setLoading(false);
+      }
+    };
+
+    fetchFoodSaleDetails();
+    fetchRecommendations();
+  }, [user, foodId]);
 
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value);
@@ -420,6 +446,71 @@ const OrderConfirmationPage = () => {
             </motion.div>
           </div>
         </div>
+
+        {/* Section for similar products */}
+        {recommendations.length > 0 && (
+          <div className="mt-12">
+            <h3 className="text-2xl font-semibold mb-6">You might also like</h3>
+            <div className="carousel w-full">
+              {recommendations.slice(0, 4).map((item, index) => (
+                <div
+                  key={item.foodSaleId}
+                  id={`slide${Math.floor(index / 2)}`}
+                  className="carousel-item relative w-full flex justify-center items-center gap-4"
+                >
+                  {[item, recommendations[index + 1]].filter(Boolean).map((subItem) => (
+                    <div
+                      key={subItem.foodSaleId}
+                      className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden w-1/3"
+                    >
+                      <figure className="h-36 w-full relative">
+                        <img
+                          src={`/images/${subItem.foodSaleId}.jpg`}
+                          alt={subItem.name}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            e.target.onerror = null; // Prevent infinite loop
+                            e.target.src = '/images/default-placeholder.png'; // Fallback image
+                          }}
+                        />
+                      </figure>
+                      <div className="card-body p-2">
+                        <h4 className="card-title text-sm font-medium">{subItem.name}</h4>
+                        <p className="text-xs text-gray-500">Category: {subItem.category}</p>
+                        <p className="text-xs text-gray-500">Similarity: {subItem.similarity}</p>
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-sm font-bold text-primary">
+                            ${subItem.discountedPrice.toFixed(2)}
+                          </span>
+                          {subItem.discountedPrice !== subItem.price && (
+                            <span className="line-through text-xs text-gray-500">
+                              ${subItem.price.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                        <button className="btn btn-primary btn-xs mt-2 w-full">View Product</button>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
+                    <a
+                      href={`#slide${(Math.floor(index / 2) - 1 + 2) % 2}`}
+                      className="btn btn-circle"
+                    >
+                      ❮
+                    </a>
+                    <a
+                      href={`#slide${(Math.floor(index / 2) + 1) % 2}`}
+                      className="btn btn-circle"
+                    >
+                      ❯
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
