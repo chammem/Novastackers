@@ -22,6 +22,9 @@ const { uploadDriverDocuments } = require('../controllers/roleVerification');
 const upload = require("../middleware/upload");
 const notificationController = require('../controllers/notifications/notificationController');
 const Batch = require('../models/batch')
+const recommendationController = require('../controllers/recommendationController');
+
+
 router.get("/auth-endpoint",authToken,(request, response) => {
   response.json({ message: "You are authorized to access me" });
 });
@@ -398,7 +401,14 @@ router.post("/optimized-route", async (req, res) => {
 });
 
 router.get('/volunteer/:userId/campaigns', donationController.getMyVolunteeredCampaigns);
+// Route to fetch all available food items
+
+router.get('/', foodController.getAllAvailableFood);
+
+// Route to fetch food recommendations for a user
+router.get('/recommendations/:userId', recommendationController.getFoodRecommendations);
 
 
 
-module.exports = router
+
+module.exports = router;

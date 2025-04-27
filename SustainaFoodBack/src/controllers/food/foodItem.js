@@ -191,6 +191,24 @@ exports.startPickup = async (req, res) => {
     }
   };
 
+  exports.getAllAvailableFood = async (req, res) => {
+    try {
+        const availableFood = await FoodItem.find({ status: 'available' }); // Adjust query as per schema
+        res.status(200).json({
+            success: true,
+            data: availableFood,
+            message: 'Available food items fetched successfully',
+        });
+    } catch (error) {
+        console.error('Error fetching available food:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch available food items',
+            error: error.message,
+        });
+    }
+};
+
 
 
 

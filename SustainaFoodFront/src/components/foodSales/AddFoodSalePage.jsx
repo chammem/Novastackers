@@ -4,12 +4,12 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import axiosInstance from '../../config/axiosInstance';
-import { FiUpload, FiAlertCircle, FiArrowLeft } from 'react-icons/fi';
+import { FiUpload, FiAlertCircle, FiArrowLeft, FiMapPin } from 'react-icons/fi';
 import HeaderMid from '../HeaderMid';
 
 const AddFoodSalePage = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
+const { user } = useAuth();
+  
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -19,14 +19,16 @@ const AddFoodSalePage = () => {
     category: '',
     allergens: '',
     size: 'small',
-    image_url: '',
+    image: '',
   });
-  
+
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [preview, setPreview] = useState(null);
-  
-  // Redirect if user is not logged in or not a restaurant/supermarket
+  const navigate = useNavigate();
+
+  // Redirection sécurisée
   if (!user || (user.role !== 'restaurant' && user.role !== 'supermarket')) {
     toast.error("Only restaurants and supermarkets can add food items");
     navigate('/login');
@@ -35,66 +37,87 @@ const AddFoodSalePage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value
-    });
+    }));
   };
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
+    setSelectedFile(file);
 
-    // Create a preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target.result);
     };
     reader.readAsDataURL(file);
 
-    // In a real app, you would upload this to your server/cloud storage
-    // For now, we're using the object URL as a placeholder
-    setFormData({
-      ...formData,
-      image_url: URL.createObjectURL(file)
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+    const imageFormData = new FormData();
+    imageFormData.append('image', file);
 
     try {
-      // Make sure we have a business ID from the logged-in user
-      if (!user._id) {
-        toast.error("User ID not available");
-        setLoading(false);
-        return;
-      }
+      const response = await axiosInstance.post('/food-sale/upload', imageFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-      // Include business ID in the form data
-      const dataToSubmit = {
-        ...formData,
-        buisinessId: user._id,
-      };
+      setFormData((prev) => ({
+        ...prev,
+        image: response.data.imagePath,
+      }));
 
-      const response = await axiosInstance.post(
-        `/food-sale`, 
-        dataToSubmit
-      );
-      
-      setLoading(false);
-      toast.success('Food item added successfully!');
-      navigate('/food-sales');
-    } catch (err) {
-      console.error("Error creating food sale:", err);
-      setLoading(false);
-      setError(err.response?.data?.message || "Failed to add food item. Please try again.");
-      toast.error(err.response?.data?.message || "Failed to add food item");
+      toast.success('Image uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image. Please try again.');
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // ← évite le reload automatique du form
+    
+    if (!selectedFile) {
+      toast.error("Please select an image first.");
+      return;
+    }
+  
+    const submitData = new FormData();
+    submitData.append('image', selectedFile);
+    submitData.append('name', formData.name);
+    submitData.append('price', formData.price);
+    submitData.append('discountedPrice', formData.discountedPrice);
+    submitData.append('quantityAvailable', formData.quantityAvailable);
+    submitData.append('expiresAt', formData.expiresAt);
+    submitData.append('category', formData.category);
+    submitData.append('allergens', formData.allergens);
+    submitData.append('size', formData.size);
+    submitData.append('buisinessId', user?.buisinessId || user?._id);
+    submitData.append('businessRole', user?.role);
+  
+    try {
+      setLoading(true);
+  
+      const response = await axiosInstance.post('/food-sale', submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
+      console.log('Upload success:', response.data);
+      toast.success('Food item added successfully!');
+      navigate('/food-sales'); // ← ici ça marchera correctement
+    } catch (error) {
+      console.error('Upload error:', error);
+      setError(error);
+      toast.error('Failed to add food item. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
   // Animation variants
   const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -304,7 +327,7 @@ const AddFoodSalePage = () => {
                         className="btn btn-circle btn-xs absolute top-0 right-0 bg-error text-white"
                         onClick={() => {
                           setPreview(null);
-                          setFormData({...formData, image_url: ''});
+                          setFormData({...formData, image: ''});
                         }}
                       >
                         ✕
@@ -326,6 +349,30 @@ const AddFoodSalePage = () => {
                   )}
                 </div>
               </div>
+            </div>
+
+            <div className="flex flex-col mt-3 pt-3 border-t border-base-200">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="avatar">
+                  <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs">
+                    {user?.role?.charAt(0).toUpperCase() || "R"}
+                  </div>
+                </div>
+                <span className="text-sm font-medium truncate">
+                  {user?.businessName || "View restaurant details"}
+                </span>
+              </div>
+              <motion.button 
+                className="btn btn-sm btn-outline btn-secondary"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/restaurant/${user?._id}`);
+                }}
+              >
+                <FiMapPin className="mr-1" /> View Restaurant Details
+              </motion.button>
             </div>
 
             <div className="mt-8">

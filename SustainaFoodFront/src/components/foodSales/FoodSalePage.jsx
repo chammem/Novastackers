@@ -128,12 +128,13 @@ const FoodSalePage = () => {
               whileHover={{ scale: 1.03 }}
               className="card bg-base-100 shadow-xl overflow-hidden"
             >
-              {item.foodItem.image_url ? (
+              {item.image ? (
                 <figure className="h-48 w-full relative">
                   <img 
-                    src={item.foodItem.image_url} 
-                    alt={item.foodItem.name} 
+                    src={item.image} 
+                    alt={item.foodItem.name || 'Food item'} 
                     className="h-full w-full object-cover"
+                    onError={(e) => { e.target.src = '/public/images/default-food.jpg'; }} // Fallback image
                   />
                   <div className="absolute top-2 right-2 badge badge-accent p-3">
                     ${item.discountedPrice || item.price}
