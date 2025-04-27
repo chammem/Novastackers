@@ -69,6 +69,10 @@ donationRouter.get(
   donationController.getAvailableVolunteersForCampaign
 );
 
+// New routes for edit and delete
+donationRouter.put("/update-food-item/:foodId", donationController.updateFoodItem);
+donationRouter.delete("/delete-food-item/:foodId", donationController.deleteFoodItem);
+
 // Add these routes to your existing donations router
 
 // Generate batches

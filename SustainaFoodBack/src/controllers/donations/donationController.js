@@ -44,29 +44,23 @@ exports.createDonation = async (req, res) => {
 
 exports.addFoodToDonation = async (req, res) => {
   const { donationId } = req.params;
-  const { buisiness_id, name, quantity, category, size } = req.body;
   try {
     const Food = new FoodItem({
-      buisiness_id,
-      name,
-      quantity,
-      category,
-      size,
+      ...req.body,
       donationId: donationId,
     });
     await Food.save();
 
     const donation = await FoodDonation.findById(donationId);
-
     if (!donation) {
       return res.status(404).json({ message: "Donation not found" });
     }
     donation.foods.push(Food);
-
     await donation.save();
     res.status(201).json(donation);
   } catch (error) {
-    res.status(500).json({ message: "Error adding food item", error });
+    console.error("Error adding food item:", error);
+    res.status(500).json({ message: "Error adding food item", error: error.message });
   }
 };
 
@@ -687,5 +681,52 @@ exports.deleteDonation = async (req, res) => {
       message: 'Erreur lors de la suppression',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
+  }
+};
+// Update a food item
+exports.updateFoodItem = async (req, res) => {
+  const { foodId } = req.params;
+  const { quantity, category } = req.body;
+
+  try {
+    const foodItem = await FoodItem.findById(foodId);
+    if (!foodItem) {
+      return res.status(404).json({ message: "Food item not found" });
+    }
+
+    // Update only quantity and category
+    foodItem.quantity = quantity;
+    foodItem.category = category;
+    await foodItem.save();
+
+    res.status(200).json({ message: "Food item updated successfully", foodItem });
+  } catch (error) {
+    console.error("Error updating food item:", error);
+    res.status(500).json({ message: "Error updating food item", error: error.message });
+  }
+};
+
+// Delete a food item
+exports.deleteFoodItem = async (req, res) => {
+  const { foodId } = req.params;
+
+  try {
+    const foodItem = await FoodItem.findById(foodId);
+    if (!foodItem) {
+      return res.status(404).json({ message: "Food item not found" });
+    }
+
+    // Remove the food item from the associated donation
+    const donation = await FoodDonation.findById(foodItem.donationId);
+    if (donation) {
+      donation.foods = donation.foods.filter((food) => food.toString() !== foodId);
+      await donation.save();
+    }
+
+    await FoodItem.findByIdAndDelete(foodId);
+    res.status(200).json({ message: "Food item deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting food item:", error);
+    res.status(500).json({ message: "Error deleting food item", error: error.message });
   }
 };

@@ -179,7 +179,7 @@ function ActivateAccount() {
           {/* Business License Number */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text">Business License Number</span>
+              <span className="label-text">Business License Number (text.pdf)</span>
             </label>
             <input
               type="file"
@@ -192,7 +192,7 @@ function ActivateAccount() {
           {/* Tax ID */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text">Tax ID</span>
+              <span className="label-text">Tax ID (text.pdf)</span>
             </label>
             <input
               type="file"
