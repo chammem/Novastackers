@@ -58,6 +58,11 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use('/api', router);
 app.use('/api/donations', donationRouter);
 
+
+// ⚡ Add this simple GET route
+app.get('/', (req, res) => {
+  res.send('🚀 Novastackers backend is running!');
+});
 /* Start DB and server
 const startServer = async () => {
   await connectDB();
