@@ -58,11 +58,23 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use('/api', router);
 app.use('/api/donations', donationRouter);
 
-// Start DB and server
+/* Start DB and server
 const startServer = async () => {
   await connectDB();
   server.listen(8082, () => {
     console.log(`🚀 Server + Socket.IO running on port 8082`);
+  });
+};
+
+startServer();*/
+// Start DB and server
+const startServer = async () => {
+  await connectDB();
+
+  // Use PORT environment variable for binding to the correct port on Render
+  const port = process.env.PORT || 8082; // Default to 8082 if PORT is not defined
+  server.listen(port, () => {
+    console.log(`🚀 Server + Socket.IO running on port ${port}`);
   });
 };
 
