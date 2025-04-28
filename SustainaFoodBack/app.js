@@ -66,8 +66,8 @@ app.use('/api', router);
 app.use('/api/donations', donationRouter);
 app.use('/api/food-sale', foodSaleRoutes);
 app.use('/api/payment', paymentRoutes);
-app.use('/api/recommendations', recommendationRoutes);
-// Start DB and server
+// Recommendation routes
+app.use('/api', recommendationRoutes);// Start DB and server
 const startServer = async () => {
   await connectDB();
   server.listen(8082, () => {

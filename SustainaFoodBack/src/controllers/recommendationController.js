@@ -1,67 +1,73 @@
 const axios = require('axios');
-const mongoose = require('mongoose');
 
-// Controller to get food recommendations
+exports.getUserRecommendations = async (req, res) => {
+    const { userId } = req.body;
+
+    if (!userId) {
+        return res.status(400).json({
+            success: false,
+            message: 'User ID is required',
+        });
+    }
+
+    try {
+        const response = await axios.post('http://127.0.0.1:5000/recommend/user', {
+            user_id: userId,
+        });
+
+        res.status(200).json(response.data);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.response?.data?.message || 'Error fetching user recommendations',
+        });
+    }
+};
+
+exports.getProductRecommendations = async (req, res) => {
+    const { productName } = req.body;
+
+    if (!productName) {
+        return res.status(400).json({
+            success: false,
+            message: 'Product name is required',
+        });
+    }
+
+    try {
+        const response = await axios.post('http://127.0.0.1:5000/recommend/product', {
+            product_name: productName,
+        });
+
+        res.status(200).json(response.data);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.response?.data?.message || 'Error fetching product recommendations',
+        });
+    }
+};
+
 exports.getFoodRecommendations = async (req, res) => {
     const { userId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
+    if (!userId) {
         return res.status(400).json({
             success: false,
-            message: 'Invalid or missing userId',
+            message: 'User ID is required',
         });
     }
 
     try {
-        const response = await axios.post('http://localhost:8082/update-recommendations');            user_id: parseInt(userId), // assure que c’est un integer si besoin
+        const response = await axios.post('http://127.0.0.1:5000/recommend/user', {
+            user_id: userId,
         });
 
-        const recommendations = response.data.recommendations;
-
-        if (!recommendations || recommendations.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'No recommendations found',
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            recommendations,
-        });
+        res.status(200).json(response.data);
     } catch (error) {
-        console.error('Erreur lors de la récupération des recommandations:', error.message);
-        return res.status(500).json({
+        res.status(500).json({
             success: false,
-            message: 'Erreur interne du serveur',
-            error: error.message,
+            message: error.response?.data?.message || 'Error fetching food recommendations',
         });
     }
 };
-
-// Controller to update recommendations
-exports.updateRecommendations = async (req, res) => {
-    try {
-        const response = await axios.post('http://localhost:8082/api/recommendations/update');
-
-        if (!response.data.success) {
-            return res.status(500).json({
-                success: false,
-                message: response.data.message || 'Erreur inconnue du serveur FastAPI',
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: 'Recommandations mises à jour avec succès !',
-        });
-    } catch (error) {
-        console.error('Erreur lors de la mise à jour des recommandations:', error.message);
-        return res.status(500).json({
-            success: false,
-            message: 'Erreur interne du serveur',
-            error: error.message,
-        });
-    }
-};
-

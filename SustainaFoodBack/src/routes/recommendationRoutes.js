@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const recommendationController = require('../controllers/recommendationController');
 
-// Route to get recommendations for a user
-router.get('/:userId', recommendationController.getFoodRecommendations);
-router.post('/update', recommendationController.updateRecommendations);
+// Route for user-based recommendations
+router.post('/recommendations/user', recommendationController.getUserRecommendations);
+
+// Route for product-based recommendations
+router.post('/recommendations/product', recommendationController.getProductRecommendations);
 
 module.exports = router;

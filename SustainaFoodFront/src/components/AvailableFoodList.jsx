@@ -6,6 +6,7 @@ import HeaderMid from './HeaderMid';
 import Footer from './Footer';
 import { useNavigate } from 'react-router-dom';
 import Modal from './ui/Modal';
+import axios from 'axios';
 
 const AvailableFoodList = () => {
   const [foodItems, setFoodItems] = useState([]);
@@ -13,6 +14,8 @@ const AvailableFoodList = () => {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all'); // Filter state for user or supermarket
   const [selectedAllergens, setSelectedAllergens] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -118,6 +121,20 @@ const AvailableFoodList = () => {
   const closeAllergensModal = () => {
     setSelectedAllergens(null);
   };
+
+  const fetchRecommendations = async (productName) => {
+    try {
+        const response = await axios.get(`/api/recommendations/${productName}`);
+        if (response.data.success) {
+            setRecommendations(response.data.recommendations);
+            setSelectedProduct(productName);
+        } else {
+            console.error('No recommendations found');
+        }
+    } catch (error) {
+        console.error('Error fetching recommendations:', error);
+    }
+};
 
   return (
     <>
@@ -284,6 +301,17 @@ const AvailableFoodList = () => {
               </button>
             </div>
           </Modal>
+        )}
+
+        {selectedProduct && (
+          <div>
+            <h2>Recommendations for {selectedProduct}</h2>
+            <ul>
+                {recommendations.map((rec, index) => (
+                    <li key={index}>{rec.product_name} - Similarity: {rec.similarity}</li>
+                ))}
+            </ul>
+          </div>
         )}
       </div>
       <Footer />

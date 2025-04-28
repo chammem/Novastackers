@@ -8,236 +8,296 @@ Original file is located at
 """
 
 
-import kagglehub
+# -*- coding: utf-8 -*-
+"""recommandation_optimisee.py
+
+Modèle de recommandation optimisé pour Instacart Market Basket Analysis
+"""
+
 import pandas as pd
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
-from joblib import dump
-from scipy.sparse import coo_matrix
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import linear_kernel
+from joblib import dump, load
+from scipy.sparse import csr_matrix, save_npz, load_npz
 import os
-from pathlib import Path
-from fastapi import FastAPI
-from joblib import load
-from pydantic import BaseModel
-from pymongo import MongoClient
+import json
+import sys
+from datetime import datetime
+import logging
 
-app = FastAPI()
+# Configuration du logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-# Configuration de la base de données MongoDB
-MONGO_URI = os.getenv("MONGODB_URI", "mongodb+srv://mohammedazizgawet:novastackers@sustainafood.ihxbt.mongodb.net/SustainaFood?retryWrites=true&w=majority&appName=SustainaFood")
-DB_NAME = "SustainaFood"
-client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
+# Constantes
+SAMPLE_SIZE = 0.1  # Fraction des données à utiliser
+MIN_PRODUCT_PURCHASES = 5  # Nombre minimum d'achats pour considérer un produit
+MIN_USER_ORDERS = 3  # Nombre minimum de commandes pour considérer un utilisateur
+DATA_DIR = 'data'
+MODEL_DIR = 'model'
 
-# Charger les utilisateurs et produits depuis MongoDB
-def load_users_and_products():
-    users = list(db.users.find({}, {"_id": 1}))
-    products = list(db.products.find({}, {"_id": 1}))
-    return users, products
-
-# Charger les interactions utilisateur-produit depuis MongoDB
-def load_interactions():
-    interactions = list(db.interactions.find({}, {"user_id": 1, "product_id": 1, "count": 1}))
-    return interactions
-
-# Préparer la matrice utilisateur-produit
-def prepare_matrix_from_db():
-    users, products = load_users_and_products()
-    interactions = load_interactions()
-
-    # Créer des mappings user_id et product_id
-    user_map = {str(user["_id"]): i for i, user in enumerate(users)}
-    product_map = {str(product["_id"]): i for i, product in enumerate(products)}
-
-    # Construire la matrice sparse
-    rows = [user_map[str(interaction["user_id"])] for interaction in interactions]
-    cols = [product_map[str(interaction["product_id"])] for interaction in interactions]
-    counts = [interaction["count"] for interaction in interactions]
-
-    matrix = coo_matrix((counts, (rows, cols)), shape=(len(users), len(products)))
-    return user_map, product_map, matrix.tocsr()
-
-# Mettre à jour les recommandations
-def update_recommendations():
-    user_map, product_map, matrix = prepare_matrix_from_db()
-    model = train_model(matrix)
-    save_model(model, user_map, product_map)
-    print("Recommandations mises à jour avec succès !")
-
-@app.post("/update-recommendations")
-def update_recommendations_endpoint():
-    try:
-        update_recommendations()
-        return {"success": True, "message": "Recommandations mises à jour avec succès !"}
-    except Exception as e:
-        return {"success": False, "message": str(e)}
-
-# Charger les artefacts
-artifacts_path = os.path.join(os.path.dirname(__file__), "model/recommendation_artifacts.joblib")
-artifacts = load(artifacts_path)
-model = artifacts['model']
-user_map = artifacts['user_map']
-product_map = artifacts['product_map']
-
-class RecommendationRequest(BaseModel):
-    user_id: int
-
-@app.post("/recommendations")
-def get_recommendations(request: RecommendationRequest):
-    user_id = request.user_id
-    if user_id not in user_map:
-        return {"success": False, "message": "Utilisateur non trouvé"}
+def load_sample_data(dataset_path):
+    """Charge un échantillon des données avec filtrage des utilisateurs/produits peu actifs"""
+    logger.info("Chargement des données avec échantillonnage...")
     
-    user_index = user_map[user_id]
-    distances, indices = model.kneighbors([user_index])
-    recommended_products = [
-        {"product_id": list(product_map.keys())[i], "similarity": distances[0][j]}
-        for j, i in enumerate(indices[0])
-    ]
-    
-    return {"success": True, "recommendations": recommended_products}
-
-def download_dataset():
-    """Télécharge le dataset depuis Kaggle Hub"""
-    print("Téléchargement du dataset depuis Kaggle Hub...")
     try:
-        path = kagglehub.dataset_download("psparks/instacart-market-basket-analysis")
-        print(f"Dataset téléchargé à: {path}")
-        return path
-    except Exception as e:
-        print(f"Erreur lors du téléchargement: {e}")
-        raise
-
-def load_data(dataset_path):
-    """Charge les données depuis les fichiers CSV"""
-    print("Chargement des données...")
-    try:
-        orders = pd.read_csv(os.path.join(dataset_path, 'orders.csv'))
-        order_products = pd.read_csv(os.path.join(dataset_path, 'order_products__prior.csv'))
-        products = pd.read_csv(os.path.join(dataset_path, 'products.csv'))
-
+        # Chargement avec types optimisés
+        dtype = {
+            'order_id': 'int32', 
+            'user_id': 'int32',
+            'product_id': 'int32',
+            'add_to_cart_order': 'int16',
+            'reordered': 'int8'
+        }
+        
+        # Chargement partiel des données
+        orders = pd.read_csv(os.path.join(dataset_path, 'orders.csv'), 
+                          dtype={'order_id': 'int32', 'user_id': 'int32'},
+                          nrows=int(1e6) if SAMPLE_SIZE < 1.0 else None)
+        
+        order_products = pd.read_csv(
+            os.path.join(dataset_path, 'order_products__prior.csv'),
+            dtype=dtype,
+            nrows=int(3e6) if SAMPLE_SIZE < 1.0 else None
+        )
+        
+        products = pd.read_csv(os.path.join(dataset_path, 'products.csv'),
+                            dtype={'product_id': 'int32', 'aisle_id': 'int16', 'department_id': 'int8'})
+        
+        aisles = pd.read_csv(os.path.join(dataset_path, 'aisles.csv'))
+        
         # Fusion des données
-        merged = order_products.merge(orders, on='order_id').merge(products, on='product_id')
-        return merged
+        merged = order_products.merge(orders, on='order_id')
+        merged = merged.merge(products, on='product_id')
+        merged = merged.merge(aisles, on='aisle_id')
+        
+        # Filtrage des utilisateurs et produits peu actifs
+        user_counts = merged['user_id'].value_counts()
+        active_users = user_counts[user_counts >= MIN_USER_ORDERS].index
+        
+        product_counts = merged['product_id'].value_counts()
+        active_products = product_counts[product_counts >= MIN_PRODUCT_PURCHASES].index
+        
+        filtered_data = merged[
+            (merged['user_id'].isin(active_users)) & 
+            (merged['product_id'].isin(active_products))
+        ]
+        
+        logger.info(f"Données filtrées: {len(filtered_data)} lignes "
+                   f"({len(active_users)} utilisateurs, {len(active_products)} produits)")
+        
+        return filtered_data, products.merge(aisles, on='aisle_id')
+    
     except Exception as e:
-        print(f"Erreur lors du chargement des données: {e}")
+        logger.error(f"Erreur lors du chargement: {str(e)}")
         raise
 
-def prepare_matrix(data, sample_fraction=0.1):
-    """Version optimisée pour la création et affichage de la matrice"""
-    print("\nPréparation de la matrice optimisée...")
-
+def prepare_sparse_matrix(data):
+    """Crée une matrice sparse utilisateur-produit optimisée"""
+    logger.info("Préparation de la matrice sparse...")
+    
     try:
-        # Échantillonnage pour le développement
-        if sample_fraction < 1.0:
-            unique_users = data['user_id'].unique()
-            sample_users = np.random.choice(unique_users,
-                                         size=int(len(unique_users)*sample_fraction),
-                                         replace=False)
-            data = data[data['user_id'].isin(sample_users)]
-            print(f"Échantillon: {len(sample_users)} utilisateurs")
-
-        # Création d'un mapping des IDs
+        # Création des mappings
         user_ids = data['user_id'].unique()
         product_ids = data['product_id'].unique()
-
+        
         user_map = {u: i for i, u in enumerate(user_ids)}
         product_map = {p: i for i, p in enumerate(product_ids)}
-
-        # Comptage des interactions
-        grouped = data.groupby(['user_id', 'product_id']).size().reset_index(name='count')
-
-        # Création de la matrice sparse COO
-        rows = grouped['user_id'].map(user_map)
-        cols = grouped['product_id'].map(product_map)
-        counts = grouped['count']
-
-        matrix = coo_matrix((counts, (rows, cols)),
-                          shape=(len(user_ids), len(product_ids)))
-
-        # Conversion en CSR pour l'efficacité
-        matrix_csr = matrix.tocsr()
-
-        # Affichage de la matrice
-        print("\nAperçu de la matrice sparse:")
-        print(f"Format: {matrix_csr.shape[0]} utilisateurs x {matrix_csr.shape[1]} produits")
-        print(f"Nombre total d'interactions: {matrix_csr.nnz}")
-
-        # Afficher une sous-matrice pour visualisation
-        print("\nExtrait de la matrice (10x10 premiers éléments):")
-        dense_sample = matrix_csr[:10, :10].toarray()
-        print(pd.DataFrame(dense_sample,
-                         index=[f"User_{i}" for i in range(10)],
-                         columns=[f"Prod_{i}" for i in range(10)]))
-
-        return user_map, product_map, matrix_csr, grouped
-
+        
+        # Pondération par réachat
+        data['weight'] = data['reordered'].apply(lambda x: 1.5 if x else 1.0)
+        
+        # Construction de la matrice CSR directement pour économiser de la mémoire
+        row_ind = data['user_id'].map(user_map)
+        col_ind = data['product_id'].map(product_map)
+        values = data['weight']
+        
+        matrix = csr_matrix(
+            (values, (row_ind, col_ind)),
+            shape=(len(user_ids), len(product_ids)))
+        
+        logger.info(f"Matrice créée: {matrix.shape[0]} utilisateurs x {matrix.shape[1]} produits")
+        logger.info(f"Nombre d'interactions: {matrix.nnz}")
+        
+        return matrix, user_map, product_map
+    
     except Exception as e:
-        print(f"Erreur lors de la préparation de la matrice: {e}")
+        logger.error(f"Erreur lors de la création de la matrice: {str(e)}")
         raise
 
-def train_model(matrix_csr):
-    """Entraîne le modèle de recommandation"""
-    print("\nEntraînement du modèle...")
+def train_hybrid_model(matrix, product_info):
+    """Entraîne un modèle hybride KNN + contenu"""
+    logger.info("Entraînement du modèle hybride...")
+    
     try:
-        model = NearestNeighbors(metric='cosine',
-                               algorithm='brute',
-                               n_neighbors=5)  # Réduit pour l'exemple
-        model.fit(matrix_csr)
-        print("Modèle entraîné avec succès!")
-        return model
-    except Exception as e:
-        print(f"Erreur lors de l'entraînement: {e}")
-        raise
-
-def save_model(model, user_map, product_map):
-    """Sauvegarde des artefacts du modèle"""
-    print("\nSauvegarde des artefacts...")
-    try:
-        os.makedirs('model', exist_ok=True)
+        # Modèle de similarité collaborative
+        cf_model = NearestNeighbors(
+            metric='cosine', 
+            algorithm='brute', 
+            n_neighbors=20
+        )
+        cf_model.fit(matrix)
+        logger.info("Modèle collaboratif entraîné")
+        
+        # Modèle de similarité basé sur le contenu (TF-IDF sur les noms de produits)
+        tfidf = TfidfVectorizer(stop_words='english')
+        tfidf_matrix = tfidf.fit_transform(product_info['product_name'])
+        
+        # Sauvegarde des artefacts
+        os.makedirs(MODEL_DIR, exist_ok=True)
         dump({
-            'model': model,
-            'user_map': user_map,
-            'product_map': product_map
-        }, 'model/recommendation_artifacts.joblib')
-        print("Artefacts sauvegardés dans model/recommendation_artifacts.joblib")
+            'cf_model': cf_model,
+            'tfidf': tfidf,
+            'tfidf_matrix': tfidf_matrix,
+            'product_info': product_info
+        }, os.path.join(MODEL_DIR, 'hybrid_model.joblib'))
+        
+        # Sauvegarde de la matrice sparse
+        save_npz(os.path.join(MODEL_DIR, 'interaction_matrix.npz'), matrix)
+        
+        logger.info("Modèle hybride sauvegardé")
+        
+        return cf_model, tfidf, tfidf_matrix
+    
     except Exception as e:
-        print(f"Erreur lors de la sauvegarde: {e}")
+        logger.error(f"Erreur lors de l'entraînement: {str(e)}")
         raise
+
+def hybrid_recommendations(user_id, user_map, matrix, n=10):
+    """Génère des recommandations hybrides pour un utilisateur"""
+    try:
+        # Charger le modèle hybride
+        artifacts = load(os.path.join(MODEL_DIR, 'hybrid_model.joblib'))
+        cf_model = artifacts['cf_model']
+        product_info = artifacts['product_info']
+        
+        # Vérifier si l'utilisateur existe
+        if user_id not in user_map:
+            return {'success': False, 'message': 'User not found'}
+        
+        user_idx = user_map[user_id]
+        
+        # 1. Recommandations collaboratives
+        distances, indices = cf_model.kneighbors(matrix[user_idx])
+        
+        # Obtenir les IDs des produits recommandés
+        product_ids = [list(product_map.keys())[list(product_map.values()).index(i)] for i in indices[0]]
+        
+        # 2. Fusion avec similarité de contenu
+        recommendations = []
+        for pid in product_ids[:n*2]:  # Prendre plus que nécessaire pour filtrer
+            product = product_info[product_info['product_id'] == pid].iloc[0]
+            recommendations.append({
+                'product_id': int(pid),
+                'product_name': product['product_name'],
+                'aisle': product['aisle'],
+                'score': 1.0  # Score initial basé sur CF
+            })
+        
+        # 3. Diversification (éviter trop de produits similaires)
+        unique_aisles = set()
+        final_recommendations = []
+        
+        for rec in sorted(recommendations, key=lambda x: -x['score']):
+            if rec['aisle'] not in unique_aisles or len(unique_aisles) >= 5:
+                final_recommendations.append(rec)
+                unique_aisles.add(rec['aisle'])
+                if len(final_recommendations) >= n:
+                    break
+        
+        return {'success': True, 'recommendations': final_recommendations}
+    
+    except Exception as e:
+        return {'success': False, 'message': str(e)}
+
+def content_based_recommendations(product_name, n=10):
+    """Recommandations basées sur le contenu pour un produit"""
+    try:
+        artifacts = load(os.path.join(MODEL_DIR, 'hybrid_model.joblib'))
+        tfidf = artifacts['tfidf']
+        tfidf_matrix = artifacts['tfidf_matrix']
+        product_info = artifacts['product_info']
+        
+        # Trouver le produit
+        product_row = product_info[product_info['product_name'].str.lower() == product_name.lower()]
+        if product_row.empty:
+            return {'success': False, 'message': 'Product not found'}
+        
+        # Calculer la similarité avec TF-IDF
+        product_idx = product_row.index[0]
+        cosine_similarities = linear_kernel(tfidf_matrix[product_idx], tfidf_matrix).flatten()
+        related_indices = cosine_similarities.argsort()[-n-1:-1][::-1]
+        
+        recommendations = []
+        for idx in related_indices:
+            product = product_info.iloc[idx]
+            recommendations.append({
+                'product_id': int(product['product_id']),
+                'product_name': product['product_name'],
+                'aisle': product['aisle'],
+                'score': float(cosine_similarities[idx])
+            })
+        
+        # Filtrer les recommandations basées sur la similarité > 0.75
+        recommendations = [
+            rec for rec in recommendations if isinstance(rec['score'], (int, float)) and rec['score'] > 0.75
+        ]
+
+        return {'success': True, 'recommendations': recommendations}
+    
+    except Exception as e:
+        return {'success': False, 'message': str(e)}
 
 def main():
     try:
-        # Téléchargement
-        dataset_path = download_dataset()
-
-        # Chargement
-        data = load_data(dataset_path)
-        print(f"\nDonnées chargées: {len(data)} lignes")
-
-        # Préparation avec affichage
-        user_map, product_map, matrix, grouped = prepare_matrix(data, sample_fraction=0.1)
-
-        # Entraînement
-        model = train_model(matrix)
-
-        # Sauvegarde
-        save_model(model, user_map, product_map)
-
+        # Chargement des données
+        dataset_path = "data"  # Modifier selon votre structure
+        data, product_info = load_sample_data(dataset_path)
+        
+        # Préparation de la matrice
+        matrix, user_map, product_map = prepare_sparse_matrix(data)
+        
+        # Entraînement du modèle
+        train_hybrid_model(matrix, product_info)
+        
+        # Sauvegarde des mappings
+        dump({
+            'user_map': user_map,
+            'product_map': product_map
+        }, os.path.join(MODEL_DIR, 'mappings.joblib'))
+        
         # Exemple de recommandation
-        print("\nExemple de recommandation:")
-        sample_user_id = grouped.iloc[0]['user_id']
-        user_index = user_map[sample_user_id]
-        distances, indices = model.kneighbors(matrix[user_index])
-
-        print(f"Recommandations pour l'utilisateur {sample_user_id}:")
-        for i, (idx, dist) in enumerate(zip(indices[0], distances[0])):
-            product_id = list(product_map.keys())[list(product_map.values()).index(idx)]
-            print(f"{i+1}. Produit {product_id} (similarité: {1-dist:.2f})")
-
-        print("\nProcessus terminé avec succès!")
+        sample_user = next(iter(user_map.keys()))
+        logger.info(f"\nExemple de recommandation pour l'utilisateur {sample_user}:")
+        print(json.dumps(hybrid_recommendations(sample_user, user_map, matrix), indent=2))
+        
+        sample_product = product_info.iloc[0]['product_name']
+        logger.info(f"\nExemple de recommandation pour le produit '{sample_product}':")
+        print(json.dumps(content_based_recommendations(sample_product), indent=2))
+        
     except Exception as e:
-        print(f"\nÉchec: {e}")
+        logger.error(f"Erreur dans le main: {str(e)}")
 
 if __name__ == "__main__":
-    # kagglehub.login()  # Décommentez si nécessaire
-    main()
+    if len(sys.argv) > 1:
+        # Mode API
+        try:
+            mappings = load(os.path.join(MODEL_DIR, 'mappings.joblib'))
+            matrix = load_npz(os.path.join(MODEL_DIR, 'interaction_matrix.npz'))
+            
+            if sys.argv[1] == '--user':
+                user_id = int(sys.argv[2])
+                result = hybrid_recommendations(user_id, mappings['user_map'], matrix)
+            else:
+                product_name = " ".join(sys.argv[1:])
+                result = content_based_recommendations(product_name)
+            
+            print(json.dumps(result))
+            
+        except Exception as e:
+            print(json.dumps({'success': False, 'message': str(e)}))
+    else:
+        # Mode entraînement
+        main()
