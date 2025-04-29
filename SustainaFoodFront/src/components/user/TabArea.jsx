@@ -239,3 +239,9 @@
 // };
 
 // export default TabArea;
+const TabArea = () => {
+    // ton code ici
+  };
+  
+  export default TabArea;
+  

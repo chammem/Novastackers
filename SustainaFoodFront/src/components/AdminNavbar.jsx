@@ -1,18 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "../context/AuthContext";
+import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import axiosInstance from "../config/axiosInstance";
-import { FiChevronLeft, FiChevronRight, FiUser, FiLogOut, FiX, FiMenu, FiHome, FiUsers, FiShield, FiPackage, FiTruck, FiPieChart, FiSettings } from "react-icons/fi";
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiUser,
+  FiLogOut,
+  FiX,
+  FiMenu,
+  FiHome,
+  FiUsers,
+  FiShield,
+  FiPackage,
+  FiTruck,
+  FiPieChart,
+  FiSettings,
+} from "react-icons/fi";
 
-const AdminNavbar = ({
-  sidebarOpen,
-  setSidebarOpen,
-  user,
-  notifications,
-  onLogout
-}) => {
+const AdminNavbar = ({ sidebarOpen, setSidebarOpen, user, onLogout }) => {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -37,18 +44,20 @@ const AdminNavbar = ({
   return (
     <>
       {/* Sidebar */}
-      <div className={`fixed left-0 top-0 h-full bg-blue-900 text-white z-50 transition-all duration-300 ease-in-out ${
-        sidebarOpen ? "w-80" : "w-20"
-      }`}>
+      <div
+        className={`fixed left-0 top-0 h-full bg-blue-900 text-white z-50 transition-all duration-300 ease-in-out ${
+          sidebarOpen ? "w-80" : "w-20"
+        }`}
+      >
         <div className={`p-4 ${sidebarOpen ? "min-w-[320px]" : "min-w-[80px]"}`}>
           <div className="flex items-center justify-between h-12">
             <h1 className="text-2xl font-bold whitespace-nowrap">
-              {sidebarOpen ? "SaistainaFood Admin" : "FS"}
+              {sidebarOpen ? "SustainaFood Admin" : "SF"}
             </h1>
             <button
-          onClick={() => setSidebarOpen(!sidebarOpen)} // Utilisation correcte
-          className="p-1.5 rounded-full hover:bg-blue-700 transition-colors"
-        >
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-1.5 rounded-full hover:bg-blue-700 transition-colors"
+            >
               {sidebarOpen ? (
                 <FiChevronLeft className="w-5 h-5" />
               ) : (
@@ -56,23 +65,20 @@ const AdminNavbar = ({
               )}
             </button>
           </div>
-  
+
           <nav className="mt-6 space-y-1">
             <NavItem icon={<FiHome />} text="Dashboard" to="/admin/dashboard" sidebarOpen={sidebarOpen} />
             <NavItem icon={<FiUsers />} text="Users" to="/admin/users" sidebarOpen={sidebarOpen} />
             <NavItem icon={<FiShield />} text="Roles" to="/admin/roles-verification" sidebarOpen={sidebarOpen} />
-            <NavItem 
-  icon={<FiPackage />} 
-  text="Campaigns" 
-  to="/admin/campaigns" 
-  sidebarOpen={sidebarOpen} 
-/>            <NavItem icon={<FiTruck />} text="Food" to="/admin/food" sidebarOpen={sidebarOpen} />
+            <NavItem icon={<FiPackage />} text="Campaigns" to="/admin/campaigns" sidebarOpen={sidebarOpen} />
+            <NavItem icon={<FiTruck />} text="Food" to="/admin/food" sidebarOpen={sidebarOpen} />
+            <NavItem icon={<FiPackage />} text="Mystery Packs" to="/admin/mysterypack" sidebarOpen={sidebarOpen} />
             <NavItem icon={<FiPieChart />} text="Reports" to="/reports" sidebarOpen={sidebarOpen} />
             <NavItem icon={<FiSettings />} text="Settings" to="/settings" sidebarOpen={sidebarOpen} />
           </nav>
         </div>
       </div>
-  
+
       {/* Top Navigation */}
       <motion.header
         initial={{ y: -20 }}
@@ -82,11 +88,8 @@ const AdminNavbar = ({
           scrolled ? "bg-white/90 shadow-md backdrop-blur-sm" : "bg-white"
         } ${sidebarOpen ? "left-80" : "left-20"}`}
       >
-  
         <div className="flex justify-between items-center px-4 py-3">
-          <div className="flex items-center gap-4">
-         
-          </div>
+          <div></div>
 
           <div className="flex items-center gap-2">
             <div className="dropdown dropdown-end">
@@ -147,13 +150,10 @@ const AdminNavbar = ({
             <nav className="mt-4">
               <MobileNavItem icon={<FiHome />} text="Dashboard" to="/admin/dashboard" />
               <MobileNavItem icon={<FiUsers />} text="Users" to="/admin/users" />
-              <NavItem 
-              active={activeTab === 'roles-verification'}
-              icon={<ShieldIcon />}
-              text="Verifications"
-              to="/admin/roles-verification"
-            />              <MobileNavItem icon={<FiPackage />} text="Compaings" to="/admin/campaigns" />
+              <MobileNavItem icon={<FiShield />} text="Roles" to="/admin/roles-verification" />
+              <MobileNavItem icon={<FiPackage />} text="Campaigns" to="/admin/campaigns" />
               <MobileNavItem icon={<FiTruck />} text="Food" to="/admin/food" />
+              <MobileNavItem icon={<FiPackage />} text="Mystery Packs" to="/admin/mysterypack" />
               <MobileNavItem icon={<FiPieChart />} text="Reports" to="/reports" />
               <MobileNavItem icon={<FiSettings />} text="Settings" to="/settings" />
               <div className="divider my-2" />
@@ -204,8 +204,5 @@ const MobileNavItem = ({ icon, text, to }) => {
     </NavLink>
   );
 };
-
-
-
 
 export default AdminNavbar;
