@@ -12,7 +12,7 @@ import {
 } from "react-icons/fi";
 import HeaderMid from "../HeaderMid";
 import { useAuth } from "../../context/AuthContext";
-import { getRecommendations } from '../../services/recommendationService';
+import { FiArrowRight } from 'react-icons/fi';
 
 const OrderConfirmationPage = () => {
   const { foodId } = useParams();
@@ -32,60 +32,73 @@ const OrderConfirmationPage = () => {
     country: "USA",
   });
   const [specialInstructions, setSpecialInstructions] = useState("");
+  const [recommendationsLoading, setRecommendationsLoading] = useState(false);
+
+
+useEffect(() => {
+  console.log('OrderConfirmationPage mounted with foodId:', foodId); // Ajoutez ce log
+  
+  if (!foodId) {
+    console.error('No foodId provided in URL');
+    setError('Invalid product ID');
+    setLoading(false);
+    return;
+  }
+
+  const fetchFoodSaleDetails = async () => {
+    try {
+      const response = await axiosInstance.get(`/food-sale/${foodId}`);
+      setFoodSale(response.data.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching food sale details:', err);
+      setError(err.response?.data?.message || 'Failed to load food item details');
+      setLoading(false);
+    }
+  };
+
+  fetchFoodSaleDetails();
+}, [foodId]);
 
   useEffect(() => {
-    console.log('OrderConfirmationPage mounted');
-
-    const fetchRecommendations = async () => {
+    const fetchProductRecommendations = async () => {
       try {
-        if (user && user._id) {
-          console.log('Fetching recommendations for userId:', user._id);
-          const recommendationData = await getRecommendations(user._id);
-          console.log('Recommendations received:', recommendationData);
+        if (foodSale && foodSale.foodItem?.name) {
+          setRecommendationsLoading(true);
+          console.log('Fetching recommendations for product:', foodSale.foodItem.name);
+          const response = await axiosInstance.post('/recommendations/product', {
+            productName: foodSale.foodItem.name,
+          });
 
-          // Fetch product details for each recommended productId
-          const productDetails = await Promise.all(
-            recommendationData.map(async (item) => {
-              try {
-                const response = await axiosInstance.get(`/food-sale/${item.foodSaleId}`); // Adjusted to use foodSale ID
-                return { ...response.data.data, similarity: item.similarity };
-              } catch (error) {
-                if (error.response && error.response.status === 404) {
-                  console.warn(`Food sale with ID ${item.foodSaleId} not found.`);
-                  return null; // Skip this product
-                } else {
-                  throw error; // Re-throw other errors
-                }
-              }
-            })
-          );
-
-          // Filter out null values (missing products)
-          setRecommendations(productDetails.filter((item) => item !== null));
+          if (response.data.success) {
+            // Transform the response to a consistent format
+            const formattedRecommendations = response.data.results.map(item => ({
+              id: item.id || null,
+              name: item.name,
+              image: item.image || null,
+              isAvailable: !!item.id, // Available if has an id
+              message: item.message || null
+            }));
+            setRecommendations(formattedRecommendations);
+          } else {
+            console.warn('No recommendations found for product:', foodSale.foodItem.name);
+            setRecommendations([]);
+          }
         }
       } catch (error) {
-        console.error('Error fetching recommendations:', error);
+        console.error('Error fetching product recommendations:', error);
+        setRecommendations([]);
+      } finally {
+        setRecommendationsLoading(false);
       }
     };
 
-    const fetchFoodSaleDetails = async () => {
-      try {
-        const response = await axiosInstance.get(`/food-sale/${foodId}`);
-        setFoodSale(response.data.data);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching food sale details:', err);
-        setError(
-          err.response?.data?.message || 'Failed to load food item details'
-        );
-        setLoading(false);
-      }
-    };
+    if (foodSale) {
+      fetchProductRecommendations();
+    }
+  }, [foodSale]);
 
-    fetchFoodSaleDetails();
-    fetchRecommendations();
-  }, [user, foodId]);
-
+ 
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value);
     if (value > 0 && value <= (foodSale?.quantityAvailable || 1)) {
@@ -448,72 +461,128 @@ const OrderConfirmationPage = () => {
         </div>
 
         {/* Section for similar products */}
-        {recommendations.length > 0 && (
-          <div className="mt-12">
-            <h3 className="text-2xl font-semibold mb-6">You might also like</h3>
-            <div className="carousel w-full">
-              {recommendations.slice(0, 4).map((item, index) => (
+{/* Section for similar products */}
+{/* Section for similar products */}
+{recommendationsLoading ? (
+  <div className="mt-12 flex justify-center">
+    <span className="loading loading-spinner"></span>
+  </div>
+) : recommendations && recommendations.length > 0 ? (
+  <div className="mt-12">
+    <h3 className="text-2xl font-semibold mb-6">You might also like</h3>
+    <div className="carousel w-full">
+      {recommendations.slice(0, 4).map((item, index) => {
+        console.log('Produit recommandé:', {
+          id: item.id,
+          name: item.name,
+          image: item.image,
+          isAvailable: item.isAvailable
+        });
+
+        return (
+          <div
+            key={item.id || index}
+            id={`slide${Math.floor(index / 2)}`}
+            className="carousel-item relative w-full flex justify-center items-center gap-4"
+          >
+            {[item, recommendations[index + 1]].filter(Boolean).map((subItem, subIndex) => {
+              console.log('Chemin image:', {
+                original: subItem.image,
+                processed: subItem.image ? `${import.meta.env.VITE_API_BASE_URL || ''}/uploads/${subItem.image.split('uploads/').pop()}` : null,
+                isAvailable: subItem.isAvailable
+              });
+
+              return (
                 <div
-                  key={item.foodSaleId}
-                  id={`slide${Math.floor(index / 2)}`}
-                  className="carousel-item relative w-full flex justify-center items-center gap-4"
+                  key={subItem.id || subIndex}
+                  className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden w-1/3"
                 >
-                  {[item, recommendations[index + 1]].filter(Boolean).map((subItem) => (
-                    <div
-                      key={subItem.foodSaleId}
-                      className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden w-1/3"
-                    >
-                      <figure className="h-36 w-full relative">
-                        <img
-                          src={`/images/${subItem.foodSaleId}.jpg`}
-                          alt={subItem.name}
-                          className="h-full w-full object-cover"
-                          onError={(e) => {
-                            e.target.onerror = null; // Prevent infinite loop
-                            e.target.src = '/images/default-placeholder.png'; // Fallback image
-                          }}
-                        />
-                      </figure>
-                      <div className="card-body p-2">
-                        <h4 className="card-title text-sm font-medium">{subItem.name}</h4>
-                        <p className="text-xs text-gray-500">Category: {subItem.category}</p>
-                        <p className="text-xs text-gray-500">Similarity: {subItem.similarity}</p>
-                        <div className="flex justify-between items-center mt-2">
-                          <span className="text-sm font-bold text-primary">
-                            ${subItem.discountedPrice.toFixed(2)}
+                  <figure className="h-36 w-full relative">
+                    {subItem.isAvailable ? (
+   <img 
+   src={
+     subItem.image
+       ? `${import.meta.env.VITE_API_BASE_URL}/${subItem.image.replace(/^\/?uploads\//, '')}`
+       : '/images/default-food.jpg'
+   }
+   alt={subItem.name}
+   className="h-full w-full object-cover"
+   onError={(e) => {
+     console.error('Image load error:', {
+       attemptedUrl: e.target.src,
+       imagePath: subItem.image,
+       baseUrl: import.meta.env.VITE_API_BASE_URL
+     });
+     e.target.onerror = null;
+     e.target.src = '/images/default-food.jpg';
+   }}
+ />
+           
+                    ) : (
+                      <img
+                        src="/images/default-food.jpg"
+                        alt="Product not available"
+                        className="h-full w-full object-cover opacity-70"
+                      />
+                    )}
+                  </figure>
+                  <div className="card-body p-2">
+                    <h4 className="card-title text-sm font-medium">{subItem.name}</h4>
+                    <div className="flex justify-between items-center mt-2">
+                      {subItem.isAvailable ? (
+                        <div className="mt-3">
+                                     <motion.button 
+  className="btn btn-primary btn-sm btn-block"
+  whileHover={{ scale: 1.03 }}
+  whileTap={{ scale: 0.98 }}
+  onClick={(e) => {
+    e.preventDefault();
+    if (subItem.id) {
+      navigate(`/order-confirmation/${subItem.id}`);
+    }
+  }}
+>
+  Order Now
+</motion.button>
+                                        </div>
+                      ) : (
+                        <div className="w-full text-center">
+                          <span className="text-xs text-gray-500">
+                            {subItem.message || "Product not available"}
                           </span>
-                          {subItem.discountedPrice !== subItem.price && (
-                            <span className="line-through text-xs text-gray-500">
-                              ${subItem.price.toFixed(2)}
-                            </span>
-                          )}
                         </div>
-                        <button className="btn btn-primary btn-xs mt-2 w-full">View Product</button>
-                      </div>
+                      )}
                     </div>
-                  ))}
-                  <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-                    <a
-                      href={`#slide${(Math.floor(index / 2) - 1 + 2) % 2}`}
-                      className="btn btn-circle"
-                    >
-                      ❮
-                    </a>
-                    <a
-                      href={`#slide${(Math.floor(index / 2) + 1) % 2}`}
-                      className="btn btn-circle"
-                    >
-                      ❯
-                    </a>
                   </div>
                 </div>
-              ))}
+              );
+            })}
+            <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
+              <a
+                href={`#slide${(Math.floor(index / 2) - 1 + 2) % 2}`}
+                className="btn btn-circle"
+              >
+                ❮
+              </a>
+              <a
+                href={`#slide${(Math.floor(index / 2) + 1) % 2}`}
+                className="btn btn-circle"
+              >
+                ❯
+              </a>
             </div>
           </div>
-        )}
+        );
+      })}
+    </div>
+  </div>
+) : null}
+
+
       </div>
     </>
   );
 };
 
 export default OrderConfirmationPage;
+
