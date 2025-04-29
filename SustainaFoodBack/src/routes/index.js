@@ -125,6 +125,14 @@ router.get('/auth/google/callback', async (req, res) => {
     } catch (phoneError) {
       console.error('Error fetching phone number:', phoneError.response ? phoneError.response.data : phoneError.message);
     }
+// Gestion des erreurs globales
+router.use((err, req, res, next) => {
+  console.error(err); // Affiche l'erreur dans la console pour le débogage
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Une erreur interne est survenue.',
+  });
+});
 
     // Step 4: Check if the User Exists in the Database
     let user = await userModel.findOne({ email: profile.email });

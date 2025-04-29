@@ -8,13 +8,9 @@ const connectDB = require('./src/config/db');
 const router = require('./src/routes');
 const donationRouter = require('./src/routes/donationRouter');
 const path = require("path");
-const { initScheduler } = require('./src/utils/scheduler');
-const foodSaleRoutes = require('./src/routes/foodSaleRoute');
-const paymentRoutes = require('./src/routes/paymentRoutes');
-// Create Express app and HTTP server
+const mysteryPacksRouter = require('./src/routes/mysteryPacks');
 const app = express();
 const server = http.createServer(app);
-const paymentController = require('./src/controllers/payment/paymentController');
 
 // Configure Socket.IO
 const io = new Server(server, {
@@ -25,11 +21,8 @@ const io = new Server(server, {
   }
 });
 
-// Socket.IO connection logic
 io.on('connection', (socket) => {
   console.log('✅ New client connected');
-
-  // Join user to a room by their ID
   socket.on('join', (userId) => {
     socket.join(userId);
     console.log(`🟢 User joined room: ${userId}`);
@@ -40,14 +33,10 @@ io.on('connection', (socket) => {
   });
 });
 
-// Middleware to make `req.io` available in all routes
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
-
-// This line MUST come BEFORE any Express JSON parsing middleware
-app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), paymentController.handleWebhook);
 
 // Middleware and static
 app.use(cors({
@@ -63,8 +52,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Routes
 app.use('/api', router);
 app.use('/api/donations', donationRouter);
-app.use('/api/food-sale', foodSaleRoutes);
-app.use('/api/payment', paymentRoutes);
+app.use('/api/mystery-packs', mysteryPacksRouter); // ✅ nom cohérent avec le frontend
+
 // Start DB and server
 const startServer = async () => {
   await connectDB();
@@ -74,5 +63,5 @@ const startServer = async () => {
 };
 
 startServer();
-initScheduler();
+
 module.exports = app;
