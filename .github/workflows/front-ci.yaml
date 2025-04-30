@@ -24,7 +24,7 @@ jobs:
       - name: Install frontend dependencies
         run: |
           cd SustainaFoodFront
-          npm ci
+          npm install
 
       - name: Build frontend
         run: |

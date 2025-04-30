@@ -24,7 +24,7 @@ jobs:
       - name: Install backend dependencies
         run: |
           cd SustainaFoodBack
-          npm ci
+          npm install
 
       # Uncomment if you add backend tests
       # - name: Run backend tests
