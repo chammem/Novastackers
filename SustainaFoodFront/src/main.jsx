@@ -98,8 +98,7 @@ createRoot(document.getElementById('root')).render(
     </NotificationProvider>
     </AuthProvider>
   </StrictMode>
-    // test CI/CD 2
-    // Test frontend CI/CDfinal
+    // Frontend CI/CD trigger test
 
 
 );
