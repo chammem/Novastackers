@@ -1,40 +1,31 @@
-name: FRONT CI
+name: Frontend CI
 
 on:
   push:
     branches:
-      - main
+      - alaeddine
   pull_request:
     branches:
-      - main
+      - alaeddine
+
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # Install dependencies
       - name: Install frontend dependencies
         run: |
           cd SustainaFoodFront
           npm ci
 
-      # # Run tests
-      # - name: Run frontend tests
-      #   run: |
-      #     cd SustainaFoodFront
-      #     npm test
-
-      # Build the frontend
       - name: Build frontend
         run: |
           cd SustainaFoodFront

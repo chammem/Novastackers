@@ -3,30 +3,16 @@ name: Backend CD
 on:
   push:
     branches:
-      - main
+      - alaeddine
+  pull_request:
+    branches:
+      - alaeddine
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Deploy Backend to Server
+      - name: Trigger Backend Deployment on Render
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
-            rm -rf ${{ secrets.BACKEND_REMOTE_DIR }}
-            mkdir -p ${{ secrets.BACKEND_REMOTE_DIR }}
-          EOF
-
-          scp -r SustainaFoodBack/* ${{ secrets.USERNAME }}@${{ secrets.HOST }}:${{ secrets.BACKEND_REMOTE_DIR }}
-
-      - name: Restart Backend (optional)
-        run: |
-          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "pm2 restart backend-app-name || pm2 start ${{ secrets.BACKEND_REMOTE_DIR }}/index.js --name backend-app-name"
+          curl -X POST ${{ secrets.RENDER_BACKEND_HOOK }}
