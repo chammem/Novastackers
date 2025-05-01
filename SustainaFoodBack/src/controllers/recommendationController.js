@@ -1,6 +1,7 @@
 const axios = require('axios');
 const FoodItem = require('../models/foodItem');
 const FoodSale = require('../models/sales/FoodSaleItem');
+const SuggestedProduct = require('../models/SuggestedProduct');
 
 exports.getUserRecommendations = async (req, res) => {
   const { userId } = req.body;
@@ -64,14 +65,28 @@ exports.getProductRecommendations = async (req, res) => {
               };
             }
           }
-  
-          // Si le produit n'existe pas dans la base de données
-          return {
+
+          // Check if the product already exists in the SuggestedProduct table
+          const existingSuggestedProduct = await SuggestedProduct.findOne({ name: rec.product_name });
+
+          if (existingSuggestedProduct) {
+            // Increment the recommendation count if the product exists
+            existingSuggestedProduct.recommendationCount += 1;
+            await existingSuggestedProduct.save();
+            return existingSuggestedProduct;
+          }
+
+          // If the product does not exist, create a new suggested product
+          const suggestedProduct = {
             name: rec.product_name,
             message: 'This product is not available in our database.',
             aisle: rec.aisle || 'Unknown aisle',
             score: rec.score || 'No score available',
           };
+
+          // Save the new suggested product to the database
+          const newSuggestedProduct = await SuggestedProduct.create(suggestedProduct);
+          return newSuggestedProduct;
         })
       );
   
