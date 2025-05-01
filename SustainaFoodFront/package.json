@@ -43,6 +43,7 @@
     "recharts": "^2.15.2",
     "socket.io-client": "^4.8.1",
     "stripe": "^18.0.0",
+    "swiper": "^11.2.6",
     "yup": "^1.6.1"
   },
   "devDependencies": {
