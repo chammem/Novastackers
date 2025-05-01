@@ -1,6 +1,7 @@
 const FoodSaleItem = require('../../models/sales/FoodSaleItem');
 const FoodItem = require('../../models/foodItem');
 const User = require('../../models/userModel');
+const path = require('path'); // Import path for handling file paths
 
 exports.createFoodSale = async (req, res) => {
   try {
@@ -14,13 +15,25 @@ exports.createFoodSale = async (req, res) => {
       category,
       allergens,
       size,
+      businessRole
     } = req.body;
 
+    console.log('Request body:', req.body);
+    console.log('Uploaded file:', req.file);
+
+    // Check if an image was uploaded
+    let imagePath = null;
+    if (req.file) {
+      imagePath = `uploads/${req.file.filename}`; // Save the relative path of the image
+    } else {
+      console.warn('No image uploaded');
+    }
+
     // Basic validation
-    if (!price || !name) {
+    if (!price || !name || !businessRole) {
       return res.status(400).json({
         success: false,
-        message: "Food name and price are required",
+        message: "Food name, price, and business role are required",
       });
     }
 
@@ -44,6 +57,8 @@ exports.createFoodSale = async (req, res) => {
       quantityAvailable: quantityAvailable || 1,
       expiresAt: expiresAt,
       isAvailable: true, // Explicitly set this to true
+      businessRole, // Include businessRole
+      image: imagePath // Save the image path
     });
 
     const savedFoodSale = await newFoodSale.save();
@@ -106,16 +121,24 @@ exports.getAllFoodSales = async (req, res) => {
     // Count total food sales for pagination info
     const totalFoodSales = await FoodSaleItem.countDocuments(filter);
 
+    // Ajoutez le chemin complet pour les images
+    const updatedFoodSales = foodSales.map((sale) => {
+      if (sale.image) {
+        sale.image = `${req.protocol}://${req.get('host')}/${sale.image}`;
+      }
+      return sale;
+    });
+
     return res.status(200).json({
       success: true,
-      count: foodSales.length,
+      count: updatedFoodSales.length,
       pagination: {
         total: totalFoodSales,
         pages: Math.ceil(totalFoodSales / limit),
         currentPage: page,
         perPage: limit,
       },
-      data: foodSales,
+      data: updatedFoodSales,
       message: "Food sales retrieved successfully",
     });
   } catch (error) {
@@ -187,7 +210,7 @@ exports.getRestaurantFoodSales = async (req, res) => {
     const foodItems = await FoodItem.find({
       buisiness_id: restaurantId,
     }).select("_id");
-
+    console.log("Food Items:", foodItems);
     if (foodItems.length === 0) {
       return res.status(200).json({
         success: true,
@@ -216,16 +239,24 @@ exports.getRestaurantFoodSales = async (req, res) => {
       isAvailable: true,
     });
 
+    // Ajoutez le chemin complet pour les images
+    const updatedFoodSales = foodSales.map((sale) => {
+      if (sale.image) {
+        sale.image = `${req.protocol}://${req.get('host')}/${sale.image}`;
+      }
+      return sale;
+    });
+
     return res.status(200).json({
       success: true,
-      count: foodSales.length,
+      count: updatedFoodSales.length,
       pagination: {
         total: totalFoodSales,
         pages: Math.ceil(totalFoodSales / limit),
         currentPage: page,
         perPage: limit,
       },
-      data: foodSales,
+      data: updatedFoodSales,
       message: "Restaurant food sales retrieved successfully",
     });
   } catch (error) {
@@ -278,4 +309,43 @@ exports.getFoodSaleById = async (req, res) => {
       error: error.message
     });
   }
+};
+
+exports.getFoodSalesByRole = async (req, res) => {
+    const { role } = req.params; // Role can be 'restaurant' or 'supermarket'
+
+    try {
+        // Step 1: Find food sales directly by businessRole
+        const foodSales = await FoodSaleItem.find({ businessRole: role }).populate('foodItem');
+        console.log("Step 1 - Food Sales for role:", role, foodSales);
+
+        if (foodSales.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: `No food sales found for role: ${role}`,
+            });
+        }
+
+        // Ajoutez le chemin complet pour les images
+        const updatedFoodSales = foodSales.map((sale) => {
+          if (sale.image) {
+            sale.image = `${req.protocol}://${req.get('host')}/${sale.image}`;
+          }
+          return sale;
+        });
+
+        return res.status(200).json({
+            success: true,
+            count: updatedFoodSales.length,
+            data: updatedFoodSales,
+            message: `Food sales retrieved successfully for role: ${role}`,
+        });
+    } catch (error) {
+        console.error('Error fetching food sales by role:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Server error while fetching food sales by role',
+            error: error.message,
+        });
+    }
 };

@@ -11,6 +11,7 @@ const path = require("path");
 const { initScheduler } = require('./src/utils/scheduler');
 const foodSaleRoutes = require('./src/routes/foodSaleRoute');
 const paymentRoutes = require('./src/routes/paymentRoutes');
+const recommendationRoutes = require('./src/routes/recommendationRoutes');
 // Create Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
@@ -65,7 +66,8 @@ app.use('/api', router);
 app.use('/api/donations', donationRouter);
 app.use('/api/food-sale', foodSaleRoutes);
 app.use('/api/payment', paymentRoutes);
-// Start DB and server
+// Recommendation routes
+app.use('/api', recommendationRoutes);// Start DB and server
 const startServer = async () => {
   await connectDB();
   server.listen(8082, () => {
