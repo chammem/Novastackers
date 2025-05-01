@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import axiosInstance from "../../config/axiosInstance";
 import {
@@ -12,7 +12,7 @@ import {
 } from "react-icons/fi";
 import HeaderMid from "../HeaderMid";
 import { useAuth } from "../../context/AuthContext";
-import { FiArrowRight } from 'react-icons/fi';
+import { FiArrowRight, FiChevronLeft, FiChevronRight, FiShoppingCart } from 'react-icons/fi';
 
 const OrderConfirmationPage = () => {
   const { foodId } = useParams();
@@ -33,6 +33,7 @@ const OrderConfirmationPage = () => {
   });
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
 
 
 useEffect(() => {
@@ -461,123 +462,116 @@ useEffect(() => {
         </div>
 
         {/* Section for similar products */}
-{/* Section for similar products */}
-{/* Section for similar products */}
 {recommendationsLoading ? (
   <div className="mt-12 flex justify-center">
     <span className="loading loading-spinner"></span>
   </div>
-) : recommendations && recommendations.length > 0 ? (
-  <div className="mt-12">
-    <h3 className="text-2xl font-semibold mb-6">You might also like</h3>
-    <div className="carousel w-full">
-      {recommendations.slice(0, 4).map((item, index) => {
-        console.log('Produit recommandé:', {
-          id: item.id,
-          name: item.name,
-          image: item.image,
-          isAvailable: item.isAvailable
-        });
-
-        return (
-          <div
-            key={item.id || index}
-            id={`slide${Math.floor(index / 2)}`}
-            className="carousel-item relative w-full flex justify-center items-center gap-4"
-          >
-            {[item, recommendations[index + 1]].filter(Boolean).map((subItem, subIndex) => {
-              console.log('Chemin image:', {
-                original: subItem.image,
-                processed: subItem.image ? `${import.meta.env.VITE_API_BASE_URL || ''}/uploads/${subItem.image.split('uploads/').pop()}` : null,
-                isAvailable: subItem.isAvailable
-              });
-
-              return (
-                <div
-                  key={subItem.id || subIndex}
-                  className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden w-1/3"
-                >
-                  <figure className="h-36 w-full relative">
-                    {subItem.isAvailable ? (
-   <img 
-   src={
-     subItem.image
-       ? `${import.meta.env.VITE_API_BASE_URL}/${subItem.image.replace(/^\/?uploads\//, '')}`
-       : '/images/default-food.jpg'
-   }
-   alt={subItem.name}
-   className="h-full w-full object-cover"
-   onError={(e) => {
-     console.error('Image load error:', {
-       attemptedUrl: e.target.src,
-       imagePath: subItem.image,
-       baseUrl: import.meta.env.VITE_API_BASE_URL
-     });
-     e.target.onerror = null;
-     e.target.src = '/images/default-food.jpg';
-   }}
- />
-           
-                    ) : (
-                      <img
-                        src="/images/default-food.jpg"
-                        alt="Product not available"
-                        className="h-full w-full object-cover opacity-70"
-                      />
-                    )}
-                  </figure>
-                  <div className="card-body p-2">
-                    <h4 className="card-title text-sm font-medium">{subItem.name}</h4>
-                    <div className="flex justify-between items-center mt-2">
-                      {subItem.isAvailable ? (
-                        <div className="mt-3">
-                                     <motion.button 
-  className="btn btn-primary btn-sm btn-block"
-  whileHover={{ scale: 1.03 }}
-  whileTap={{ scale: 0.98 }}
-  onClick={(e) => {
-    e.preventDefault();
-    if (subItem.id) {
-      navigate(`/order-confirmation/${subItem.id}`);
-    }
-  }}
->
-  Order Now
-</motion.button>
-                                        </div>
-                      ) : (
-                        <div className="w-full text-center">
-                          <span className="text-xs text-gray-500">
-                            {subItem.message || "Product not available"}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+) : recommendations && recommendations.filter(item => item.id).length > 0 ? (
+  <motion.div 
+    className="mt-12"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}
+  >
+    <h3 className="text-2xl font-semibold mb-6 text-center">You might also like</h3>
+    
+    <div className="relative px-8 max-w-3xl mx-auto">
+      {/* Carousel Navigation - Only show if more than 1 item */}
+      {recommendations.filter(item => item.id).length > 2 && (
+        <button 
+          className="absolute left-0 top-1/2 -translate-y-1/2 bg-base-100 rounded-full shadow-md p-2 z-10 hover:bg-base-200 transition-colors"
+          onClick={() => {
+            setCurrentPage(prev => Math.max(0, prev - 1));
+          }}
+          disabled={currentPage === 0}
+        >
+          <FiChevronLeft size={24} />
+        </button>
+      )}
+      
+      {/* Products Display - Single centered item or grid */}
+      <div className={`overflow-hidden ${recommendations.filter(item => item.id).length === 1 ? 'max-w-sm mx-auto' : 'grid grid-cols-2 gap-4'}`}>
+        {recommendations
+          .filter((item) => item.id)
+          .slice(currentPage * 2, currentPage * 2 + 2)
+          .map((item, index) => (
+            <motion.div
+              key={item.id || index}
+              className="cursor-pointer"
+              whileHover={{ y: -5, scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              onClick={() => {
+                if (item.id) {
+                  navigate(`/order-confirmation/${item.id}`);
+                }
+              }}
+            >
+              <div className="card bg-base-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden h-full">
+                <figure className="h-48 w-full relative">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-0"></div>
+                  <img
+                    src={
+                      item.image && import.meta.env.VITE_API_BASE_URL
+                        ? `${import.meta.env.VITE_API_BASE_URL}/${item.image}`
+                        : '/images/default-food.jpg'
+                    }
+                    alt={item.name || 'Product image'}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      console.error('Image load error:', {
+                        attemptedUrl: e.target.src,
+                        imagePath: item.image,
+                        baseUrl: import.meta.env.VITE_API_BASE_URL || 'undefined',
+                      });
+                      e.target.onerror = null;
+                      e.target.src = '/images/default-food.jpg';
+                    }}
+                  />
+                </figure>
+                <div className="card-body p-4 bg-gradient-to-r from-primary/5 to-transparent">
+                  <h4 className="card-title text-base font-medium line-clamp-2">{item.name}</h4>
+                  
+                  <div className="mt-auto pt-3 flex justify-between items-center">
+                    <span className="text-primary font-medium text-sm">View details</span>
+                    <FiArrowRight className="text-primary" size={16} />
                   </div>
                 </div>
-              );
-            })}
-            <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-              <a
-                href={`#slide${(Math.floor(index / 2) - 1 + 2) % 2}`}
-                className="btn btn-circle"
-              >
-                ❮
-              </a>
-              <a
-                href={`#slide${(Math.floor(index / 2) + 1) % 2}`}
-                className="btn btn-circle"
-              >
-                ❯
-              </a>
-            </div>
-          </div>
-        );
-      })}
+              </div>
+            </motion.div>
+          ))}
+      </div>
+      
+      {/* Carousel Navigation - Right - Only show if more than 1 item */}
+      {recommendations.filter(item => item.id).length > 2 && (
+        <button 
+          className="absolute right-0 top-1/2 -translate-y-1/2 bg-base-100 rounded-full shadow-md p-2 z-10 hover:bg-base-200 transition-colors"
+          onClick={() => {
+            setCurrentPage(prev => {
+              const maxPage = Math.ceil(recommendations.filter(item => item.id).length / 2) - 1;
+              return prev < maxPage ? prev + 1 : prev;
+            });
+          }}
+          disabled={currentPage >= Math.ceil(recommendations.filter(item => item.id).length / 2) - 1}
+        >
+          <FiChevronRight size={24} />
+        </button>
+      )}
     </div>
-  </div>
+    
+    {/* Pagination Dots - Only show if more than 2 items */}
+    {recommendations.filter(item => item.id).length > 2 && (
+      <div className="flex justify-center gap-2 mt-4">
+        {Array.from({ length: Math.ceil(recommendations.filter(item => item.id).length / 2) }).map((_, i) => (
+          <button 
+            key={i} 
+            className={`w-2 h-2 rounded-full transition-colors ${currentPage === i ? 'bg-primary' : 'bg-gray-300'}`}
+            onClick={() => setCurrentPage(i)}
+          />
+        ))}
+      </div>
+    )}
+  </motion.div>
 ) : null}
-
 
       </div>
     </>
