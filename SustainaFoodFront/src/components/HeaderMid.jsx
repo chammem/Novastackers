@@ -1,4 +1,5 @@
 // src/components/HeaderMid.jsx
+import React from 'react';
 import { useNavigate, Link, NavLink } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext"; // use auth context
