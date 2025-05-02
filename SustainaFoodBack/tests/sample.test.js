@@ -1,18 +1,27 @@
 const request = require('supertest');
-const app = require('../app'); // Assuming app.js exports the Express app
+const app = require('../app');
 const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
+
+let mongoServer;
 
 describe('Sample Test Suite', () => {
   beforeAll(async () => {
-    // Ensure proper handling of Mongoose connections
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect('mongodb://localhost:27017/testdb');
-    }
+    // Start in-memory MongoDB server
+    mongoServer = await MongoMemoryServer.create();
+    const uri = mongoServer.getUri();
+
+    // Connect to in-memory MongoDB
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
   });
 
   afterAll(async () => {
-    // Disconnect from the database
-    await mongoose.connection.close();
+    // Disconnect and stop the in-memory MongoDB server
+    await mongoose.disconnect();
+    await mongoServer.stop();
   });
 
   it('should return 200 for the root route', async () => {
@@ -21,7 +30,7 @@ describe('Sample Test Suite', () => {
   });
 
   it('should return a 404 for an unknown route', async () => {
-    const response = await request(app).get('/unknown');
+    const response = await request(app).get('/unknown-route');
     expect(response.statusCode).toBe(404);
   });
 });
