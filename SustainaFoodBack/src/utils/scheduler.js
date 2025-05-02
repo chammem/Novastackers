@@ -60,11 +60,14 @@ const checkExpiredBatchAssignments = async () => {
   }
 };
 
+let scheduledTask;
+
 const initScheduler = () => {
-  cron.schedule('*/15 * * * * *', checkExpiredBatchAssignments);
+  scheduledTask = cron.schedule('*/15 * * * * *', checkExpiredBatchAssignments);
 };
 
 module.exports = {
   initScheduler,
   checkExpiredBatchAssignments,
+  scheduledTask, // Export the task for testing
 };

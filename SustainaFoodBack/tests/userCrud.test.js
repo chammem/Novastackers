@@ -2,7 +2,7 @@ const request = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
 const userModel = require('../src/models/userModel');
-const { scheduledTask } = require('../src/utils/scheduler');
+const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const mockUser = {
   fullName: 'Test User',
@@ -11,28 +11,34 @@ const mockUser = {
   role: 'user',
 };
 
+let mongoServer;
+
 describe('User CRUD Operations', () => {
   let userId;
 
   beforeAll(async () => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
-    
-    // Connexion à MongoDB
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect('mongodb://localhost:27017/testdb');
-    }
 
-    // Création d’un utilisateur
+    // Start in-memory MongoDB server
+    mongoServer = await MongoMemoryServer.create();
+    const uri = mongoServer.getUri();
+
+    // Connect to in-memory MongoDB
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    // Create a user
     const user = await userModel.create(mockUser);
     userId = user._id;
   });
 
   afterAll(async () => {
-    // Stop the cron task
-    scheduledTask.stop();
+    // Stop the in-memory MongoDB server
+    await mongoose.disconnect();
+    await mongoServer.stop();
 
-    // Close the database connection
-    await mongoose.connection.close();
     jest.restoreAllMocks();
   });
 
@@ -41,8 +47,6 @@ describe('User CRUD Operations', () => {
     expect(response.statusCode).toBe(200);
     expect(response.body.data).toBeInstanceOf(Array);
   });
-
-
 
   it('should fetch a user by ID', async () => {
     const response = await request(app).get(`/api/user/${userId}`);
