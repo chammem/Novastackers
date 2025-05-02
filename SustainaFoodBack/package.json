@@ -7,7 +7,8 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "seed": "node src/seeder.js",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "sonar": "node ./node_modules/sonarqube-scanner/bin/sonar-scanner -Dsonar.token=sqa_e70c9f3c89d643fa9db70bffcbee28ce879c2ac4"
   },
   "keywords": [],
   "author": "",
