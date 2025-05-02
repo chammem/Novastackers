@@ -44,7 +44,7 @@ jobs:
         run: |
           cd SustainaFoodBack
           sonar-scanner \
-            -Dsonar.host.url=http://172.20.119.237:9000 \
+            -Dsonar.host.url=http://localhost:9000 \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.projectKey=sustainafood_backend \
             -Dsonar.sources=src \
@@ -91,7 +91,7 @@ jobs:
         run: |
           cd SustainaFoodFront
           sonar-scanner \
-            -Dsonar.host.url=http://172.20.119.237:9000 \
+            -Dsonar.host.url=http://localhost:9000 \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.projectKey=sustainafood_frontend \
             -Dsonar.sources=src \
