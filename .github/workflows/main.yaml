@@ -41,7 +41,7 @@ jobs:
         run: |
           cd SustainaFoodBack
           npm run sonar -- -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=your_organization_key \
+            -Dsonar.organization=piweb \
             -Dsonar.projectKey=sustainafood_backend
 
   frontend:
@@ -87,7 +87,7 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.projectKey=sustainafood_frontend \
-            -Dsonar.organization=your_organization_key \
+            -Dsonar.organization=your_actual_organization_key \
             -Dsonar.sources=src \
             -Dsonar.exclusions=**/node_modules/**,**/build/** \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
