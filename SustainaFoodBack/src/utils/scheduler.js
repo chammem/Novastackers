@@ -60,12 +60,11 @@ const checkExpiredBatchAssignments = async () => {
   }
 };
 
-// Schedule the task
-const scheduledTask = cron.schedule('*/5 * * * *', checkExpiredBatchAssignments, {
-  scheduled: false, // Disable auto-start for tests
-});
+const initScheduler = () => {
+  cron.schedule('*/15 * * * * *', checkExpiredBatchAssignments);
+};
 
 module.exports = {
-  scheduledTask,
+  initScheduler,
   checkExpiredBatchAssignments,
 };

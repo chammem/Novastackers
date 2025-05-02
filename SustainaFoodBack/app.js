@@ -86,6 +86,7 @@ const startServer = async () => {
 
 if (process.env.NODE_ENV !== 'test') {
   startServer();
+  initScheduler(); // Only initialize the scheduler if not in test mode
 }
-initScheduler();
+
 module.exports = app;
