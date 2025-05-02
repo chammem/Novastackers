@@ -36,9 +36,11 @@ jobs:
           npm run test:coverage
 
       - name: Run SonarQube analysis (Backend)
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd SustainaFoodBack
-          npm run sonar
+          npm run sonar -- -Dsonar.host.url=http://172.20.119.237:9000
 
   frontend:
     needs: backend
