@@ -20,6 +20,19 @@ jobs:
           - 9000:9000
         env:
           SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    steps:
+      - name: Wait for SonarQube to be ready
+        run: |
+          echo "Waiting for SonarQube to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:9000/api/system/status | grep -q '"status":"UP"'; then
+              echo "SonarQube is ready!"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "SonarQube did not start in time."
+          exit 1
 
   backend:
     needs: sonarqube
@@ -56,7 +69,7 @@ jobs:
         run: |
           cd SustainaFoodBack
           sonar-scanner \
-            -Dsonar.host.url=http://sonarqube:9000 \
+            -Dsonar.host.url=http://localhost:9000 \
             -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.projectKey=sustainafood_backend \
             -Dsonar.sources=src \
@@ -103,7 +116,7 @@ jobs:
         run: |
           cd SustainaFoodFront
           sonar-scanner \
-            -Dsonar.host.url=http://sonarqube:9000 \
+            -Dsonar.host.url=http://localhost:9000 \
             -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.projectKey=sustainafood_frontend \
             -Dsonar.sources=src \
