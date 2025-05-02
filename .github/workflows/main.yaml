@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       sonarqube:
-        image: sonarqube:latest
+        image: sonarqube:community
         ports:
           - 9000:9000
         env:
@@ -56,7 +56,7 @@ jobs:
         run: |
           cd SustainaFoodBack
           sonar-scanner \
-            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.host.url=http://sonarqube:9000 \
             -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.projectKey=sustainafood_backend \
             -Dsonar.sources=src \
