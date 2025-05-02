@@ -22,8 +22,14 @@ const seedDatabase = async () => {
       role: 'admin',
     };
 
-    await User.create(defaultUser);
-    console.log('Database seeded successfully');
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email: defaultUser.email });
+    if (existingUser) {
+      console.log(`User with email ${defaultUser.email} already exists. Skipping insertion.`);
+    } else {
+      await User.create(defaultUser);
+      console.log('Database seeded successfully');
+    }
 
     // Close the connection
     await mongoose.connection.close();
