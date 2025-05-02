@@ -35,15 +35,17 @@ jobs:
           cd SustainaFoodBack
           npm run test:coverage
 
-      - name: Run SonarQube analysis
+      - name: Run SonarQube analysis (Backend)
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: sqa_e70c9f3c89d643fa9db70bffcbee28ce879c2ac4
         run: |
-          sonar-scanner -Dsonar.login=$SONAR_TOKEN
+          sonar-scanner \
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.login=$SONAR_TOKEN
 
   frontend:
     needs: backend
-    name: Frontend Build and Test
+    name: Frontend Build, Test, and SonarQube Analysis
     runs-on: ubuntu-latest
 
     steps:
@@ -71,3 +73,12 @@ jobs:
         run: |
           cd SustainaFoodFront
           npm test
+
+      - name: Run SonarQube analysis (Frontend)
+        env:
+          SONAR_TOKEN: sqa_e70c9f3c89d643fa9db70bffcbee28ce879c2ac4
+        run: |
+          cd SustainaFoodFront
+          sonar-scanner \
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.login=$SONAR_TOKEN
