@@ -6,7 +6,8 @@
     "test": "jest --coverage",
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "seed": "node src/seeder.js"
+    "seed": "node src/seeder.js",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "",
@@ -38,10 +39,11 @@
     "yup": "^1.6.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.0.0",
     "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
     "mongodb-memory-server": "^10.1.4",
-    "supertest": "^6.3.4",
-    "@testing-library/jest-dom": "^6.0.0"
+    "sonarqube-scanner": "^4.3.0",
+    "supertest": "^6.3.4"
   }
 }

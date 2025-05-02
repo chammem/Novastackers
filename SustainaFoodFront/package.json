@@ -71,6 +71,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "msw": "^2.7.5",
     "postcss": "^8.5.3",
+    "sonarqube-scanner": "^4.3.0",
     "tailwindcss": "^4.0.8",
     "vite": "^6.1.0",
     "whatwg-fetch": "^3.6.20"

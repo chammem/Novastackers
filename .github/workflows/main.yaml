@@ -11,7 +11,7 @@ on:
 
 jobs:
   backend:
-    name: Backend Build and Test
+    name: Backend Build, Test, and SonarQube Analysis
     runs-on: ubuntu-latest
 
     steps:
@@ -30,17 +30,16 @@ jobs:
           cd SustainaFoodBack
           npm ci
 
-      - name: Run seed (Backend)
-        env:
-          MONGODB_URI: mongodb+srv://mohammedazizgawet:novastackers@sustainafood.ihxbt.mongodb.net/SustainaFood?retryWrites=true&w=majority&appName=SustainaFood
+      - name: Run tests with coverage (Backend)
         run: |
           cd SustainaFoodBack
-          npm run seed
+          npm run test:coverage
 
-      - name: Run tests (Backend)
+      - name: Run SonarQube analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          cd SustainaFoodBack
-          npm test
+          sonar-scanner -Dsonar.login=$SONAR_TOKEN
 
   frontend:
     needs: backend
