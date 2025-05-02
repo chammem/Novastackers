@@ -2,6 +2,7 @@ const request = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
 const userModel = require('../src/models/userModel');
+const { scheduledTask } = require('../src/utils/scheduler');
 
 const mockUser = {
   fullName: 'Test User',
@@ -27,6 +28,10 @@ describe('User CRUD Operations', () => {
   });
 
   afterAll(async () => {
+    // Stop the cron task
+    scheduledTask.stop();
+
+    // Close the database connection
     await mongoose.connection.close();
     jest.restoreAllMocks();
   });
