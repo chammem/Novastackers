@@ -10,32 +10,7 @@ on:
       - main
 
 jobs:
-  sonarqube:
-    name: SonarQube Server
-    runs-on: ubuntu-latest
-    services:
-      sonarqube:
-        image: sonarqube:latest
-        ports:
-          - 9000:9000
-        env:
-          SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
-    steps:
-      - name: Wait for SonarQube to be ready
-        run: |
-          echo "Waiting for SonarQube to start..."
-          for i in {1..60}; do # Increased timeout to 5 minutes
-            if curl -s http://sonarqube:9000/api/system/status | grep -q '"status":"UP"'; then
-              echo "SonarQube is ready!"
-              exit 0
-            fi
-            sleep 5
-          done
-          echo "SonarQube did not start in time."
-          exit 1
-
   backend:
-    needs: sonarqube
     name: Backend Build, Test, and SonarQube Analysis
     runs-on: ubuntu-latest
 
@@ -69,7 +44,7 @@ jobs:
         run: |
           cd SustainaFoodBack
           sonar-scanner \
-            -Dsonar.host.url=http://sonarqube:9000 \
+            -Dsonar.host.url=http://localhost:9000 \
             -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.projectKey=sustainafood_backend \
             -Dsonar.sources=src \
@@ -77,7 +52,7 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
   frontend:
-    needs: sonarqube
+    needs: backend
     name: Frontend Build, Test, and SonarQube Analysis
     runs-on: ubuntu-latest
 
@@ -116,7 +91,7 @@ jobs:
         run: |
           cd SustainaFoodFront
           sonar-scanner \
-            -Dsonar.host.url=http://sonarqube:9000 \
+            -Dsonar.host.url=http://localhost:9000 \
             -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.projectKey=sustainafood_frontend \
             -Dsonar.sources=src \
