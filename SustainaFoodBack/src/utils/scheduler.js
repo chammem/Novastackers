@@ -1,4 +1,5 @@
 const cron = require('node-cron');
+const mongoose = require('mongoose');
 const Batch = require('../models/batch');
 const FoodItem = require('../models/foodItem');
 const Notification = require('../models/notification');
@@ -59,10 +60,14 @@ const checkExpiredBatchAssignments = async () => {
   }
 };
 
-// Schedule the task to run every 5 minutes
+let scheduledTask;
+
 const initScheduler = () => {
-  cron.schedule('*/5 * * * *', checkExpiredBatchAssignments);
-  console.log('Batch assignment expiration scheduler initialized');
+  scheduledTask = cron.schedule('*/15 * * * * *', checkExpiredBatchAssignments);
 };
 
-module.exports = { initScheduler };
+module.exports = {
+  initScheduler,
+  checkExpiredBatchAssignments,
+  scheduledTask, // Export the task for testing
+};

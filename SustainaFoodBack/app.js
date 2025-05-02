@@ -48,6 +48,11 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/', (req, res) => {
+  res.status(200).send('API is running');
+});
+
+
 // This line MUST come BEFORE any Express JSON parsing middleware
 app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), paymentController.handleWebhook);
 
@@ -79,6 +84,9 @@ const startServer = async () => {
   });
 };
 
-startServer();
-initScheduler();
+if (process.env.NODE_ENV !== 'test') {
+  startServer();
+  initScheduler(); // Only initialize the scheduler if not in test mode
+}
+
 module.exports = app;

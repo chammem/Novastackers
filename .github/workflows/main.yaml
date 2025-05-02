@@ -1,0 +1,74 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - sinda
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  backend:
+    name: Backend Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: SustainaFoodBack/package-lock.json
+
+      - name: Install dependencies (Backend)
+        run: |
+          cd SustainaFoodBack
+          npm ci
+
+      - name: Run seed (Backend)
+        env:
+          MONGODB_URI: mongodb+srv://mohammedazizgawet:novastackers@sustainafood.ihxbt.mongodb.net/SustainaFood?retryWrites=true&w=majority&appName=SustainaFood
+        run: |
+          cd SustainaFoodBack
+          npm run seed
+
+      - name: Run tests (Backend)
+        run: |
+          cd SustainaFoodBack
+          npm test
+
+  frontend:
+    needs: backend
+    name: Frontend Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: SustainaFoodFront/package-lock.json
+
+      - name: Install dependencies (Frontend)
+        run: |
+          cd SustainaFoodFront
+          npm ci
+
+      - name: Build Project (Frontend)
+        run: |
+          cd SustainaFoodFront
+          npm run build
+
+      - name: Run tests (Frontend)
+        run: |
+          cd SustainaFoodFront
+          npm test
