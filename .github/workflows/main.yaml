@@ -40,7 +40,9 @@ jobs:
           SONAR_TOKEN: 80a158098efce80c33201f4b2a8a77d05b87f8e2
         run: |
           cd SustainaFoodBack
-          npm run sonar -- -Dsonar.host.url=https://sonarcloud.io
+          npm run sonar -- -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=your_organization_key \
+            -Dsonar.projectKey=sustainafood_backend
 
   frontend:
     needs: backend
