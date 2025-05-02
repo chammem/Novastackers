@@ -25,7 +25,7 @@ jobs:
         run: |
           echo "Waiting for SonarQube to start..."
           for i in {1..30}; do
-            if curl -s http://localhost:9000/api/system/status | grep -q '"status":"UP"'; then
+            if curl -s http://sonarqube:9000/api/system/status | grep -q '"status":"UP"'; then
               echo "SonarQube is ready!"
               exit 0
             fi
@@ -69,7 +69,7 @@ jobs:
         run: |
           cd SustainaFoodBack
           sonar-scanner \
-            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.host.url=http://sonarqube:9000 \
             -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.projectKey=sustainafood_backend \
             -Dsonar.sources=src \
@@ -116,7 +116,7 @@ jobs:
         run: |
           cd SustainaFoodFront
           sonar-scanner \
-            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.host.url=http://sonarqube:9000 \
             -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.projectKey=sustainafood_frontend \
             -Dsonar.sources=src \
