@@ -40,7 +40,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd SustainaFoodBack
-          npm run sonar -- -Dsonar.host.url=http://172.20.119.237:9000
+          npm run sonar -- -Dsonar.host.url=http://localhost:9000
 
   frontend:
     needs: backend
@@ -82,7 +82,7 @@ jobs:
         run: |
           cd SustainaFoodFront
           sonar-scanner \
-            -Dsonar.host.url=http://172.20.119.237:9000 \
+            -Dsonar.host.url=http://localhost:9000 \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.projectKey=sustainafood_frontend \
             -Dsonar.sources=src \
