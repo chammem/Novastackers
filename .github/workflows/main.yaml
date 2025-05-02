@@ -10,7 +10,19 @@ on:
       - main
 
 jobs:
+  sonarqube:
+    name: SonarQube Server
+    runs-on: ubuntu-latest
+    services:
+      sonarqube:
+        image: sonarqube:latest
+        ports:
+          - 9000:9000
+        env:
+          SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+
   backend:
+    needs: sonarqube
     name: Backend Build, Test, and SonarQube Analysis
     runs-on: ubuntu-latest
 
@@ -35,16 +47,24 @@ jobs:
           cd SustainaFoodBack
           npm run test:coverage
 
+      - name: Install SonarScanner
+        run: npm install -g sonarqube-scanner
+
       - name: Run SonarQube analysis (Backend)
         env:
-          SONAR_TOKEN: sqa_e70c9f3c89d643fa9db70bffcbee28ce879c2ac4
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
+          cd SustainaFoodBack
           sonar-scanner \
             -Dsonar.host.url=http://localhost:9000 \
-            -Dsonar.login=$SONAR_TOKEN
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.projectKey=sustainafood_backend \
+            -Dsonar.sources=src \
+            -Dsonar.tests=tests \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
   frontend:
-    needs: backend
+    needs: sonarqube
     name: Frontend Build, Test, and SonarQube Analysis
     runs-on: ubuntu-latest
 
@@ -72,13 +92,20 @@ jobs:
       - name: Run tests (Frontend)
         run: |
           cd SustainaFoodFront
-          npm test
+          npm test -- --coverage --watchAll=false
+
+      - name: Install SonarScanner
+        run: npm install -g sonarqube-scanner
 
       - name: Run SonarQube analysis (Frontend)
         env:
-          SONAR_TOKEN: sqa_e70c9f3c89d643fa9db70bffcbee28ce879c2ac4
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd SustainaFoodFront
           sonar-scanner \
-            -Dsonar.host.url=http://localhost:9000 \
-            -Dsonar.login=$SONAR_TOKEN
+            -Dsonar.host.url=http://sonarqube:9000 \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.projectKey=sustainafood_frontend \
+            -Dsonar.sources=src \
+            -Dsonar.exclusions=**/node_modules/**,**/build/** \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
