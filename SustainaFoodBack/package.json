@@ -5,7 +5,8 @@
   "scripts": {
     "test": "jest --coverage",
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "seed": "node src/seeder.js"
   },
   "keywords": [],
   "author": "",
