@@ -35,21 +35,10 @@ jobs:
           cd SustainaFoodBack
           npm run test:coverage
 
-      - name: Install SonarScanner
-        run: npm install -g sonarqube-scanner
-
       - name: Run SonarQube analysis (Backend)
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd SustainaFoodBack
-          sonar-scanner \
-            -Dsonar.host.url=http://172.20.119.237:9000 \
-            -Dsonar.token=$SONAR_TOKEN \
-            -Dsonar.projectKey=sustainafood_backend \
-            -Dsonar.sources=src \
-            -Dsonar.tests=tests \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+          npm run sonar
 
   frontend:
     needs: backend
