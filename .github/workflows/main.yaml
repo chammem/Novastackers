@@ -41,7 +41,7 @@ jobs:
         run: |
           cd SustainaFoodBack
           npm run sonar -- -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=piweb \
+            -Dsonar.organization=chammem \
             -Dsonar.projectKey=sustainafood_backend
 
   frontend:
