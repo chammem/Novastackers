@@ -13,6 +13,9 @@ env:
   BACKEND_KEY: "sustainafood_backend"
   FRONTEND_KEY: "sustainafood_frontend"
   SONAR_TOKEN: "4b75a0fef4c5ae5bd4b40ba192666a31aeac6853" # ⚠️ Token exposé
+  DOCKER_USERNAME: "sinda12"
+  DOCKER_REPO_BACKEND: "sustainafood-backend"
+  DOCKER_REPO_FRONTEND: "sustainafood-frontend"
 
 jobs:
   backend:
@@ -53,6 +56,29 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
             -Dsonar.scm.disabled=true
 
+      - name: Increment Version (Backend)
+        id: version
+        run: |
+          VERSION_FILE=SustainaFoodBack/version.txt
+          if [ ! -f "$VERSION_FILE" ]; then
+            echo "1.0.0" > $VERSION_FILE
+          fi
+          VERSION=$(cat $VERSION_FILE)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo $NEW_VERSION > $VERSION_FILE
+          echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Log in to Docker Hub
+        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
+
+      - name: Build and Push Docker Image (Backend)
+        working-directory: SustainaFoodBack
+        run: |
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION
+
   frontend:
     name: Frontend Analysis
     needs: backend
@@ -92,3 +118,26 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
             -Dsonar.exclusions=**/node_modules/**,**/build/** \
             -Dsonar.scm.disabled=true
+
+      - name: Increment Version (Frontend)
+        id: version
+        run: |
+          VERSION_FILE=SustainaFoodFront/version.txt
+          if [ ! -f "$VERSION_FILE" ]; then
+            echo "1.0.0" > $VERSION_FILE
+          fi
+          VERSION=$(cat $VERSION_FILE)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo $NEW_VERSION > $VERSION_FILE
+          echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Log in to Docker Hub
+        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
+
+      - name: Build and Push Docker Image (Frontend)
+        working-directory: SustainaFoodFront
+        run: |
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION
