@@ -172,5 +172,10 @@ jobs:
 
       - name: Ensure Shared Version is Up-to-Date
         run: |
-          git pull origin sinda
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          if [ "$CURRENT_BRANCH" = "HEAD" ]; then
+            CURRENT_BRANCH=${{ github.ref_name }}
+          fi
+          git checkout $CURRENT_BRANCH
+          git pull origin $CURRENT_BRANCH
           echo "Shared version file is up-to-date."
