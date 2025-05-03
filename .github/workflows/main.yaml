@@ -1,4 +1,4 @@
-naname: CI/CD Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -18,8 +18,41 @@ env:
   DOCKER_REPO_FRONTEND: "sustainafood-frontend"
 
 jobs:
+  versioning:
+    name: Increment Shared Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Increment Version
+        id: set-version
+        run: |
+          VERSION_FILE=shared-version.txt
+          if [ ! -f "$VERSION_FILE" ]; then
+            echo "1.0.0" > $VERSION_FILE
+          fi
+          VERSION=$(cat $VERSION_FILE)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo $NEW_VERSION > $VERSION_FILE
+          echo "::set-output name=version::$NEW_VERSION"
+
+      - name: Commit Updated Version
+        run: |
+          git config user.name "chammem"
+          git config user.email "chammemcinda@gmail.com"
+          git add shared-version.txt
+          git commit -m "ci: increment shared version to ${{ steps.set-version.outputs.version }}"
+          git push --force
+
   backend:
     name: Backend Analysis
+    needs: versioning
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -62,13 +95,12 @@ jobs:
       - name: Build and Push Docker Image (Backend)
         working-directory: SustainaFoodBack
         run: |
-          VERSION=$(date +%Y%m%d%H%M%S)
-          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION .
-          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }} .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }}
 
   frontend:
     name: Frontend Analysis
-    needs: backend
+    needs: versioning
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -112,5 +144,5 @@ jobs:
       - name: Build and Push Docker Image (Frontend)
         working-directory: SustainaFoodFront
         run: |
-          VERSION=$(date +%Y%m%d%H%M%S)
-          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION .
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }} .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }}
