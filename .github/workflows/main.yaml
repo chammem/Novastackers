@@ -14,13 +14,14 @@ env:
   FRONTEND_KEY: "sustainafood_frontend"
   SONAR_TOKEN: "4b75a0fef4c5ae5bd4b40ba192666a31aeac6853" # ⚠️ Token exposé
   DOCKER_USERNAME: "sinda12"
+  DOCKER_PASSWORD: "cindaa123." # ⚠️ Password exposed in the workflow
   DOCKER_REPO_BACKEND: "sustainafood-backend"
   DOCKER_REPO_FRONTEND: "sustainafood-frontend"
 
 jobs:
   backend:
     name: Backend Analysis
-    runs-on: ubuntu-latest
+    runs-on: self-hosted # Use a self-hosted runner connected to your local machine
     steps:
       - uses: actions/checkout@v4
         with:
@@ -57,19 +58,24 @@ jobs:
             -Dsonar.scm.disabled=true
 
       - name: Log in to Docker Hub
-        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
+        run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
-      - name: Build and Push Docker Image (Backend)
+      - name: Build Docker Image Locally (Backend)
         working-directory: SustainaFoodBack
         run: |
           VERSION=$(date +%Y%m%d%H%M%S)
           docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION .
+
+      - name: Push Docker Image to Docker Hub (Backend)
+        working-directory: SustainaFoodBack
+        run: |
+          VERSION=$(date +%Y%m%d%H%M%S)
           docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION
 
   frontend:
     name: Frontend Analysis
     needs: backend
-    runs-on: ubuntu-latest
+    runs-on: self-hosted # Use a self-hosted runner connected to your local machine
     steps:
       - uses: actions/checkout@v4
         with:
@@ -107,11 +113,16 @@ jobs:
             -Dsonar.scm.disabled=true
 
       - name: Log in to Docker Hub
-        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
+        run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
-      - name: Build and Push Docker Image (Frontend)
+      - name: Build Docker Image Locally (Frontend)
         working-directory: SustainaFoodFront
         run: |
           VERSION=$(date +%Y%m%d%H%M%S)
           docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION .
+
+      - name: Push Docker Image to Docker Hub (Frontend)
+        working-directory: SustainaFoodFront
+        run: |
+          VERSION=$(date +%Y%m%d%H%M%S)
           docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION
