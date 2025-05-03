@@ -57,7 +57,7 @@ jobs:
             -Dsonar.scm.disabled=true
 
       - name: Log in to Docker Hub
-        run: echo "cinda123." | docker login -u "sinda12" --password-stdin
+        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
 
       - name: Build and Push Docker Image (Backend)
         working-directory: SustainaFoodBack
@@ -107,7 +107,7 @@ jobs:
             -Dsonar.scm.disabled=true
 
       - name: Log in to Docker Hub
-        run: echo "cinda123." | docker login -u "sinda12" --password-stdin
+        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
 
       - name: Build and Push Docker Image (Frontend)
         working-directory: SustainaFoodFront
