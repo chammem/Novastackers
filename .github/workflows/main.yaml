@@ -28,6 +28,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check Out Target Branch
+        run: |
+          git fetch origin sinda
+          git checkout sinda
+
       - name: Increment Version
         id: set-version
         run: |
@@ -48,7 +53,7 @@ jobs:
           git config user.email "chammemcinda@gmail.com"
           git add shared-version.txt
           git commit -m "ci: increment shared version to ${{ steps.set-version.outputs.version }}"
-          git push --force
+          git push origin sinda
 
   backend:
     name: Backend Analysis
@@ -167,5 +172,5 @@ jobs:
 
       - name: Ensure Shared Version is Up-to-Date
         run: |
-          git pull origin $(git rev-parse --abbrev-ref HEAD)
+          git pull origin sinda
           echo "Shared version file is up-to-date."
