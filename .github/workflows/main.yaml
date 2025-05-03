@@ -74,6 +74,7 @@ jobs:
         run: |
           git config user.name "chammem"
           git config user.email "chammemcinda@gmail.com"
+          git pull --rebase origin $(git rev-parse --abbrev-ref HEAD) # Pull latest changes
           git add SustainaFoodBack/version.txt
           git commit -m "ci: increment backend version to $VERSION"
           git push
@@ -145,6 +146,7 @@ jobs:
         run: |
           git config user.name "chammem"
           git config user.email "chammemcinda@gmail.com"
+          git pull --rebase origin $(git rev-parse --abbrev-ref HEAD) # Pull latest changes
           git add SustainaFoodFront/version.txt
           git commit -m "ci: increment frontend version to $VERSION"
           git push
