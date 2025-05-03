@@ -18,8 +18,41 @@ env:
   DOCKER_REPO_FRONTEND: "sustainafood-frontend"
 
 jobs:
+  versioning:
+    name: Increment Shared Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Increment Version
+        id: set-version
+        run: |
+          VERSION_FILE=shared-version.txt
+          if [ ! -f "$VERSION_FILE" ]; then
+            echo "1.0.0" > $VERSION_FILE
+          fi
+          VERSION=$(cat $VERSION_FILE)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo $NEW_VERSION > $VERSION_FILE
+          echo "::set-output name=version::$NEW_VERSION"
+
+      - name: Commit Updated Version
+        run: |
+          git config user.name "chammem"
+          git config user.email "chammemcinda@gmail.com"
+          git add shared-version.txt
+          git commit -m "ci: increment shared version to ${{ steps.set-version.outputs.version }}"
+          git push --force
+
   backend:
     name: Backend Analysis
+    needs: versioning
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -56,40 +89,18 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
             -Dsonar.scm.disabled=true
 
-      - name: Increment Version (Backend)
-        id: version
-        run: |
-          VERSION_FILE=SustainaFoodBack/version.txt
-          if [ ! -f "$VERSION_FILE" ]; then
-            echo "1.0.0" > $VERSION_FILE
-          fi
-          VERSION=$(cat $VERSION_FILE)
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-          PATCH=$((PATCH + 1))
-          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-          echo $NEW_VERSION > $VERSION_FILE
-          echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
-
-      - name: Commit Updated Version (Backend)
-        run: |
-          git config user.name "chammem"
-          git config user.email "chammemcinda@gmail.com"
-          git add SustainaFoodBack/version.txt
-          git commit -m "ci: increment backend version to $VERSION"
-          git push
-
       - name: Log in to Docker Hub
         run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
 
       - name: Build and Push Docker Image (Backend)
         working-directory: SustainaFoodBack
         run: |
-          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION .
-          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }} .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }}
 
   frontend:
     name: Frontend Analysis
-    needs: backend
+    needs: versioning
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -127,33 +138,11 @@ jobs:
             -Dsonar.exclusions=**/node_modules/**,**/build/** \
             -Dsonar.scm.disabled=true
 
-      - name: Increment Version (Frontend)
-        id: version
-        run: |
-          VERSION_FILE=SustainaFoodFront/version.txt
-          if [ ! -f "$VERSION_FILE" ]; then
-            echo "1.0.0" > $VERSION_FILE
-          fi
-          VERSION=$(cat $VERSION_FILE)
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-          PATCH=$((PATCH + 1))
-          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-          echo $NEW_VERSION > $VERSION_FILE
-          echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
-
-      - name: Commit Updated Version (Frontend)
-        run: |
-          git config user.name "chammem"
-          git config user.email "chammemcinda@gmail.com"
-          git add SustainaFoodFront/version.txt
-          git commit -m "ci: increment frontend version to $VERSION"
-          git push --force
-
       - name: Log in to Docker Hub
         run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
 
       - name: Build and Push Docker Image (Frontend)
         working-directory: SustainaFoodFront
         run: |
-          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION .
-          docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }} .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }}
