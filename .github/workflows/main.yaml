@@ -7,10 +7,13 @@ on:
     branches: [main]
 
 env:
-  SONAR_HOST: https://sonarcloud.io
-  SONAR_ORG: chammem
-  BACKEND_KEY: sustainafood_backend
-  FRONTEND_KEY: sustainafood_frontend
+  # ⚠️ Attention: Ces informations seront visibles dans les logs publics
+  SONAR_HOST: "https://sonarcloud.io"
+  SONAR_ORG: "chammem"
+  BACKEND_KEY: "sustainafood_backend"
+  FRONTEND_KEY: "sustainafood_frontend"
+  # ⚠️ Token en clair - extrêmement risqué
+  SONAR_TOKEN: "sqa_e70c9f3c89d643fa9db70bffcbee28ce879c2ac4" 
 
 jobs:
   backend:
@@ -33,23 +36,15 @@ jobs:
         working-directory: SustainaFoodBack
         run: npm run test:coverage
 
-      - name: Run Local Sonar Analysis (Backend)
+      - name: SonarCloud Scan
         working-directory: SustainaFoodBack
         run: |
           npx sonarqube-scanner \
             -Dsonar.organization=$SONAR_ORG \
             -Dsonar.projectKey=$BACKEND_KEY \
             -Dsonar.host.url=$SONAR_HOST \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-            -Dsonar.scm.disabled=true \
-            -Dsonar.scanner.mode=preview \
-            -Dsonar.issuesReport.html.enable=true
-
-      - name: Upload Analysis Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: sonarqube-backend-report
-          path: SustainaFoodBack/.scannerwork/report-task.txt
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
   frontend:
     name: Frontend Analysis
@@ -72,21 +67,13 @@ jobs:
         working-directory: SustainaFoodFront
         run: npm test -- --coverage --watchAll=false
 
-      - name: Run Local Sonar Analysis (Frontend)
+      - name: SonarCloud Scan
         working-directory: SustainaFoodFront
         run: |
           npx sonarqube-scanner \
             -Dsonar.organization=$SONAR_ORG \
             -Dsonar.projectKey=$FRONTEND_KEY \
             -Dsonar.host.url=$SONAR_HOST \
+            -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-            -Dsonar.exclusions=**/node_modules/**,**/build/** \
-            -Dsonar.scm.disabled=true \
-            -Dsonar.scanner.mode=preview \
-            -Dsonar.issuesReport.html.enable=true
-
-      - name: Upload Analysis Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: sonarqube-frontend-report
-          path: SustainaFoodFront/.scannerwork/report-task.txt
+            -Dsonar.exclusions=**/node_modules/**,**/build/**
