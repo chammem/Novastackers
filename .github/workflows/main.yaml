@@ -13,6 +13,9 @@ env:
   BACKEND_KEY: "sustainafood_backend"
   FRONTEND_KEY: "sustainafood_frontend"
   SONAR_TOKEN: "4b75a0fef4c5ae5bd4b40ba192666a31aeac6853" # ⚠️ Token exposé
+  DOCKER_USERNAME: "sinda12" # Replace with your Docker Hub username
+  DOCKER_REPO_BACKEND: "sustainafood-backend"
+  DOCKER_REPO_FRONTEND: "sustainafood-frontend"
 
 jobs:
   backend:
@@ -53,6 +56,16 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
             -Dsonar.scm.disabled=true
 
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build and Push Docker Image (Backend)
+        working-directory: SustainaFoodBack
+        run: |
+          VERSION=$(date +%Y%m%d%H%M%S)
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION
+
   frontend:
     name: Frontend Analysis
     needs: backend
@@ -92,3 +105,13 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
             -Dsonar.exclusions=**/node_modules/**,**/build/** \
             -Dsonar.scm.disabled=true
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build and Push Docker Image (Frontend)
+        working-directory: SustainaFoodFront
+        run: |
+          VERSION=$(date +%Y%m%d%H%M%S)
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION
