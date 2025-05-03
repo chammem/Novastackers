@@ -13,7 +13,7 @@ env:
   BACKEND_KEY: "sustainafood_backend"
   FRONTEND_KEY: "sustainafood_frontend"
   SONAR_TOKEN: "4b75a0fef4c5ae5bd4b40ba192666a31aeac6853" # ⚠️ Token exposé
-  DOCKER_USERNAME: "sinda12" # Replace with your Docker Hub username
+  DOCKER_USERNAME: "sinda12"
   DOCKER_REPO_BACKEND: "sustainafood-backend"
   DOCKER_REPO_FRONTEND: "sustainafood-frontend"
 
@@ -57,7 +57,7 @@ jobs:
             -Dsonar.scm.disabled=true
 
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        run: echo "cinda123." | docker login -u "sinda12" --password-stdin
 
       - name: Build and Push Docker Image (Backend)
         working-directory: SustainaFoodBack
@@ -107,7 +107,7 @@ jobs:
             -Dsonar.scm.disabled=true
 
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        run: echo "cinda123." | docker login -u "sinda12" --password-stdin
 
       - name: Build and Push Docker Image (Frontend)
         working-directory: SustainaFoodFront
