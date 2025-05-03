@@ -17,11 +17,11 @@ jobs:
     name: Backend Analysis
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
 
@@ -46,7 +46,7 @@ jobs:
             -Dsonar.issuesReport.html.enable=true
 
       - name: Upload Analysis Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sonarqube-backend-report
           path: SustainaFoodBack/.scannerwork/report-task.txt
@@ -56,11 +56,11 @@ jobs:
     needs: backend
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
 
@@ -86,7 +86,7 @@ jobs:
             -Dsonar.issuesReport.html.enable=true
 
       - name: Upload Analysis Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sonarqube-frontend-report
           path: SustainaFoodFront/.scannerwork/report-task.txt
