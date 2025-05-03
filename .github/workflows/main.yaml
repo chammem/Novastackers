@@ -13,7 +13,7 @@ env:
   BACKEND_KEY: "sustainafood_backend"
   FRONTEND_KEY: "sustainafood_frontend"
   # ⚠️ Token en clair - extrêmement risqué
-  SONAR_TOKEN: "sqa_e70c9f3c89d643fa9db70bffcbee28ce879c2ac4" 
+  SONAR_TOKEN: "4b75a0fef4c5ae5bd4b40ba192666a31aeac6853" 
 
 jobs:
   backend:
