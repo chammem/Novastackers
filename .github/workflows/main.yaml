@@ -147,7 +147,7 @@ jobs:
           git config user.email "chammemcinda@gmail.com"
           git add SustainaFoodFront/version.txt
           git commit -m "ci: increment frontend version to $VERSION"
-          git push
+          git push --force
 
       - name: Log in to Docker Hub
         run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
