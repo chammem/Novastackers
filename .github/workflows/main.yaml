@@ -7,13 +7,12 @@ on:
     branches: [main]
 
 env:
-  # ⚠️ Attention: Ces informations seront visibles dans les logs publics
+  # ⚠️ ATTENTION : Ces informations seront visibles dans les logs publics
   SONAR_HOST: "https://sonarcloud.io"
   SONAR_ORG: "chammem"
   BACKEND_KEY: "sustainafood_backend"
   FRONTEND_KEY: "sustainafood_frontend"
-  # ⚠️ Token en clair - extrêmement risqué
-  SONAR_TOKEN: "4b75a0fef4c5ae5bd4b40ba192666a31aeac6853" 
+  SONAR_TOKEN: "4b75a0fef4c5ae5bd4b40ba192666a31aeac6853" # ⚠️ Token exposé
 
 jobs:
   backend:
@@ -36,7 +35,14 @@ jobs:
         working-directory: SustainaFoodBack
         run: npm run test:coverage
 
-      - name: SonarCloud Scan
+      - name: Create SonarCloud Project (Backend)
+        run: |
+          curl -X POST "$SONAR_HOST/api/projects/create" \
+            -u "$SONAR_TOKEN:" \
+            -d "project=$BACKEND_KEY&name=SustainaFood+Backend&organization=$SONAR_ORG" \
+            || echo "Le projet existe peut-être déjà"
+
+      - name: SonarCloud Scan (Backend)
         working-directory: SustainaFoodBack
         run: |
           npx sonarqube-scanner \
@@ -44,7 +50,8 @@ jobs:
             -Dsonar.projectKey=$BACKEND_KEY \
             -Dsonar.host.url=$SONAR_HOST \
             -Dsonar.login=$SONAR_TOKEN \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.scm.disabled=true
 
   frontend:
     name: Frontend Analysis
@@ -67,7 +74,14 @@ jobs:
         working-directory: SustainaFoodFront
         run: npm test -- --coverage --watchAll=false
 
-      - name: SonarCloud Scan
+      - name: Create SonarCloud Project (Frontend)
+        run: |
+          curl -X POST "$SONAR_HOST/api/projects/create" \
+            -u "$SONAR_TOKEN:" \
+            -d "project=$FRONTEND_KEY&name=SustainaFood+Frontend&organization=$SONAR_ORG" \
+            || echo "Le projet existe peut-être déjà"
+
+      - name: SonarCloud Scan (Frontend)
         working-directory: SustainaFoodFront
         run: |
           npx sonarqube-scanner \
@@ -76,4 +90,5 @@ jobs:
             -Dsonar.host.url=$SONAR_HOST \
             -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-            -Dsonar.exclusions=**/node_modules/**,**/build/**
+            -Dsonar.exclusions=**/node_modules/**,**/build/** \
+            -Dsonar.scm.disabled=true
