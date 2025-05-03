@@ -8,9 +8,9 @@ on:
 
 env:
   SONAR_HOST: https://sonarcloud.io
-  SONAR_ORG: chammem  # À remplacer par votre organisation
-  BACKEND_KEY: sustainafood_backend  # À remplacer
-  FRONTEND_KEY: sustainafood_frontend  # À remplacer
+  SONAR_ORG: chammem
+  BACKEND_KEY: sustainafood_backend
+  FRONTEND_KEY: sustainafood_frontend
 
 jobs:
   backend:
@@ -33,14 +33,23 @@ jobs:
         working-directory: SustainaFoodBack
         run: npm run test:coverage
 
-      - name: SonarCloud Scan
+      - name: Run Local Sonar Analysis (Backend)
+        working-directory: SustainaFoodBack
         run: |
-          cd SustainaFoodBack
           npx sonarqube-scanner \
             -Dsonar.organization=$SONAR_ORG \
             -Dsonar.projectKey=$BACKEND_KEY \
             -Dsonar.host.url=$SONAR_HOST \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.scm.disabled=true \
+            -Dsonar.scanner.mode=preview \
+            -Dsonar.issuesReport.html.enable=true
+
+      - name: Upload Analysis Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: sonarqube-backend-report
+          path: SustainaFoodBack/.scannerwork/report-task.txt
 
   frontend:
     name: Frontend Analysis
@@ -63,12 +72,21 @@ jobs:
         working-directory: SustainaFoodFront
         run: npm test -- --coverage --watchAll=false
 
-      - name: SonarCloud Scan
+      - name: Run Local Sonar Analysis (Frontend)
+        working-directory: SustainaFoodFront
         run: |
-          cd SustainaFoodFront
           npx sonarqube-scanner \
             -Dsonar.organization=$SONAR_ORG \
             -Dsonar.projectKey=$FRONTEND_KEY \
             -Dsonar.host.url=$SONAR_HOST \
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-            -Dsonar.exclusions=**/node_modules/**,**/build/**
+            -Dsonar.exclusions=**/node_modules/**,**/build/** \
+            -Dsonar.scm.disabled=true \
+            -Dsonar.scanner.mode=preview \
+            -Dsonar.issuesReport.html.enable=true
+
+      - name: Upload Analysis Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: sonarqube-frontend-report
+          path: SustainaFoodFront/.scannerwork/report-task.txt
