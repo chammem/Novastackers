@@ -146,3 +146,20 @@ jobs:
         run: |
           docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }} .
           docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }}
+
+    finalize:
+    name: Finalize and Update Shared Version
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch Latest Changes
+        run: git fetch origin
+
+      - name: Ensure Shared Version is Up-to-Date
+        run: |
+          git pull origin $(git rev-parse --abbrev-ref HEAD)
+          echo "Shared version file is up-to-date."       
