@@ -2,89 +2,73 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
-      - sinda
+    branches: [main, sinda]
   pull_request:
-    branches:
-      - main
+    branches: [main]
+
+env:
+  SONAR_HOST: https://sonarcloud.io
+  SONAR_ORG: chammem  # À remplacer par votre organisation
+  BACKEND_KEY: sustainafood_backend  # À remplacer
+  FRONTEND_KEY: sustainafood_frontend  # À remplacer
 
 jobs:
   backend:
-    name: Backend Build, Test, and SonarCloud Analysis
+    name: Backend Analysis
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
-          cache-dependency-path: SustainaFoodBack/package-lock.json
 
-      - name: Install dependencies (Backend)
+      - name: Install dependencies
+        working-directory: SustainaFoodBack
+        run: npm ci
+
+      - name: Run tests with coverage
+        working-directory: SustainaFoodBack
+        run: npm run test:coverage
+
+      - name: SonarCloud Scan
         run: |
           cd SustainaFoodBack
-          npm ci
-
-      - name: Run tests with coverage (Backend)
-        run: |
-          cd SustainaFoodBack
-          npm run test:coverage
-
-      - name: Run SonarCloud analysis (Backend)
-        env:
-          SONAR_TOKEN: 80a158098efce80c33201f4b2a8a77d05b87f8e2
-        run: |
-          cd SustainaFoodBack
-          npm run sonar -- -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=chammem \
-            -Dsonar.projectKey=sustainafood_backend
+          npx sonarqube-scanner \
+            -Dsonar.organization=$SONAR_ORG \
+            -Dsonar.projectKey=$BACKEND_KEY \
+            -Dsonar.host.url=$SONAR_HOST \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
   frontend:
+    name: Frontend Analysis
     needs: backend
-    name: Frontend Build, Test, and SonarCloud Analysis
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
-          cache-dependency-path: SustainaFoodFront/package-lock.json
 
-      - name: Install dependencies (Frontend)
+      - name: Install dependencies
+        working-directory: SustainaFoodFront
+        run: npm ci
+
+      - name: Run tests with coverage
+        working-directory: SustainaFoodFront
+        run: npm test -- --coverage --watchAll=false
+
+      - name: SonarCloud Scan
         run: |
           cd SustainaFoodFront
-          npm ci
-
-      - name: Build Project (Frontend)
-        run: |
-          cd SustainaFoodFront
-          npm run build
-
-      - name: Run tests (Frontend)
-        run: |
-          cd SustainaFoodFront
-          npm test -- --coverage --watchAll=false
-
-      - name: Run SonarCloud analysis (Frontend)
-        env:
-          SONAR_TOKEN: 80a158098efce80c33201f4b2a8a77d05b87f8e2
-        run: |
-          cd SustainaFoodFront
-          node ./node_modules/sonarqube-scanner/bin/sonar-scanner \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.token=$SONAR_TOKEN \
-            -Dsonar.projectKey=sustainafood_frontend \
-            -Dsonar.organization=chammem \
-            -Dsonar.sources=src \
-            -Dsonar.exclusions=**/node_modules/**,**/build/** \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+          npx sonarqube-scanner \
+            -Dsonar.organization=$SONAR_ORG \
+            -Dsonar.projectKey=$FRONTEND_KEY \
+            -Dsonar.host.url=$SONAR_HOST \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.exclusions=**/node_modules/**,**/build/**
