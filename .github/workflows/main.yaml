@@ -56,13 +56,26 @@ jobs:
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
             -Dsonar.scm.disabled=true
 
+      - name: Increment Version (Backend)
+        id: version
+        run: |
+          VERSION_FILE=SustainaFoodBack/version.txt
+          if [ ! -f "$VERSION_FILE" ]; then
+            echo "1.0.0" > $VERSION_FILE
+          fi
+          VERSION=$(cat $VERSION_FILE)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo $NEW_VERSION > $VERSION_FILE
+          echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
       - name: Log in to Docker Hub
         run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
 
       - name: Build and Push Docker Image (Backend)
         working-directory: SustainaFoodBack
         run: |
-          VERSION=$(date +%Y%m%d%H%M%S)
           docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION .
           docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION
 
@@ -106,11 +119,25 @@ jobs:
             -Dsonar.exclusions=**/node_modules/**,**/build/** \
             -Dsonar.scm.disabled=true
 
+      - name: Increment Version (Frontend)
+        id: version
+        run: |
+          VERSION_FILE=SustainaFoodFront/version.txt
+          if [ ! -f "$VERSION_FILE" ]; then
+            echo "1.0.0" > $VERSION_FILE
+          fi
+          VERSION=$(cat $VERSION_FILE)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo $NEW_VERSION > $VERSION_FILE
+          echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
       - name: Log in to Docker Hub
         run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
 
       - name: Build and Push Docker Image (Frontend)
         working-directory: SustainaFoodFront
         run: |
-          VERSION=$(date +%Y%m%d%H%M%S)
           docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION
