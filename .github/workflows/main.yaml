@@ -172,10 +172,15 @@ jobs:
 
       - name: Ensure Shared Version is Up-to-Date
         run: |
-          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-          if [ "$CURRENT_BRANCH" = "HEAD" ]; then
-            CURRENT_BRANCH=${{ github.ref_name }}
+          # Determine the current branch
+          if [ "$(git rev-parse --abbrev-ref HEAD)" = "HEAD" ]; then
+            CURRENT_BRANCH="${{ github.ref_name }}"
+          else
+            CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
           fi
+          echo "Current branch is $CURRENT_BRANCH"
+
+          # Check out the branch and pull the latest changes
           git checkout $CURRENT_BRANCH
           git pull origin $CURRENT_BRANCH
           echo "Shared version file is up-to-date."
