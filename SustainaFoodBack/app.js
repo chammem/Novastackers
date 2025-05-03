@@ -79,8 +79,9 @@ app.use('/api/suggested-products', suggestedProductRoutes);
 // Start DB and server
 const startServer = async () => {
   await connectDB();
-  server.listen(8082, () => {
-    console.log(`🚀 Server + Socket.IO running on port 8082`);
+  const PORT = process.env.PORT || 8082;
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server + Socket.IO running on http://0.0.0.0:${PORT}`);
   });
 };
 
