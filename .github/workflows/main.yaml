@@ -106,6 +106,10 @@ jobs:
           docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }} .
           docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }}
 
+      - name: Run Backend Container
+        run: |
+          docker run -d -p 8080:8080 --name backend --env-file c:\Users\USER\Desktop\4twin9\Piweb\Novastackers\SustainaFoodBack\.env $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }}
+
   frontend:
     name: Frontend Analysis
     needs: versioning
