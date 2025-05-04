@@ -10,8 +10,8 @@ COPY requirements.txt /app/
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install pandas explicitly if not listed in requirements.txt
-RUN pip install pandas
+# Install additional dependencies explicitly if not listed in requirements.txt
+RUN pip install pandas numpy scikit-learn joblib scipy flask
 
 # Copy the entire RecommendationModel directory into the container
 COPY . /app/

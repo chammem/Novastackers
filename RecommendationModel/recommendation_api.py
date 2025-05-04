@@ -2,6 +2,11 @@ from flask import Flask, request, jsonify
 from recommandation import content_based_recommendations, hybrid_recommendations
 from joblib import load
 from scipy.sparse import load_npz
+import pandas as pd
+import numpy as np
+from sklearn.neighbors import NearestNeighbors
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import linear_kernel
 import os
 
 app = Flask(__name__)
