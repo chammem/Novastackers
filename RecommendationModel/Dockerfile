@@ -3,14 +3,14 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Copy requirements and install dependencies
-COPY RecommendationModel/requirements.txt .
+COPY ./RecommendationModel/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code from the RecommendationModel directory
-COPY RecommendationModel/* . 
+COPY ./RecommendationModel/* . 
 
 # Copy recommendation_api.py from the root of the project
-COPY recommendation_api.py .
+COPY ./recommendation_api.py .
 
 # Expose the Flask port
 EXPOSE 5000
