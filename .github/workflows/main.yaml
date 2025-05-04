@@ -188,6 +188,10 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
+      - name: Verify Directory Structure
+        run: |
+          ls -la ./Piweb/Novastackers
+
       - name: Deploy with Docker Compose
         working-directory: ./Piweb/Novastackers
         run: |
