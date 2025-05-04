@@ -39,7 +39,7 @@ exports.getProductRecommendations = async (req, res) => {
   
     try {
       // Appel à Flask pour obtenir les recommandations
-      const flaskResponse = await axios.post('http://127.0.0.1:5000/recommend/product', {
+      const flaskResponse = await axios.post('http://flask:5000/recommend/product', {
         product_name: productName,
       });
   
