@@ -3,10 +3,6 @@ const FoodItem = require('../models/foodItem');
 const FoodSale = require('../models/sales/FoodSaleItem');
 const SuggestedProduct = require('../models/SuggestedProduct');
 
-const FLASK_BASE_URL = process.env.DOCKER_ENV === 'true' 
-  ? 'http://flask:5000' // Use the service name 'flask' instead of an IP address
-  : 'http://127.0.0.1:5000'; // Localhost for local development
-
 exports.getUserRecommendations = async (req, res) => {
   const { userId } = req.body;
 
@@ -18,7 +14,7 @@ exports.getUserRecommendations = async (req, res) => {
   }
 
   try {
-    const response = await axios.post(`${FLASK_BASE_URL}/recommend/user`, {
+    const response = await axios.post('http://127.0.0.1:5000/recommend/user', {
       user_id: userId,
     });
 
@@ -43,7 +39,7 @@ exports.getProductRecommendations = async (req, res) => {
   
     try {
       // Appel à Flask pour obtenir les recommandations
-      const flaskResponse = await axios.post(`${FLASK_BASE_URL}/recommend/product`, {
+      const flaskResponse = await axios.post('http://127.0.0.1:5000/recommend/product', {
         product_name: productName,
       });
   
@@ -121,7 +117,7 @@ exports.getFoodRecommendations = async (req, res) => {
   }
 
   try {
-    const response = await axios.post(`${FLASK_BASE_URL}/recommend/user`, {
+    const response = await axios.post('http://127.0.0.1:5000/recommend/user', {
       user_id: userId,
     });
 
