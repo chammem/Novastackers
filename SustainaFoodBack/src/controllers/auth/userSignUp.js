@@ -44,13 +44,10 @@ async function generateOtp(req,res) {
         });
       }
   
-    
       const otp = generateVerificationCode(6);
   
-      
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000); 
   
-      
       let verification = await Verification.findOne({ email });
   
       if (verification) {
@@ -68,7 +65,6 @@ async function generateOtp(req,res) {
   
       await verification.save();
   
-      
       const subject = 'Your OTP for Password Reset';
       const text = `Your OTP is: ${otp}. This OTP is valid for 10 minutes.`;
   
@@ -136,6 +132,11 @@ async function registerVerification(req, res) {
 
         if (verification.expiresAt < new Date()) {
             return res.status(400).json({ message: "Verification code has expired." });
+        }
+
+        // Remove googleId if it is null or undefined
+        if (!userInput.googleId) {
+            delete userInput.googleId;
         }
 
         // Hash the password before saving the user
