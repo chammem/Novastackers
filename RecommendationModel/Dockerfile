@@ -10,11 +10,14 @@ COPY requirements.txt /app/
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install pandas explicitly if not listed in requirements.txt
+RUN pip install pandas
+
 # Copy the entire RecommendationModel directory into the container
 COPY . /app/
 
 # Expose the Flask port
 EXPOSE 5000
 
-# Run the Flask application
-CMD ["python", "recommendation_api.py"]
+# Run recommandation.py first, then recommendation_api.py
+CMD ["sh", "-c", "python recommandation.py && python recommendation_api.py"]

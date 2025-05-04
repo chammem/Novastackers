@@ -44,5 +44,16 @@ def recommend_for_product():
 def health_check():
     return jsonify({'status': 'healthy'}), 200
 
+@app.route("/recommendations/content", methods=["GET"])
+def content_recommendations():
+    content_based_recommendations()
+    return {"message": "Content-based recommendations executed successfully."}
+
+@app.route("/recommendations/hybrid", methods=["GET"])
+def hybrid_recommendations_route():
+    hybrid_recommendations()
+    return {"message": "Hybrid recommendations executed successfully."}
+
 if __name__ == '__main__':
+    print("Starting Flask server...")
     app.run(host='0.0.0.0', port=5000, debug=True)
