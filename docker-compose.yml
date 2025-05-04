@@ -2,30 +2,30 @@ version: '3.8'
 
 services:
   backend:
-    build:
-      context: ./SustainaFoodBack
+    image: sinda12/sustainafood-backend:${VERSION:-latest}
     container_name: backend
     ports:
       - "8082:8082"
-    env_file:
-      - ./SustainaFoodBack/.env
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=${MONGODB_URI}
+      - TOKEN_SECRET_KEY=${TOKEN_SECRET_KEY}
+      - FRONTEND_URL=http://localhost:5173
     networks:
       - sustainafood-network
 
   frontend:
-    build:
-      context: ./SustainaFoodFront
+    image: sinda12/sustainafood-frontend:${VERSION:-latest}
     container_name: frontend
     ports:
       - "5173:80"
     environment:
-      - REACT_APP_API_BASE_URL=http://backend:8082
+      - REACT_APP_API_BASE_URL=http://localhost:8082
     networks:
       - sustainafood-network
 
   flask:
-    build:
-      context: ./RecommendationModel
+    image: sinda12/sustainafood-flask:${VERSION:-latest}
     container_name: flask
     ports:
       - "5000:5000"

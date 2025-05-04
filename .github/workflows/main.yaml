@@ -182,18 +182,9 @@ jobs:
     needs: [backend, frontend, flask]
     runs-on: ubuntu-latest
     steps:
-      - name: Install Docker Compose
+      - name: Notify Deployment Ready
         run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
-
-      - name: Verify Directory Structure
-        run: |
-          ls -la ./Piweb/Novastackers
-
-      - name: Deploy with Docker Compose
-        working-directory: ./Piweb/Novastackers
-        run: |
-          docker-compose down
-          docker-compose up -d
+          echo "Les images Docker sont prêtes à être déployées:"
+          echo "Backend: sinda12/sustainafood-backend:${{ needs.versioning.outputs.version }}"
+          echo "Frontend: sinda12/sustainafood-frontend:${{ needs.versioning.outputs.version }}"
+          echo "Flask: sinda12/sustainafood-flask:${{ needs.versioning.outputs.version }}"
