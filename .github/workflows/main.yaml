@@ -184,3 +184,26 @@ jobs:
           git checkout $CURRENT_BRANCH
           git pull origin $CURRENT_BRANCH
           echo "Shared version file is up-to-date."
+
+      - name: Build and Push Backend Image
+        working-directory: SustainaFoodBack
+        run: |
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }} .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }}
+
+      - name: Build and Push Frontend Image
+        working-directory: SustainaFoodFront
+        run: |
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }} .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }}
+
+      - name: Build and Push Flask Image
+        working-directory: RecommendationModel
+        run: |
+          docker build -t $DOCKER_USERNAME/sustainafood-flask:${{ needs.versioning.outputs.version }} .
+          docker push $DOCKER_USERNAME/sustainafood-flask:${{ needs.versioning.outputs.version }}
+
+      - name: Deploy with Docker Compose
+        run: |
+          docker-compose down
+          docker-compose up -d

@@ -1,21 +1,37 @@
 version: '3.8'
+
 services:
   backend:
-    build: ./SustainaFoodBack
+    build:
+      context: ./SustainaFoodBack
+    container_name: backend
     ports:
-      - "8082:8082"  # Updated to match backend port
-    environment:
-      - NODE_ENV=development
-      - DB_URI=mongodb+srv://mohammedazizgawet:novastackers@sustainafood.ihxbt.mongodb.net/SustainaFood?retryWrites=true&w=majority&appName=SustainaFood
-      # Ensure the backend environment variables are correctly configured to connect to MongoDB Atlas
+      - "8082:8082"
+    env_file:
+      - ./SustainaFoodBack/.env
+    networks:
+      - sustainafood-network
 
   frontend:
-    build: ./SustainaFoodFront
+    build:
+      context: ./SustainaFoodFront
+    container_name: frontend
     ports:
-      - "5173:5173"  # Updated to match frontend port
-    depends_on:
-      - backend
+      - "5173:80"
+    environment:
+      - REACT_APP_API_BASE_URL=http://backend:8082
+    networks:
+      - sustainafood-network
 
-# Removed the MongoDB service as MongoDB Atlas is being used
-volumes:
-  mongodb_data:
+  flask:
+    build:
+      context: ./RecommendationModel
+    container_name: flask
+    ports:
+      - "5000:5000"
+    networks:
+      - sustainafood-network
+
+networks:
+  sustainafood-network:
+    driver: bridge
