@@ -189,7 +189,7 @@ jobs:
           docker-compose --version
 
       - name: Deploy with Docker Compose
-        working-directory: c:\Users\USER\Desktop\4twin9\Piweb\Novastackers
+        working-directory: ./Piweb/Novastackers
         run: |
           docker-compose down
           docker-compose up -d
