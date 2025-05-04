@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    image: sinda12/sustainafood-backend:${VERSION:-latest}
+    image: sinda12/sustainafood-backend:1.0.24
     container_name: backend
     ports:
       - "8082:8082"
@@ -15,18 +15,19 @@ services:
       - sustainafood-network
 
   frontend:
-    image: sinda12/sustainafood-frontend:${VERSION:-latest}
+    image: sinda12/sustainafood-frontend:1.0.24
     container_name: frontend
     ports:
       - "5173:80"
     environment:
-      - REACT_APP_API_BASE_URL=http://localhost:8082
+      - REACT_APP_API_BASE_URL=http://backend:8082
     networks:
       - sustainafood-network
 
   flask:
-    image: sinda12/sustainafood-flask:${VERSION:-latest}
+    image: sinda12/sustainafood-flask:1.0.24
     container_name: flask
+    working_dir: /app
     ports:
       - "5000:5000"
     networks:
