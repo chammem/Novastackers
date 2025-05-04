@@ -4,14 +4,14 @@ FROM python:3.9-slim
 # Set the working directory
 WORKDIR /app
 
-# Copy requirements.txt from RecommendationModel directory
-COPY ./RecommendationModel/requirements.txt /app/
+# Copy the requirements file into the container
+COPY requirements.txt /app/
 
-# Install dependencies
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy recommendation_api.py from the root directory
-COPY ./recommendation_api.py /app/
+# Copy the entire RecommendationModel directory into the container
+COPY . /app/
 
 # Expose the Flask port
 EXPOSE 5000
