@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser');
 const http = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
-const { connectDB } = require('./src/config/db');
+const connectDB = require('./src/config/db'); // Updated import statement
 const router = require('./src/routes');
 const donationRouter = require('./src/routes/donationRouter');
 const path = require("path");
