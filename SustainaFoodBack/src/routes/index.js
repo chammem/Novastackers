@@ -22,6 +22,8 @@ const { uploadDriverDocuments } = require('../controllers/roleVerification');
 const upload = require("../middleware/upload");
 const notificationController = require('../controllers/notifications/notificationController');
 const Batch = require('../models/batch')
+const routerController = require('../controllers/route/routeController')
+
 router.get("/auth-endpoint",authToken,(request, response) => {
   response.json({ message: "You are authorized to access me" });
 });
@@ -397,8 +399,95 @@ router.post("/optimized-route", async (req, res) => {
   }
 });
 
+router.post('/optimized-route-with-constraints', async (req, res) => {
+  try {
+    const { start, end, pickups, constraints } = req.body;
+    
+    // If there are no constraints, use regular optimization
+    if (!constraints || constraints.length === 0) {
+      return optimizeRoute(req, res);
+    }
+    
+    // First, try to use ORS optimizer with constraints
+    // If that fails, we'll use our own constraint enforcement
+    
+    // TODO: Call to OpenRouteService with constraints if supported
+    
+    // Fallback: Custom constraint handling
+    // We'll manually ensure pickups come before deliveries
+    
+    // 1. Get an optimized route without constraints first
+    const optimizedResult = await getOptimizedRoute(start, end, pickups);
+    
+    // 2. Check if any constraints are violated
+    let orderedWaypoints = optimizedResult.orderedWaypoints;
+    let constraintsViolated = false;
+    
+    // Check each constraint
+    constraints.forEach(constraint => {
+      const beforeIndex = findPointIndex(orderedWaypoints, constraint.before);
+      const afterIndex = findPointIndex(orderedWaypoints, constraint.after);
+      
+      if (beforeIndex > afterIndex) {
+        constraintsViolated = true;
+      }
+    });
+    
+    // 3. If constraints are violated, enforce them
+    if (constraintsViolated) {
+      // Simplified approach: Group by orders and enforce pickup before delivery
+      const orderedWithConstraints = [];
+      
+      // Add start point
+      orderedWithConstraints.push(start);
+      
+      // For each order, add pickup then delivery
+      Object.values(groupPointsByOrder(pickups, constraints)).forEach(orderPoints => {
+        if (orderPoints.before) orderedWithConstraints.push(orderPoints.before);
+        if (orderPoints.after) orderedWithConstraints.push(orderPoints.after);
+      });
+      
+      // Add end point
+      orderedWithConstraints.push(end);
+      
+      // Generate new route with these ordered points
+      const newRoute = await getDirectRoute(orderedWithConstraints);
+      
+      return res.json({
+        orderedWaypoints: orderedWithConstraints,
+        encodedPolyline: newRoute.encodedPolyline
+      });
+    }
+    
+    // Otherwise, return the original optimization
+    return res.json(optimizedResult);
+    
+  } catch (error) {
+    console.error('Route optimization error:', error);
+    res.status(500).json({ error: 'Failed to optimize route' });
+  }
+});
+
+// Helper functions
+function findPointIndex(points, target) {
+  return points.findIndex(p => 
+    Math.abs(p[0] - target[0]) < 0.0001 && Math.abs(p[1] - target[1]) < 0.0001
+  );
+}
+
+function groupPointsByOrder(points, constraints) {
+  const orderMap = {};
+  
+  constraints.forEach((constraint, i) => {
+    orderMap[`order_${i}`] = {
+      before: constraint.before,
+      after: constraint.after
+    };
+  });
+  
+  return orderMap;
+}
+
 router.get('/volunteer/:userId/campaigns', donationController.getMyVolunteeredCampaigns);
-
-
 
 module.exports = router

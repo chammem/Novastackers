@@ -46,6 +46,13 @@ import RestaurantDetailsPage from './components/foodSales/RestaurantDetailsPage'
 import OrderConfirmationPage from './components/foodSales/OrderConfirmationPage.jsx';
 import OrderSuccessPage from './components/foodSales/OrderSuccessPage.jsx';
 import OrderPaymentPage from './components/foodSales/OrderPaymentPage.jsx';
+import MyOrdersPage from './components/foodSales/MyOrdersPage.jsx'
+import OrderDetailPage from './components/foodSales/OrderDetailPage.jsx';
+import DriverDashboard from './components/driver/DriverDashboard.jsx';
+import DeliveryNotification from './components/driver/DeliveryNotification.jsx';
+import AllDeliveriesMap from './components/driver/AllDeliveriesMap.jsx';
+import RequestedDeliveries from './components/driver/RequestedDeliveries.jsx';
+import DeliveryRouteDetails from './components/driver/DeliveryRouteDetails.jsx';
 const router = createBrowserRouter([
   {
     path: "/",
@@ -84,7 +91,14 @@ const router = createBrowserRouter([
       {path:"/order-confirmation/:foodId", element:<OrderConfirmationPage />},
       {path:"/order-success/:orderId", element:<OrderSuccessPage />},
       {path:"/order-payment", element:<OrderPaymentPage />},
-      
+      {path:"/orders",element:<MyOrdersPage />},
+      {path:"/orders/:orderId",element:<OrderDetailPage/>},
+      {path:"/driver-dashboard",element:<DriverDashboard/>},
+      {path:"/driver-notification",element:<DeliveryNotification/>},
+      {path:"/driver-dashboard",element:<DriverDashboard/>},
+      {path:"/delivery-route/:orderId",element:<DeliveryRouteDetails/>},
+    {path:"/requested-deliveries",element:<RequestedDeliveries/>},
+    {path:"/deliveries-map",element:<AllDeliveriesMap/>},
       {
         element: <ProtectedRoute />,
         children: [

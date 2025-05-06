@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import HeaderMid from "../HeaderMid";
 import { useAuth } from "../../context/AuthContext";
+import LocationSelector from "../common/LocationSelector";
 
 const OrderConfirmationPage = () => {
   const { foodId } = useParams();
@@ -27,6 +28,8 @@ const OrderConfirmationPage = () => {
     state: "",
     zipCode: "",
     country: "USA",
+    lat: null,
+    lng: null,
   });
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [error, setError] = useState(null);
@@ -75,6 +78,25 @@ const OrderConfirmationPage = () => {
     }));
   };
 
+  const handleLocationSelect = (location) => {
+    setDeliveryAddress((prev) => ({
+      ...prev,
+      lat: location.lat,
+      lng: location.lng,
+    }));
+
+    if (location.addressDetails) {
+      setDeliveryAddress((prev) => ({
+        ...prev,
+        street: location.addressDetails.street || prev.street,
+        city: location.addressDetails.city || prev.city,
+        state: location.addressDetails.state || prev.state,
+        zipCode: location.addressDetails.zipCode || prev.zipCode,
+        country: location.addressDetails.country || prev.country,
+      }));
+    }
+  };
+
   const calculateTotal = () => {
     if (!foodSale) return 0;
     const price = foodSale.discountedPrice || foodSale.price;
@@ -82,7 +104,6 @@ const OrderConfirmationPage = () => {
   };
 
   const handleProceedToPayment = async () => {
-    // Validate form
     if (
       !deliveryAddress.street ||
       !deliveryAddress.city ||
@@ -92,8 +113,12 @@ const OrderConfirmationPage = () => {
       return;
     }
 
+    if (!deliveryAddress.lat || !deliveryAddress.lng) {
+      toast.error("Please select a delivery location on the map");
+      return;
+    }
+
     try {
-      // Navigate to payment page with order details
       navigate("/order-payment", {
         state: {
           foodId: foodId,
@@ -102,7 +127,6 @@ const OrderConfirmationPage = () => {
           specialInstructions,
           totalAmount: calculateTotal(),
           foodSale,
-          // No need to pass userId here, we'll get it from AuthContext
         },
       });
     } catch (err) {
@@ -111,7 +135,6 @@ const OrderConfirmationPage = () => {
     }
   };
 
-  // Show a loading state while auth is being checked
   if (isLoading) {
     return (
       <>
@@ -317,6 +340,18 @@ const OrderConfirmationPage = () => {
                 <h2 className="card-title text-xl mb-4">
                   Delivery Information
                 </h2>
+
+                <LocationSelector
+                  onLocationSelect={handleLocationSelect}
+                  initialLocation={
+                    deliveryAddress.lat && deliveryAddress.lng
+                      ? { lat: deliveryAddress.lat, lng: deliveryAddress.lng }
+                      : null
+                  }
+                  address={deliveryAddress}
+                />
+
+                <div className="divider">Address Details</div>
 
                 <div className="form-control">
                   <label className="label">

@@ -1,6 +1,7 @@
 const FoodSaleItem = require('../../models/sales/FoodSaleItem');
 const FoodItem = require('../../models/foodItem');
 const User = require('../../models/userModel');
+const Order = require('../../models/sales/Order');
 
 exports.createFoodSale = async (req, res) => {
   try {
@@ -68,43 +69,67 @@ exports.createFoodSale = async (req, res) => {
 
 exports.getAllFoodSales = async (req, res) => {
   try {
-    // Basic pagination
+    // Basic pagination setup remains the same
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-
-    // Start with an empty filter to get all items by default
     const filter = {};
 
-    // Apply isAvailable filter only if specified
+    // Apply availability filter as before
     if (req.query.available === "true") {
       filter.isAvailable = true;
     } else if (req.query.available === "false") {
       filter.isAvailable = false;
     }
-    // If not specified, return all items regardless of availability
 
-    // Optional business filter
+    // Calculate the sum of quantities for each food sale from paid orders
+    const soldQuantities = await Order.aggregate([
+      { $match: { status: 'paid' } },
+      { 
+        $group: {
+          _id: '$foodSale',
+          totalSold: { $sum: '$quantity' }
+        }
+      }
+    ]);
+
+    // Create a map of foodSaleId -> soldQuantity for efficient lookup
+    const soldQuantityMap = {};
+    soldQuantities.forEach(item => {
+      soldQuantityMap[item._id.toString()] = item.totalSold;
+    });
+
+    // Business filter (keep as is)
     if (req.query.businessId) {
-      // We need to first find food items for this business
+      // Same as before
       const businessFoodItems = await FoodItem.find({
         buisiness_id: req.query.businessId,
       }).select("_id");
-
-      // Extract the IDs to use in our food sales query
       const foodItemIds = businessFoodItems.map((item) => item._id);
       filter.foodItem = { $in: foodItemIds };
     }
 
-    // Get food sales with pagination and populate food item details
-    const foodSales = await FoodSaleItem.find(filter)
+    // Get all food sales meeting the filter criteria
+    let foodSales = await FoodSaleItem.find(filter)
       .populate("foodItem")
-      .sort({ listedAt: -1 })
-      .skip(skip)
-      .limit(limit);
+      .sort({ listedAt: -1 });
 
-    // Count total food sales for pagination info
-    const totalFoodSales = await FoodSaleItem.countDocuments(filter);
+    // Filter out items that are sold out (sold quantity >= available quantity)
+    foodSales = foodSales.filter(item => {
+      const itemId = item._id.toString();
+      const soldQty = soldQuantityMap[itemId] || 0;
+      const remainingQty = item.quantityAvailable - soldQty;
+      
+      // Update the item to show the actual remaining quantity
+      item.remainingQuantity = remainingQty;
+      
+      // Only include items with remaining quantity > 0
+      return remainingQty > 0;
+    });
+
+    // Apply pagination after filtering
+    const totalFoodSales = foodSales.length;
+    foodSales = foodSales.slice(skip, skip + limit);
 
     return res.status(200).json({
       success: true,
