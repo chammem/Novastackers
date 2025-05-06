@@ -23,7 +23,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-pip install scikit-surprise
+
 
 from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
@@ -287,7 +287,46 @@ df.head()
 
 from google.colab import drive
 drive.mount('/content/drive')
+# Définir le chemin du modèle
+model_path = 'model/segmentation_model.joblib'
 
+# Vérifier si le répertoire 'model' existe, sinon le créer
+if not os.path.exists('model'):
+    os.makedirs('model')
+
+    # Sauvegarder le modèle
+    dump(kmeans, model_path)
+    print(f"Modèle sauvegardé dans {model_path}")
+
+import os
+from joblib import dump, load
+
+MODEL_DIR = 'model'
+
+# Vérifie si le modèle existe
+model_path = os.path.join(MODEL_DIR, 'segmentation_model.joblib')
+
+if not os.path.exists(model_path):
+    print(f"Le modèle '{model_path}' n'existe pas. Création du modèle...")
+        # Code pour entraîner et sauvegarder le modèle
+            # Exemple avec un modèle KMeans
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+
+# Charger les données (exemple)
+df = pd.read_csv('segmentation_input.csv')
+features = ['order_count', 'avg_spending', 'recency_days']
+X = df[features]
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+kmeans = KMeans(n_clusters=2)
+kmeans.fit(X_scaled)
+
+# Sauvegarder le modèle
+dump(kmeans, model_path)
+print(f"Modèle sauvegardé dans {model_path}")
 import os
 for f in os.listdir("/content/drive/MyDrive"):
     print(f)
