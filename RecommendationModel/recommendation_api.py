@@ -40,4 +40,5 @@ def recommend_for_product():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    # Listen on all network interfaces (0.0.0.0) instead of just localhost
+    app.run(host='0.0.0.0', port=5000, debug=True)
