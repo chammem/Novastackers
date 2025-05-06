@@ -25,7 +25,7 @@ this is a repository for our sustainaFood website project
 
 - **Frontend**: React.js (with Hooks and Context API)
 - **Backend**: Express.js (Node.js)
-- **Database**: MongoDB / PostgreSQL
+- **Database**: MongoDB 
 - **AI**: Route optimization using algorithms (e.g., A*, Dijkstra or ML model)
 - **DevOps**:
   - Docker, Docker Compose
@@ -48,13 +48,13 @@ this is a repository for our sustainaFood website project
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/sustaina-food.git
+git clone https://github.com/alasalah123/Novastackers.git
 cd sustaina-food
 
 # Setup backend
-cd back
+cd SustainaFoodBack
 npm install
 
 # Setup frontend
-cd ../front
+cd cd SustainaFoodFront
 npm install
