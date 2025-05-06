@@ -40,16 +40,16 @@ this is a repository for our sustainaFood website project
 ### 📦 Prerequisites
 
 - Node.js v18+
-- npm / yarn
+- npm 
 - Docker & Docker Compose (for DevOps setup)
-- MongoDB / PostgreSQL
+- MongoDB 
 
 ### 💻 Local Installation
 
 ```bash
 # Clone the repository
 git clone https://github.com/alasalah123/Novastackers.git
-cd sustaina-food
+cd Novastackers
 
 # Setup backend
 cd SustainaFoodBack
