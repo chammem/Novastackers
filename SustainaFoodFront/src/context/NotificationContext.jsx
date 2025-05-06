@@ -19,14 +19,32 @@ export const NotificationProvider = ({ children }) => {
     const socket = io();
     socket.on("connect", () => {
       console.log("✅ Socket connected:", socket.id);
+      // Log when user joins their room
+      console.log(`📣 User ${user._id} joining socket room`);
     });
+
     socket.emit("join", user._id);
+
     socket.on("new-notification", (data) => {
-      toast.info(data.message);
-      setNotifications((prev) => {
-        const exists = prev.some((n) => n._id === data._id);
-        return exists ? prev : [data, ...prev];
-      });
+      // Add detailed logging
+      console.log("📬 Received notification via socket:", data);
+
+      // Check if message exists before showing toast
+      if (data && data.message) {
+        toast.info(data.message);
+
+        // Log the type for driver notifications
+        if (data.type === 'assignment-request') {
+          console.log("🚚 Driver assignment notification received");
+        }
+
+        setNotifications((prev) => {
+          const exists = prev.some((n) => n._id === data._id);
+          return exists ? prev : [data, ...prev];
+        });
+      } else {
+        console.error("Received notification without message:", data);
+      }
     });
 
     axiosInstance.get(`/notification?userId=${user._id}`).then((res) => {

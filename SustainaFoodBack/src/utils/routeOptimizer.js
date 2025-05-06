@@ -1,4 +1,7 @@
 const axios = require('axios');
+const geolib = require('geolib');
+
+const ORS_API_KEY = process.env.ORS_API_KEY; // Ensure your ORS API key is set in the environment variables
 
 /**
  * Optimize route between multiple points using OpenRouteService API
@@ -179,7 +182,7 @@ async function optimizeWithAPI(points, mode) {
       },
       {
         headers: {
-          Authorization: process.env.ORS_API_KEY,
+          Authorization: ORS_API_KEY,
           'Content-Type': 'application/json'
         }
       }
@@ -220,7 +223,7 @@ async function calculateRouteSegments(points, mode) {
         },
         {
           headers: {
-            Authorization: process.env.ORS_API_KEY,
+            Authorization: ORS_API_KEY,
             'Content-Type': 'application/json'
           }
         }
@@ -272,3 +275,78 @@ function getPermutations(arr) {
   
   return result;
 }
+
+/**
+ * Get a route between two points using OpenRouteService with retry logic
+ * @param {Object} start - Starting point { lat, lng }
+ * @param {Object} end - Ending point { lat, lng }
+ * @param {number} retries - Number of retries (default: 3)
+ * @returns {Promise<Object>} The route data
+ */
+const getRoute = async (start, end, retries = 3) => {
+  try {
+    console.log("[DEBUG] Fetching route from ORS with start:", start, "end:", end);
+
+    const response = await axios.get("https://api.openrouteservice.org/v2/directions/driving-car", {
+      params: {
+        api_key: ORS_API_KEY,
+        start: `${start.lng},${start.lat}`,
+        end: `${end.lng},${end.lat}`,
+      },
+    });
+
+    console.log("[DEBUG] ORS response:", response.data);
+
+    if (!response.data || !response.data.routes || response.data.routes.length === 0) {
+      console.error("[DEBUG] No routes found in ORS response:", response.data);
+      throw new Error("No routes found");
+    }
+
+    return response.data.routes[0];
+  } catch (error) {
+    console.error("[DEBUG] Error fetching route from ORS:", error.message);
+
+    if (retries > 0) {
+      console.log(`[DEBUG] Retrying... (${3 - retries + 1})`);
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (4 - retries))); // Exponential backoff
+      return getRoute(start, end, retries - 1);
+    }
+
+    throw new Error("Failed to fetch route from OpenRouteService after retries");
+  }
+};
+
+/**
+ * Check if two routes are in the same direction
+ * @param {Object} route1 - First route data
+ * @param {Object} route2 - Second route data
+ * @returns {boolean} True if the routes are in the same direction, false otherwise
+ */
+const isSameDirection = (route1, route2) => {
+  // Compare the start and end points of the routes
+  const startDistance = geolib.getDistance(
+    { latitude: route1.geometry.coordinates[0][1], longitude: route1.geometry.coordinates[0][0] },
+    { latitude: route2.geometry.coordinates[0][1], longitude: route2.geometry.coordinates[0][0] }
+  );
+
+  const endDistance = geolib.getDistance(
+    {
+      latitude: route1.geometry.coordinates[route1.geometry.coordinates.length - 1][1],
+      longitude: route1.geometry.coordinates[route1.geometry.coordinates.length - 1][0],
+    },
+    {
+      latitude: route2.geometry.coordinates[route2.geometry.coordinates.length - 1][1],
+      longitude: route2.geometry.coordinates[route2.geometry.coordinates.length - 1][0],
+    }
+  );
+
+  // Define a threshold for similarity (e.g., 500 meters)
+  const threshold = 500;
+
+  return startDistance <= threshold && endDistance <= threshold;
+};
+
+module.exports = {
+  getRoute,
+  isSameDirection,
+};
