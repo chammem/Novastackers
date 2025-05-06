@@ -92,4 +92,3 @@ if (process.env.NODE_ENV !== 'test') {
   startServer();
   initScheduler(); // Only initialize the scheduler if not in test mode
 }
-module.exports = app;
