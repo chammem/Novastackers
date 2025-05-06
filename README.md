@@ -52,37 +52,27 @@ MongoDB (local or cloud)
 
 💻 Local Installation
 1. Clone the Repository
-bash
-Copy
-Edit
+
 git clone https://github.com/alasalah123/Novastackers.git
 cd Novastackers
 2. Setup Backend
-bash
-Copy
-Edit
+
 cd SustainaFoodBack
 npm install
 npm run dev
 3. Setup Frontend
-bash
-Copy
-Edit
+
 cd ../SustainaFoodFront
 npm install
 npm run dev
 4. Run the Python Recommendation API
-bash
-Copy
-Edit
+t
 cd ../recommendation-api
 pip install -r requirements.txt
 python recommendation-api.py
 📊 DevOps
 To build and run the full system with Docker:
 
-bash
-Copy
-Edit
+
 docker-compose up --build
 Jenkins, SonarQube, Nexus, Prometheus, and Grafana are configured in the devops/ directory.
