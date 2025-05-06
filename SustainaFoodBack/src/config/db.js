@@ -1,9 +1,28 @@
 const mongoose = require('mongoose');
 
-const connectDB = async () => {
+// Track connection state
+let isConnected = false;
+
+const connectDB = async (testUri) => {
+  // If already connected and not a test connection request, return
+  if (isConnected && !testUri) {
+    console.log('Using existing database connection');
+    return;
+  }
+
+  // If there's an existing connection and we're switching URIs, close it first
+  if (mongoose.connection.readyState === 1) {
+    await mongoose.connection.close();
+    console.log('Closed previous connection');
+  }
+
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
+    // Use testUri for tests, otherwise use the environment variable
+    const uri = testUri || process.env.MONGODB_URI;
+    const conn = await mongoose.connect(uri);
+    isConnected = true;
     console.log(`Database connected: ${conn.connection.host}`);
+    return conn;
   } catch (error) {
     console.error(`Database connection failed: ${error.message}`);
     
@@ -14,6 +33,15 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB;
+// Add a disconnect function for tests
+const disconnectDB = async () => {
+  if (mongoose.connection.readyState === 1) {
+    await mongoose.connection.close();
+    isConnected = false;
+    console.log('Database disconnected');
+  }
+};
+
+module.exports = { connectDB, disconnectDB };
 
 

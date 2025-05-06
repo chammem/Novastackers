@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser');
 const http = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
-const connectDB = require('./src/config/db');
+const { connectDB } = require('./src/config/db');
 const router = require('./src/routes');
 const donationRouter = require('./src/routes/donationRouter');
 const path = require("path");
@@ -74,9 +74,13 @@ app.use('/api/suggested-products', suggestedProductRoutes);
 // Start DB and server
 const startServer = async () => {
   await connectDB();
-  server.listen(8082, () => {
-    console.log(`🚀 Server + Socket.IO running on port 8082`);
-  });
+  
+  // Only start server if not in test mode
+  if (process.env.NODE_ENV !== 'test') {
+    server.listen(8082, () => {
+      console.log(`🚀 Server + Socket.IO running on port 8082`);
+    });
+  }
 };
 
 startServer();
