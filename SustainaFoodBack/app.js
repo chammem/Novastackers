@@ -62,6 +62,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// Add a root route handler for tests/health checks
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'SustainaFood API is running',
+    status: 'OK'
+  });
+});
+
 // Routes
 app.use('/api', router);
 app.use('/api/donations', donationRouter);
