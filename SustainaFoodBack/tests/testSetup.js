@@ -1,33 +1,17 @@
-const { MongoMemoryServer } = require('mongodb-memory-server');
-const { connectDB, disconnectDB } = require('../src/config/db');
+const mongoose = require('mongoose');
+require('dotenv').config();
 
-let mongoServer;
-
-// Set up the in-memory database before tests
-const setupTestDB = async () => {
-  // Set environment to test
-  process.env.NODE_ENV = 'test';
-  
-  // Create an in-memory MongoDB instance
-  mongoServer = await MongoMemoryServer.create();
-  const uri = mongoServer.getUri();
-  
-  // Connect to the in-memory database
-  await connectDB(uri);
-  
-  return uri;
-};
-
-// Clean up after tests
-const teardownTestDB = async () => {
-  await disconnectDB();
-  
-  if (mongoServer) {
-    await mongoServer.stop();
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log(`Database connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error(`Database connection failed: ${error.message}`);
+    process.exit(1);
   }
 };
 
-module.exports = {
-  setupTestDB,
-  teardownTestDB
-};
+module.exports = connectDB;
