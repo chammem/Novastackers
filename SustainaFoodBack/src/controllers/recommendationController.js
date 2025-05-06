@@ -46,11 +46,28 @@ exports.getProductRecommendations = async (req, res) => {
     }
 
     try {
-      console.log(`Sending product recommendation request to ${FLASK_BASE_URL}/recommend/product`);
+      console.log(`Sending product recommendation request to ${FLASK_BASE_URL}/recommend/product with product: ${productName}`);
       // Appel à Flask pour obtenir les recommandations
       const flaskResponse = await axios.post(`${FLASK_BASE_URL}/recommend/product`, {
         product_name: productName,
+      }, {
+        // Add timeout to prevent hanging requests
+        timeout: 10000,
+        // Add headers for debugging
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
       });
+
+      console.log('Flask response received:', JSON.stringify(flaskResponse.data));
+      
+      if (!flaskResponse.data.success) {
+        return res.status(400).json({
+          success: false,
+          message: flaskResponse.data.message || 'Error in recommendation service',
+        });
+      }
 
       const recommended = flaskResponse.data.recommendations;
 
@@ -108,12 +125,27 @@ exports.getProductRecommendations = async (req, res) => {
 
     } catch (error) {
       console.error('Product recommendation error:', error.message);
-      if (error.response) {
-        console.error('Flask API response:', error.response.data);
+      
+      if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+        console.error('Cannot connect to Flask API. Check if the service is running.');
+        return res.status(503).json({
+          success: false,
+          message: 'Recommendation service is unavailable'
+        });
       }
+      
+      if (error.response) {
+        console.error('Flask API error response:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+      }
+      
       res.status(500).json({
         success: false,
         message: error.response?.data?.message || 'Error fetching product recommendations',
+        error: process.env.NODE_ENV === 'development' ? error.toString() : undefined
       });
     }
   };

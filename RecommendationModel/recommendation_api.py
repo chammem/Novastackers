@@ -38,17 +38,47 @@ def recommend_for_user():
 
 @app.route('/recommend/product', methods=['POST'])
 def recommend_for_product():
-    data = request.json
-    product_name = data.get('product_name')
-
-    if not product_name:
-        return jsonify({'success': False, 'message': 'Product name is required'}), 400
-
     try:
-        recommendations = content_based_recommendations(product_name)
-        return jsonify(recommendations)
+        # Log request details
+        print(f"Received product recommendation request")
+        data = request.json
+        print(f"Request data: {data}")
+        
+        if not data:
+            print("No request data received")
+            return jsonify({'success': False, 'message': 'No request data provided'}), 400
+            
+        product_name = data.get('product_name')
+        print(f"Product name: {product_name}")
+
+        if not product_name:
+            print("No product name in request")
+            return jsonify({'success': False, 'message': 'Product name is required'}), 400
+
+        try:
+            # Add debug information
+            print(f"Calling content_based_recommendations for product: {product_name}")
+            recommendations = content_based_recommendations(product_name)
+            print(f"Recommendations result: {recommendations}")
+            
+            return jsonify(recommendations)
+        except Exception as e:
+            import traceback
+            error_trace = traceback.format_exc()
+            print(f"Error in recommender function: {str(e)}")
+            print(f"Traceback: {error_trace}")
+            return jsonify({'success': False, 'message': f'Recommendation error: {str(e)}'}), 500
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Global error in endpoint: {str(e)}")
+        print(f"Traceback: {error_trace}")
+        return jsonify({'success': False, 'message': f'API error: {str(e)}'}), 500
+
+# Add a simple test endpoint
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'ok', 'service': 'recommendation-api'})
 
 if __name__ == '__main__':
     # Listen on all network interfaces (0.0.0.0) instead of just localhost
