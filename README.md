@@ -54,7 +54,8 @@ cd Novastackers
 # Setup backend
 cd SustainaFoodBack
 npm install
-
+npm run dev
 # Setup frontend
 cd cd SustainaFoodFront
 npm install
+npm run dev
