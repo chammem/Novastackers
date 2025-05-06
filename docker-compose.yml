@@ -37,9 +37,6 @@ services:
     volumes:
       - ./RecommendationModel/data:/app/data
       - ./RecommendationModel/model:/app/model
-      - ./RecommendationModel/recommandation.py:/app/recommandation.py
-      - ./RecommendationModel/recommendation_api.py:/app/recommendation_api.py
-    command: python /app/recommendation_api.py
     networks:
       - sustainafood-network
 
