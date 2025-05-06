@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    image: sinda12/sustainafood-backend:1.0.39
+    image: sinda12/sustainafood-backend:1.0.40
     container_name: backend
     ports:
       - "8082:8082"
@@ -19,7 +19,7 @@ services:
       - sustainafood-network
 
   frontend:
-    image: sinda12/sustainafood-frontend:1.0.39
+    image: sinda12/sustainafood-frontend:1.0.40
     container_name: frontend
     ports:
       - "5173:80"
@@ -29,7 +29,7 @@ services:
       - sustainafood-network
 
   flask:
-    image: sinda12/sustainafood-flask:1.0.39
+    image: sinda12/sustainafood-flask:1.0.40
     container_name: flask
     working_dir: /app
     ports:

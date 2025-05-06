@@ -29,34 +29,34 @@ exports.getUserRecommendations = async (req, res) => {
 
 exports.getProductRecommendations = async (req, res) => {
     const { productName } = req.body;
-  
+
     if (!productName) {
       return res.status(400).json({
         success: false,
         message: 'Product name is required',
       });
     }
-  
+
     try {
       // Appel à Flask pour obtenir les recommandations
-      const flaskResponse = await axios.post('http://flask:5000/recommend/product', {
+      const flaskResponse = await axios.post('http://127.0.0.1:5000/recommend/product', {
         product_name: productName,
       });
-  
+
       const recommended = flaskResponse.data.recommendations;
-  
+
       // Recherche dans MongoDB et séparation des produits existants et non existants
       const results = await Promise.all(
         recommended.map(async (rec) => {
           const foodItem = await FoodItem.findOne({ name: rec.product_name });
-          
+
           // Si le produit existe dans la base
           if (foodItem) {
             const foodSale = await FoodSale.findOne({
               foodItem: foodItem._id,
               isAvailable: true,
             });
-  
+
             if (foodSale) {
               return {
                 name: foodItem.name,
@@ -89,14 +89,14 @@ exports.getProductRecommendations = async (req, res) => {
           return newSuggestedProduct;
         })
       );
-  
+
       const filtered = results.filter((r) => r !== null);
-  
+
       res.status(200).json({
         success: true,
         results: filtered,
       });
-  
+
     } catch (error) {
       console.error('Product recommendation error:', error.message);
       res.status(500).json({

@@ -48,11 +48,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/', (req, res) => {
-  res.status(200).send('API is running');
-});
-
-
 // This line MUST come BEFORE any Express JSON parsing middleware
 app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), paymentController.handleWebhook);
 
@@ -79,15 +74,11 @@ app.use('/api/suggested-products', suggestedProductRoutes);
 // Start DB and server
 const startServer = async () => {
   await connectDB();
-  const PORT = process.env.PORT || 8082;
-  server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server + Socket.IO running on http://0.0.0.0:${PORT}`);
+  server.listen(8082, () => {
+    console.log(`🚀 Server + Socket.IO running on port 8082`);
   });
 };
 
-if (process.env.NODE_ENV !== 'test') {
-  startServer();
-  initScheduler(); // Only initialize the scheduler if not in test mode
-}
-
+startServer();
+initScheduler();
 module.exports = app;

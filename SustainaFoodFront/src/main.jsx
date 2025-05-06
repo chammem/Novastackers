@@ -119,7 +119,7 @@ const router = createBrowserRouter([
       // Routes admin - structure corrigée
       {
         path: "admin", // Préfixe commun pour toutes les routes admin
-        element: <AdminProtectedRoute />,
+        element: <ProtectedRoute />,
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
           { path: "dashboard", element: <AdminDashboard /> },

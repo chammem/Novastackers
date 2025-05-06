@@ -33,8 +33,8 @@ logger = logging.getLogger(__name__)
 
 # Constantes
 SAMPLE_SIZE = 0.1  # Fraction des données à utiliser
-MIN_PRODUCT_PURCHASES = 5  # Nombre minimum d'achats pour considérer un produit
-MIN_USER_ORDERS = 3  # Nombre minimum de commandes pour considérer un utilisateur
+MIN_PRODUCT_PURCHASES = 5  # Nombre minimum d'achats 
+MIN_USER_ORDERS = 3  # Nombre minimum de commandes 
 DATA_DIR = 'data'
 MODEL_DIR = 'model'
 
@@ -301,20 +301,3 @@ if __name__ == "__main__":
     else:
         # Mode entraînement
         main()
-
-import pandas as pd
-# ...existing code...
-
-# Example: Ensure this script performs its tasks without errors
-def content_based_recommendations():
-    # Example logic using pandas
-    print("Content-based recommendations logic executed.")
-
-def hybrid_recommendations():
-    # Example logic using pandas
-    print("Hybrid recommendations logic executed.")
-
-if __name__ == "__main__":
-    print("Running recommandation.py...")
-    content_based_recommendations()
-    hybrid_recommendations()
