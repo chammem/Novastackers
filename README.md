@@ -1,78 +1,66 @@
 # Novastackers
 this is a repository for our sustainaFood website project
-🥗 Sustaina Food — Novastackers
-A smart food donation and delivery application leveraging AI, React, Express.js, and DevOps principles.
+# 🥗 Sustaina Food
 
-📚 Overview
-Sustaina Food is a web application designed to reduce food waste by connecting donors, restaurants, volunteers, and recipients through a smart logistics system. Built as part of an academic project at #Esprit_School_of_Engineering, the platform aims to optimize food redistribution using modern web technologies and artificial intelligence.
+> A smart food donation and delivery application leveraging AI, React, Express.js, and DevOps principles.
 
-🚀 Features
-🛒 Food donation management
+## 📚 Overview
 
-📦 Delivery route & recommendation optimization using AI
+**Sustaina Food** is a web application designed to reduce food waste by connecting donors, restaurants, volunteers, and recipients through a smart logistics system. Built as part of an academic project at **#Esprit_school_of_engineering**, the platform aims to optimize food redistribution using modern web technologies and artificial intelligence.
 
-👥 Role-based access: Restaurant, User, Admin, NGO, Driver
+---
 
-🔒 Secure authentication & authorization
+## 🚀 Features
 
-📈 Real-time monitoring and analytics
+- 🛒 Food donation management
+- 📦 Delivery route optimization using AI
+- 👥 Role-based access: donors, volunteers, NGOs, and admins
+- 🔒 Secure authentication & authorization
+- 📈 Real-time monitoring and analytics
+- 🧪 Integrated CI/CD with DevOps tools
 
-🧪 CI/CD integration with DevOps tools
+---
 
-🤖 Machine Learning-based recommendation system (Python)
+## 🛠️ Technologies Used
 
-🛠️ Technologies Used
-Frontend: React.js (Hooks, Context API)
-
-Backend: Express.js (Node.js)
-
-Database: MongoDB
-
-AI/ML: Python /ORS  (Recommendation system using recommendation-api.py)
-
-DevOps:
+- **Frontend**: React.js (with Hooks and Context API)
+- **Backend**: Express.js (Node.js)
+- **Database**: MongoDB 
+- **AI**: ORS /Route optimization using algorithms (e.g., A*, Dijkstra or ML model)
+- **ML** :recommendation
+- **DevOps**:
   - Docker, Docker Compose
-  - GitHub Actions or Jenkins
-  - SonarQube, Nexus
-  - Prometheus & Grafana (monitoring)
+  - GitHub Actions / Jenkins
+  - SonarQube, Nexus, Prometheus & Grafana
+- **Other Tools**: Postman, Git, Figma (UI/UX)
 
-Tools: Git, Postman, Figma
+---
 
-⚙️ Setup Instructions
-📦 Prerequisites
-Node.js v18+
+## ⚙️ Setup Instructions
 
-npm
+### 📦 Prerequisites
 
-Python 3.8+
+- Node.js v18+
+- npm 
+- Docker & Docker Compose (for DevOps setup)
+- MongoDB
 
-Docker & Docker Compose
+### 💻 Local Installation
 
-MongoDB (local or cloud)
-
-💻 Local Installation
-1. Clone the Repository
-
-git clone https://github.com/alasalah123/Novastackers.git
+```bash
+# Clone the repository
+git clone  https://github.com/alasalah123/Novastackers.git
 cd Novastackers
-2. Setup Backend
 
+# Setup backend
 cd SustainaFoodBack
 npm install
 npm run dev
-3. Setup Frontend
-
-cd ../SustainaFoodFront
+# Setup frontend
+cd SustainaFoodFront
 npm install
 npm run dev
-4. Run the Python Recommendation API
-t
-cd ../recommendation-api
-pip install -r requirements.txt
+#run the python recommendation
 python recommendation-api.py
-📊 DevOps
-To build and run the full system with Docker:
-
-
+#run devops 
 docker-compose up --build
-Jenkins, SonarQube, Nexus, Prometheus, and Grafana are configured in the devops/ directory.
