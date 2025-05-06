@@ -19,6 +19,18 @@ const mysteryPackApi = {
 
   // 🔹 Réserver un MysteryPack
   reserveMysteryPack: (packId) => axiosInstance.patch(`/mystery-packs/${packId}/reserve`),
+
+  // 🔹 Récupérer tous les articles FoodSales
+  getFoodSales: () => axiosInstance.get("/foodsales"),
+
+  // 🔹 Créer un mystery pack avec articles sélectionnés
+  createMysteryPackWithItems: (formData) => {
+    return axiosInstance.post("/mystery-packs/new", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    });
+  },
 };
 
 export default mysteryPackApi;

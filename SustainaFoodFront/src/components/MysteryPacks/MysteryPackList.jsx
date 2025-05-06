@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import { FiAlertCircle, FiMapPin } from 'react-icons/fi';
-import axios from 'axios';
+import { FiAlertCircle, FiMapPin, FiShoppingBag } from 'react-icons/fi';
+import mysteryPackApi from '../../services/mysteryPackApi';
 import { useAuth } from '../../context/AuthContext';
 import HeaderMid from '../HeaderMid';
 
@@ -12,61 +12,80 @@ const MysteryPackList = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [foodSales, setFoodSales] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [showItemModal, setShowItemModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
     originalPrice: '',
     discountedPrice: '',
     pickupTime: '',
     location: '',
     category: 'Lunch',
     availableQuantity: '',
-    restaurant: '',  // Ajout du champ restaurant
+    restaurant: '',
   });
-  const [image, setImage] = useState(null);
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleImageChange = (e) => setImage(e.target.files[0]);
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      originalPrice: '',
+      discountedPrice: '',
+      pickupTime: '',
+      location: '',
+      category: 'Lunch',
+      availableQuantity: '',
+      restaurant: '',
+    });
+    setSelectedItems([]);
+  };
+
+  const handleItemSelect = (item) => {
+    setSelectedItems(prev => {
+      const exists = prev.find(i => i._id === item._id);
+      if (exists) {
+        return prev.filter(i => i._id !== item._id);
+      }
+      return [...prev, item];
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     
-    // Validation simple des champs requis
-    if (!formData.name || !formData.description || !formData.originalPrice || !formData.discountedPrice || !formData.availableQuantity || !formData.restaurant) {
-      toast.error("Tous les champs requis doivent être remplis.");
-      return;
-    }
-
-    const data = new FormData();
-    for (let key in formData) data.append(key, formData[key]);
-    if (image) data.append('image', image);
-
     try {
-      const response = await axios.post('http://localhost:8082/api/mystery-packs/new', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const formDataToSend = new FormData();
+      Object.keys(formData).forEach(key => {
+        formDataToSend.append(key, formData[key]);
       });
-
-      if (response.status === 200) {
-        toast.success("Mystery Pack créé !");
+      
+      formDataToSend.append('selectedItems', JSON.stringify(selectedItems));
+      
+      const response = await mysteryPackApi.createMysteryPackWithItems(formDataToSend);
+      
+      if (response.data) {
+        toast.success("Mystery Pack créé avec succès!");
+        resetForm();
         setShowForm(false);
-        fetchPacks(); // Recharge les packs
-      } else {
-        toast.error("Erreur lors de la création du pack.");
+        fetchPacks();
       }
     } catch (err) {
-      toast.error(`Erreur lors de la création : ${err.response?.data?.message || "Une erreur inconnue est survenue."}`);
-      console.error("Erreur API:", err);
+      toast.error(err.response?.data?.message || "Erreur lors de la création");
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchPacks = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:8082/api/mystery-packs');
+      const response = await mysteryPackApi.getMysteryPacks();
       setPacks(response.data || []);
     } catch (err) {
       console.error("Erreur lors de la récupération des mystery packs", err);
@@ -77,8 +96,18 @@ const MysteryPackList = () => {
     }
   };
 
+  const fetchFoodSales = async () => {
+    try {
+      const response = await mysteryPackApi.getFoodSales();
+      setFoodSales(response.data || []);
+    } catch (err) {
+      toast.error("Erreur lors du chargement des articles");
+    }
+  };
+
   useEffect(() => {
     fetchPacks();
+    fetchFoodSales();
   }, []);
 
   const pageVariants = {
@@ -107,13 +136,52 @@ const MysteryPackList = () => {
 
         {showForm && (
           <form onSubmit={handleSubmit} className="bg-white p-4 mb-6 shadow rounded-xl space-y-2" encType="multipart/form-data">
-            <input name="name" placeholder="Nom" onChange={handleChange} required className="input input-bordered w-full" />
-            <textarea name="description" placeholder="Description" onChange={handleChange} required className="textarea textarea-bordered w-full" />
-            <input name="originalPrice" type="number" placeholder="Prix original" onChange={handleChange} required className="input input-bordered w-full" />
-            <input name="discountedPrice" type="number" placeholder="Prix réduit" onChange={handleChange} required className="input input-bordered w-full" />
-            <input name="pickupTime" placeholder="Heure retrait (ex: 18h-20h)" onChange={handleChange} className="input input-bordered w-full" />
-            <input name="location" placeholder="Lieu" onChange={handleChange} className="input input-bordered w-full" />
-            <select name="category" onChange={handleChange} className="select select-bordered w-full">
+            <input 
+              name="name" 
+              placeholder="Nom" 
+              value={formData.name}
+              onChange={handleChange} 
+              required 
+              className="input input-bordered w-full" 
+            />
+            <input 
+              name="originalPrice" 
+              type="number" 
+              placeholder="Prix original" 
+              value={formData.originalPrice}
+              onChange={handleChange} 
+              required 
+              className="input input-bordered w-full" 
+            />
+            <input 
+              name="discountedPrice" 
+              type="number" 
+              placeholder="Prix réduit" 
+              value={formData.discountedPrice}
+              onChange={handleChange} 
+              required 
+              className="input input-bordered w-full" 
+            />
+            <input 
+              name="pickupTime" 
+              placeholder="Heure retrait (ex: 18h-20h)" 
+              value={formData.pickupTime}
+              onChange={handleChange} 
+              className="input input-bordered w-full" 
+            />
+            <input 
+              name="location" 
+              placeholder="Lieu" 
+              value={formData.location}
+              onChange={handleChange} 
+              className="input input-bordered w-full" 
+            />
+            <select 
+              name="category" 
+              value={formData.category}
+              onChange={handleChange} 
+              className="select select-bordered w-full"
+            >
               <option>Lunch</option>
               <option>Breakfast</option>
               <option>Dinner</option>
@@ -123,14 +191,91 @@ const MysteryPackList = () => {
             <input
               name="restaurant"
               placeholder="Nom du restaurant"
+              value={formData.restaurant}
               onChange={handleChange}
               required
               className="input input-bordered w-full"
             />
-            <input name="availableQuantity" type="number" placeholder="Quantité" onChange={handleChange} required className="input input-bordered w-full" />
-            <input type="file" accept="image/*" onChange={handleImageChange} className="file-input file-input-bordered w-full" />
-            <button type="submit" className="btn btn-primary">Valider</button>
+            <input 
+              name="availableQuantity" 
+              type="number" 
+              placeholder="Quantité" 
+              value={formData.availableQuantity}
+              onChange={handleChange} 
+              required 
+              className="input input-bordered w-full" 
+            />
+
+            <div className="flex flex-col gap-2">
+              <button 
+                type="button"
+                onClick={() => setShowItemModal(true)}
+                className="btn btn-secondary w-full"
+              >
+                <FiShoppingBag className="mr-2" />
+                Sélectionner des articles ({selectedItems.length})
+              </button>
+              
+              {selectedItems.length > 0 && (
+                <div className="bg-gray-50 p-2 rounded">
+                  <h3 className="font-semibold mb-2">Articles sélectionnés:</h3>
+                  {selectedItems.map(item => (
+                    <div key={item._id} className="flex justify-between items-center mb-1">
+                      <span>{item.name}</span>
+                      <button 
+                        type="button"
+                        onClick={() => handleItemSelect(item)}
+                        className="btn btn-xs btn-error"
+                      >
+                        Retirer
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button 
+              type="submit" 
+              className="btn btn-primary w-full"
+              disabled={loading}
+            >
+              {loading ? 'Création en cours...' : 'Valider'}
+            </button>
           </form>
+        )}
+
+        {showItemModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+              <h2 className="text-xl font-bold mb-4">Sélectionner des articles</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {foodSales.map(item => (
+                  <div 
+                    key={item._id}
+                    className={`p-3 border rounded cursor-pointer ${
+                      selectedItems.find(i => i._id === item._id) 
+                        ? 'border-primary bg-primary bg-opacity-10' 
+                        : 'hover:border-gray-400'
+                    }`}
+                    onClick={() => handleItemSelect(item)}
+                  >
+                    <h3 className="font-semibold">{item.name}</h3>
+                    <p className="text-sm text-gray-600">{item.price} €</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button 
+                  type="button"
+                  onClick={() => setShowItemModal(false)}
+                  className="btn btn-primary"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {error && (
