@@ -28,7 +28,7 @@ Backend: Express.js (Node.js)
 
 Database: MongoDB
 
-AI/ML: Python (Recommendation system using recommendation-api.py)
+AI/ML: Python /ORS  (Recommendation system using recommendation-api.py)
 
 DevOps:
   - Docker, Docker Compose
