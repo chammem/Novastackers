@@ -42,7 +42,11 @@ const mysteryPackSchema = new mongoose.Schema({
   availableQuantity: {
     type: Number,
     required: true
-  }
+  },
+  selectedItems: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'FoodSale'
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('MysteryPack', mysteryPackSchema);
