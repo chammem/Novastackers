@@ -3,6 +3,9 @@ const FoodItem = require('../models/foodItem');
 const FoodSale = require('../models/sales/FoodSaleItem');
 const SuggestedProduct = require('../models/SuggestedProduct');
 
+// Use environment variable or fallback to localhost
+const FLASK_BASE_URL = process.env.FLASK_BASE_URL || 'http://127.0.0.1:5000';
+
 exports.getUserRecommendations = async (req, res) => {
   const { userId } = req.body;
 
@@ -14,12 +17,17 @@ exports.getUserRecommendations = async (req, res) => {
   }
 
   try {
-    const response = await axios.post('http://127.0.0.1:5000/recommend/user', {
+    console.log(`Sending user recommendation request to ${FLASK_BASE_URL}/recommend/user`);
+    const response = await axios.post(`${FLASK_BASE_URL}/recommend/user`, {
       user_id: userId,
     });
 
     res.status(200).json(response.data);
   } catch (error) {
+    console.error('User recommendation error:', error.message);
+    if (error.response) {
+      console.error('Flask API response:', error.response.data);
+    }
     res.status(500).json({
       success: false,
       message: error.response?.data?.message || 'Error fetching user recommendations',
@@ -38,8 +46,9 @@ exports.getProductRecommendations = async (req, res) => {
     }
 
     try {
+      console.log(`Sending product recommendation request to ${FLASK_BASE_URL}/recommend/product`);
       // Appel à Flask pour obtenir les recommandations
-      const flaskResponse = await axios.post('http://127.0.0.1:5000/recommend/product', {
+      const flaskResponse = await axios.post(`${FLASK_BASE_URL}/recommend/product`, {
         product_name: productName,
       });
 
@@ -99,6 +108,9 @@ exports.getProductRecommendations = async (req, res) => {
 
     } catch (error) {
       console.error('Product recommendation error:', error.message);
+      if (error.response) {
+        console.error('Flask API response:', error.response.data);
+      }
       res.status(500).json({
         success: false,
         message: error.response?.data?.message || 'Error fetching product recommendations',
@@ -117,12 +129,17 @@ exports.getFoodRecommendations = async (req, res) => {
   }
 
   try {
-    const response = await axios.post('http://127.0.0.1:5000/recommend/user', {
+    console.log(`Sending food recommendation request to ${FLASK_BASE_URL}/recommend/user`);
+    const response = await axios.post(`${FLASK_BASE_URL}/recommend/user`, {
       user_id: userId,
     });
 
     res.status(200).json(response.data);
   } catch (error) {
+    console.error('Food recommendation error:', error.message);
+    if (error.response) {
+      console.error('Flask API response:', error.response.data);
+    }
     res.status(500).json({
       success: false,
       message: error.response?.data?.message || 'Error fetching food recommendations',

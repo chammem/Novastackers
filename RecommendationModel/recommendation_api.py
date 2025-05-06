@@ -1,10 +1,21 @@
+import sys
+import os
 from flask import Flask, request, jsonify
-from recommandation import content_based_recommendations, hybrid_recommendations
 from joblib import load
 from scipy.sparse import load_npz
-import os
+
+# Ensure current directory is in the Python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Now import from recommandation.py
+from recommandation import content_based_recommendations, hybrid_recommendations
 
 app = Flask(__name__)
+
+# Print current working directory and files for debugging
+print(f"Current working directory: {os.getcwd()}")
+print(f"Files in directory: {os.listdir('.')}")
+print(f"Files in model directory: {os.listdir('model') if os.path.exists('model') else 'model dir not found'}")
 
 # Charger les artefacts nécessaires
 MODEL_DIR = 'model'
