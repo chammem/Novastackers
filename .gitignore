@@ -1,1 +1,57 @@
-node_modules/ 
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data directory - fichiers volumineux
+/data/
+data/*.csv
+order_products__prior.csv
+order_products__train.csv
+orders.csv
+products.csv
+aisles.csv
+departments.csv
+
+# Model directory - fichiers volumineux
+/model/
+model/*.joblib
+model/*.npz
+hybrid_model.joblib
+interaction_matrix.npz
+mappings.joblib
+recommendation_artifacts.joblib
+
+
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Node modules and build files
+node_modules/
+dist/
+build/
+.cache/
+
+# Package files
+package-lock.json
+yarn.lock
+
+# Compiled output
+*.min.js
+*.min.css

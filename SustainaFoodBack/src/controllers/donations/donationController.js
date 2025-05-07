@@ -44,23 +44,46 @@ exports.createDonation = async (req, res) => {
 
 exports.addFoodToDonation = async (req, res) => {
   const { donationId } = req.params;
+<<<<<<< HEAD
   try {
     const Food = new FoodItem({
       ...req.body,
+=======
+  const { buisiness_id, name, quantity, category, size } = req.body;
+  try {
+    const Food = new FoodItem({
+      buisiness_id,
+      name,
+      quantity,
+      category,
+      size,
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
       donationId: donationId,
     });
     await Food.save();
 
     const donation = await FoodDonation.findById(donationId);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
     if (!donation) {
       return res.status(404).json({ message: "Donation not found" });
     }
     donation.foods.push(Food);
+<<<<<<< HEAD
     await donation.save();
     res.status(201).json(donation);
   } catch (error) {
     console.error("Error adding food item:", error);
     res.status(500).json({ message: "Error adding food item", error: error.message });
+=======
+
+    await donation.save();
+    res.status(201).json(donation);
+  } catch (error) {
+    res.status(500).json({ message: "Error adding food item", error });
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
   }
 };
 
@@ -628,6 +651,10 @@ exports.getMyVolunteeredCampaigns = async (req, res) => {
 };
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 exports.getAllDonations = async (req, res) => {
   try {
     const search = req.query.search || "";
@@ -682,6 +709,7 @@ exports.deleteDonation = async (req, res) => {
     });
   }
 };
+<<<<<<< HEAD
 // Update a food item
 exports.updateFoodItem = async (req, res) => {
   const { foodId } = req.params;
@@ -729,3 +757,5 @@ exports.deleteFoodItem = async (req, res) => {
     res.status(500).json({ message: "Error deleting food item", error: error.message });
   }
 };
+=======
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954

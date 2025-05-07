@@ -55,6 +55,9 @@ import OrderSuccessPage from './components/foodSales/OrderSuccessPage.jsx';
 import OrderPaymentPage from './components/foodSales/OrderPaymentPage.jsx';
 import AvailableFoodList from './components/AvailableFoodList.jsx';
 import FoodRecommendations from './components/FoodRecommendations.jsx';
+import SuggestedProducts from './components/SuggestedProducts';
+import AvailableSuggestions from './components/AvailableSuggestions';
+import SuggestedProductsList from './components/SuggestedProductsList';
 
 const router = createBrowserRouter([
   {
@@ -71,10 +74,13 @@ const router = createBrowserRouter([
       { path: "role", element: <RoleChoice /> },
       { path: "verify", element: <VerifyAccount /> },
       { path: "/available-food", element: <AvailableFoodList /> },
+      { path: '/available-suggestions', element: <AvailableSuggestions threshold={0.5} /> },
       {
         path: "/recommendations",
         element: <ProtectedRoute><FoodRecommendations /></ProtectedRoute>
       },
+      { path: '/suggested-products', element: <SuggestedProducts /> },
+      { path: '/suggested-products-list', element: <SuggestedProductsList /> },
 
       // Routes protégées normales
       {path:"/donationForm",element:<CreateDonationForm/>},
@@ -113,7 +119,7 @@ const router = createBrowserRouter([
       // Routes admin - structure corrigée
       {
         path: "admin", // Préfixe commun pour toutes les routes admin
-        element: <AdminProtectedRoute />,
+        element: <ProtectedRoute />,
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
           { path: "dashboard", element: <AdminDashboard /> },

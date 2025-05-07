@@ -1,4 +1,8 @@
 // src/components/HeaderMid.jsx
+<<<<<<< HEAD
+=======
+import React from 'react';
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 import { useNavigate, Link, NavLink } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext"; // use auth context
@@ -203,6 +207,12 @@ function HeaderMid() {
                       <li>
                         <NavLink to="/food-sales">Food Sales</NavLink>
                       </li>
+<<<<<<< HEAD
+=======
+                      <li>
+                        <NavLink to="/suggested-products-list">Suggested</NavLink>
+                      </li>
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
                     </>
                   )}
                   {user?.role === "supermarket" && (
@@ -215,6 +225,17 @@ function HeaderMid() {
                       </li>
                     </>
                   )}
+<<<<<<< HEAD
+=======
+                  {user?.role === "user" && (
+                    <>
+                      <li>
+                        <NavLink to="/available-food">Food sale</NavLink>
+                      </li>
+                     
+                    </>
+                  )}
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
                 </ul>
               </div>
             )}

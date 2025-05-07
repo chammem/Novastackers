@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
+<<<<<<< HEAD
 import { Link } from 'react-router-dom';
+=======
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 import axiosInstance from '../../config/axiosInstance';
 import HeaderMid from '../HeaderMid';
 import Footer from '../Footer';
@@ -7,8 +10,12 @@ import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiBox, FiFilter, FiSearch, FiTruck, FiClock, FiCheckCircle, 
+<<<<<<< HEAD
   FiAlertCircle, FiCalendar, FiPackage, FiRefreshCw, FiList, FiGrid,
   FiEdit, FiTrash, FiX
+=======
+  FiAlertCircle, FiCalendar, FiPackage, FiRefreshCw, FiList, FiGrid
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 } from 'react-icons/fi';
 
 const MyFoodDonations = () => {
@@ -20,13 +27,17 @@ const MyFoodDonations = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState('table');
   const [selectedItem, setSelectedItem] = useState(null);
+<<<<<<< HEAD
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({ quantity: '', category: '' });
   const [editingItemId, setEditingItemId] = useState(null);
+=======
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 
   useEffect(() => {
     const fetchUserAndDonations = async () => {
       try {
+<<<<<<< HEAD
         const userRes = await axiosInstance.get('/user-details');
         console.log('User Details Response:', userRes.data);
         const user = userRes.data.data;
@@ -73,11 +84,24 @@ const MyFoodDonations = () => {
         } else {
           toast.error(`Failed to fetch your food donations: ${error.message}`);
         }
+=======
+        // Step 1: Get the logged-in user's ID
+        const userRes = await axiosInstance.get('/user-details');
+        const user = userRes.data.data;
+        setUserId(user._id);
+
+        // Step 2: Fetch food donations for that user
+        const res = await axiosInstance.get(`/donations/get-donations-by-buisiness/${user._id}`);
+        setFoodItems(res.data);
+      } catch (error) {
+        toast.error('Failed to fetch your food donations');
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
       } finally {
         setIsLoading(false);
       }
     };
 
+<<<<<<< HEAD
     fetchUserAndDonations();
   }, []);
 
@@ -136,6 +160,30 @@ const MyFoodDonations = () => {
       return true;
     })
     .sort((a, b) => {
+=======
+    // Show loading animation
+    fetchUserAndDonations();
+  }, []);
+
+  // Filter and sort the food items
+  const filteredItems = foodItems
+    .filter(item => {
+      // Filter by search term
+      if (searchTerm && !item.name?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !item.category?.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+      
+      // Filter by status
+      if (statusFilter !== 'all' && item.status !== statusFilter) {
+        return false;
+      }
+      
+      return true;
+    })
+    .sort((a, b) => {
+      // Sort by date
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
       if (sortBy === 'newest') {
         return new Date(b.created_at || 0) - new Date(a.created_at || 0);
       } else {
@@ -180,6 +228,7 @@ const MyFoodDonations = () => {
     setSelectedItem(item);
   };
 
+<<<<<<< HEAD
   const handleEditClick = (item) => {
     setEditingItemId(item._id);
     setEditFormData({
@@ -227,6 +276,8 @@ const MyFoodDonations = () => {
     }
   };
 
+=======
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
   const statusCounts = {
     all: foodItems.length,
     pending: foodItems.filter(item => item.status === 'pending' || !item.status).length,
@@ -282,7 +333,28 @@ const MyFoodDonations = () => {
               </button>
               <button 
                 className="btn btn-sm btn-outline gap-2"
+<<<<<<< HEAD
                 onClick={handleRefresh}
+=======
+                onClick={() => {
+                  setIsLoading(true);
+                  setTimeout(() => {
+                    // Re-fetch data
+                    const fetchUserAndDonations = async () => {
+                      try {
+                        const res = await axiosInstance.get(`/donations/get-donations-by-buisiness/${userId}`);
+                        setFoodItems(res.data);
+                        toast.success('Donations refreshed');
+                      } catch (error) {
+                        toast.error('Failed to refresh data');
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    };
+                    fetchUserAndDonations();
+                  }, 600);
+                }}
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
               >
                 <FiRefreshCw className="h-4 w-4" /> Refresh
               </button>
@@ -334,7 +406,11 @@ const MyFoodDonations = () => {
                   </span>
                   <input
                     type="text"
+<<<<<<< HEAD
                     placeholder="Search by name, category, campaign, or NGO"
+=======
+                    placeholder="Search by name or category"
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
                     className="input input-bordered w-full"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -502,12 +578,18 @@ const MyFoodDonations = () => {
                       <th className="bg-primary/5">Name</th>
                       <th className="bg-primary/5">Quantity</th>
                       <th className="bg-primary/5">Category</th>
+<<<<<<< HEAD
                       <th className="bg-primary/5">Campaign Name</th>
                       <th className="bg-primary/5">NGO</th>
                       <th className="bg-primary/5">Donation Date</th>
                       <th className="bg-primary/5">Status</th>
                       <th className="bg-primary/5">Volunteer</th>
                       <th className="bg-primary/5">Actions</th>
+=======
+                      <th className="bg-primary/5">Donation Date</th>
+                      <th className="bg-primary/5">Status</th>
+                      <th className="bg-primary/5">Volunteer</th>
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
                     </tr>
                   </thead>
                   <tbody>
@@ -529,6 +611,7 @@ const MyFoodDonations = () => {
                           </span>
                         </td>
                         <td>
+<<<<<<< HEAD
                           <Link
                             to={`/campaigns/${item.campaignId}`}
                             className="text-primary hover:underline"
@@ -539,6 +622,8 @@ const MyFoodDonations = () => {
                         </td>
                         <td>{item.ngoName}</td>
                         <td>
+=======
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
                           <div className="flex items-center gap-1">
                             <FiCalendar className="text-base-content/50 w-3 h-3" />
                             {item.created_at ? new Date(item.created_at).toLocaleDateString() : '—'}
@@ -553,6 +638,7 @@ const MyFoodDonations = () => {
                         <td className="font-medium">
                           {item.assignedVolunteer?.fullName || '—'}
                         </td>
+<<<<<<< HEAD
                         <td>
                           <div className="flex gap-2">
                             <button
@@ -575,6 +661,8 @@ const MyFoodDonations = () => {
                             </button>
                           </div>
                         </td>
+=======
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
                       </motion.tr>
                     ))}
                   </tbody>
@@ -606,6 +694,10 @@ const MyFoodDonations = () => {
                           <span className="capitalize">{item.status || 'Pending'}</span>
                         </span>
                       </div>
+<<<<<<< HEAD
+=======
+                      
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
                       <div className="grid grid-cols-2 gap-2 my-2 text-sm">
                         <div className="flex flex-col">
                           <span className="text-base-content/50">Quantity</span>
@@ -616,6 +708,7 @@ const MyFoodDonations = () => {
                           <span className="font-semibold capitalize">{item.category}</span>
                         </div>
                         <div className="flex flex-col">
+<<<<<<< HEAD
                           <span className="text-base-content/50">Campaign</span>
                           <Link
                             to={`/campaigns/${item.campaignId}`}
@@ -628,6 +721,10 @@ const MyFoodDonations = () => {
                         <div className="flex flex-col">
                           <span className="text-base-content/50">NGO</span>
                           <span className="font-semibold">{item.ngoName}</span>
+=======
+                          <span className="text-base-content/50">Size</span>
+                          <span className="font-semibold capitalize">{item.size || '—'}</span>
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
                         </div>
                         <div className="flex flex-col">
                           <span className="text-base-content/50">Date</span>
@@ -636,7 +733,13 @@ const MyFoodDonations = () => {
                           </span>
                         </div>
                       </div>
+<<<<<<< HEAD
                       <div className="divider my-1"></div>
+=======
+                      
+                      <div className="divider my-1"></div>
+                      
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
                       <div className="flex items-center gap-2">
                         <div className="avatar placeholder">
                           <div className="bg-neutral-focus text-neutral-content rounded-full w-8">
@@ -651,6 +754,7 @@ const MyFoodDonations = () => {
                           </span>
                         </div>
                       </div>
+<<<<<<< HEAD
                       <div className="flex gap-2 mt-3">
                         <button
                           onClick={(e) => {
@@ -671,6 +775,8 @@ const MyFoodDonations = () => {
                           <FiTrash /> Delete
                         </button>
                       </div>
+=======
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
                     </div>
                   </motion.div>
                 ))}
@@ -732,6 +838,7 @@ const MyFoodDonations = () => {
           )}
         </div>
       </motion.div>
+<<<<<<< HEAD
 
       {/* Edit Modal */}
       <AnimatePresence>
@@ -805,6 +912,8 @@ const MyFoodDonations = () => {
           </motion.div>
         )}
       </AnimatePresence>
+=======
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
       
       {/* Item Detail Modal */}
       <AnimatePresence>
@@ -856,11 +965,16 @@ const MyFoodDonations = () => {
                   
                   <div className="form-control">
                     <label className="label">
+<<<<<<< HEAD
                       <span className="label-text">Campaign</span>
+=======
+                      <span className="label-text">Size</span>
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
                     </label>
                     <input 
                       type="text" 
                       className="input input-bordered" 
+<<<<<<< HEAD
                       value={selectedItem.campaignName} 
                       disabled 
                     />
@@ -874,6 +988,9 @@ const MyFoodDonations = () => {
                       type="text" 
                       className="input input-bordered" 
                       value={selectedItem.ngoName} 
+=======
+                      value={selectedItem.size || 'N/A'} 
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
                       disabled 
                     />
                   </div>
@@ -936,4 +1053,8 @@ const MyFoodDonations = () => {
   );
 };
 
+<<<<<<< HEAD
 export default MyFoodDonations;
+=======
+export default MyFoodDonations;
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954

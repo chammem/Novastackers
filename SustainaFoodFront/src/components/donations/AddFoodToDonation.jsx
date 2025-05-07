@@ -1,9 +1,15 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../config/axiosInstance";
 import { toast } from "react-toastify";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import uploadImage from "../../helpers/uploadImage";
+=======
+import React, { useState } from "react";
+import axiosInstance from "../../config/axiosInstance";
+import { toast } from "react-toastify";
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 
 const AddFoodToDonation = ({
   donationId,
@@ -14,6 +20,7 @@ const AddFoodToDonation = ({
   const [formData, setFormData] = useState({
     name: "",
     quantity: "",
+<<<<<<< HEAD
     expiry_date: "",
     allergens: "",
     nutritional_category: "",
@@ -32,6 +39,13 @@ const AddFoodToDonation = ({
   useEffect(() => {
     console.log("Updated formData:", formData);
   }, [formData]);
+=======
+    category: "",
+    buisiness_id: businessId, // Keep this with correct spelling to match backend
+    size: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 
   const handleChange = (e) => {
     setFormData({
@@ -40,6 +54,7 @@ const AddFoodToDonation = ({
     });
   };
 
+<<<<<<< HEAD
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -102,6 +117,11 @@ const AddFoodToDonation = ({
         return;
       }
     }
+=======
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 
     try {
       const response = await axiosInstance.post(
@@ -120,11 +140,14 @@ const AddFoodToDonation = ({
     }
   };
 
+<<<<<<< HEAD
   const getMinDate = () => {
     const today = new Date();
     return today.toISOString().slice(0, 16);
   };
 
+=======
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
   return (
     <div className="modal modal-open">
       <div className="modal-box">
@@ -147,7 +170,11 @@ const AddFoodToDonation = ({
 
           <div className="form-control">
             <label className="label">
+<<<<<<< HEAD
               <span className="label-text">Quantity (in Kg)</span>
+=======
+              <span className="label-text">Quantity</span>
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
             </label>
             <input
               type="number"
@@ -184,7 +211,10 @@ const AddFoodToDonation = ({
               <span className="label-text">Size/Volume</span>
             </label>
             <select
+<<<<<<< HEAD
               name="size"
+=======
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
               className="select select-bordered w-full"
               value={formData.size}
               onChange={(e) =>
@@ -206,6 +236,7 @@ const AddFoodToDonation = ({
             </label>
           </div>
 
+<<<<<<< HEAD
           <div className="form-control">
             <label className="label">
               <span className="label-text">Expiry Date</span>
@@ -317,25 +348,39 @@ const AddFoodToDonation = ({
             </div>
           </div>
 
+=======
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
           <div className="modal-action">
             <button
               type="button"
               onClick={onClose}
               className="btn btn-ghost"
+<<<<<<< HEAD
               disabled={isSubmitting || isUploadingImage}
+=======
+              disabled={isSubmitting}
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
             >
               Cancel
             </button>
             <button
               type="submit"
+<<<<<<< HEAD
               className={`btn btn-primary ${isSubmitting || isUploadingImage ? "loading" : ""}`}
               disabled={isSubmitting || isUploadingImage}
             >
               {isSubmitting ? "Adding..." : isUploadingImage ? "Uploading Image..." : "Add Food"}
+=======
+              className={`btn btn-primary ${isSubmitting ? "loading" : ""}`}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Adding..." : "Add Food"}
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
             </button>
           </div>
         </form>
       </div>
+<<<<<<< HEAD
 
       {openFullScreenImage && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
@@ -354,8 +399,16 @@ const AddFoodToDonation = ({
           </div>
         </div>
       )}
+=======
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
     </div>
   );
 };
 
+<<<<<<< HEAD
 export default AddFoodToDonation;
+=======
+export default AddFoodToDonation;
+
+
+>>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954

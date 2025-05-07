@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  backend:
+    image: sinda12/sustainafood-backend:1.0.58
+    container_name: backend
+    ports:
+      - "8082:8082"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=${MONGODB_URI}
+      - TOKEN_SECRET_KEY=${TOKEN_SECRET_KEY}
+      - FRONTEND_URL=http://localhost:5173
+      - DOCKER_ENV=true
+      - FLASK_BASE_URL=http://flask:5000
+    env_file:
+      - ./SustainaFoodBack/.env
+    networks:
+      - sustainafood-network
+
+  frontend:
+    image: sinda12/sustainafood-frontend:1.0.58
+    container_name: frontend
+    ports:
+      - "5173:80"
+    environment:
+      - REACT_APP_API_BASE_URL=http://backend:8082
+    networks:
+      - sustainafood-network
+
+  flask:
+    image: sinda12/sustainafood-flask:1.0.58
+    container_name: flask
+    working_dir: /app
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./RecommendationModel/data:/app/data
+      - ./RecommendationModel/model:/app/model
+    environment:
+      - FLASK_APP=recommendation_api.py
+      - FLASK_ENV=development
+      - PYTHONUNBUFFERED=1
+    networks:
+      - sustainafood-network
+
+networks:
+  sustainafood-network:
+    driver: bridge
