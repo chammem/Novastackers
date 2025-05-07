@@ -16,6 +16,7 @@ env:
   DOCKER_USERNAME: "sinda12"
   DOCKER_REPO_BACKEND: "sustainafood-backend"
   DOCKER_REPO_FRONTEND: "sustainafood-frontend"
+  DOCKER_REPO_FLASK: "sustainafood-flask"
 
 jobs:
   versioning:
@@ -158,29 +159,32 @@ jobs:
           docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }} .
           docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }}
 
-  finalize:
-    name: Finalize and Update Shared Version
-    needs: [backend, frontend]
+  flask:
+    name: Flask Service Build and Push
+    needs: versioning
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Fetch Latest Changes
-        run: git fetch origin
+      - name: Log in to Docker Hub
+        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
 
-      - name: Ensure Shared Version is Up-to-Date
+      - name: Build and Push Docker Image (Flask)
+        working-directory: RecommendationModel
         run: |
-          # Determine the current branch
-          if [ "$(git rev-parse --abbrev-ref HEAD)" = "HEAD" ]; then
-            CURRENT_BRANCH="${{ github.ref_name }}"
-          else
-            CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-          fi
-          echo "Current branch is $CURRENT_BRANCH"
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }} .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }}
 
-          # Check out the branch and pull the latest changes
-          git checkout $CURRENT_BRANCH
-          git pull origin $CURRENT_BRANCH
-          echo "Shared version file is up-to-date."
+  finalize:
+    name: Finalize and Deploy
+    needs: [backend, frontend, flask]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Deployment Ready
+        run: |
+          echo "Les images Docker sont prêtes à être déployées:"
+          echo "Backend: sinda12/sustainafood-backend:${{ needs.versioning.outputs.version }}"
+          echo "Frontend: sinda12/sustainafood-frontend:${{ needs.versioning.outputs.version }}"
+          echo "Flask: sinda12/sustainafood-flask:${{ needs.versioning.outputs.version }}"

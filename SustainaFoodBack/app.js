@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser');
 const http = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
-const connectDB = require('./src/config/db');
+const connectDB = require('./src/config/db'); // Updated import statement
 const router = require('./src/routes');
 const donationRouter = require('./src/routes/donationRouter');
 const path = require("path");
@@ -48,11 +48,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/', (req, res) => {
-  res.status(200).send('API is running');
-});
-
-
 // This line MUST come BEFORE any Express JSON parsing middleware
 app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), paymentController.handleWebhook);
 
@@ -67,6 +62,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// Add a root route handler for tests/health checks
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'SustainaFood API is running',
+    status: 'OK'
+  });
+});
+
 // Routes
 app.use('/api', router);
 app.use('/api/donations', donationRouter);
@@ -79,8 +82,9 @@ app.use('/api/suggested-products', suggestedProductRoutes);
 // Start DB and server
 const startServer = async () => {
   await connectDB();
-  server.listen(8082, () => {
-    console.log(`🚀 Server + Socket.IO running on port 8082`);
+  const PORT = process.env.PORT || 8082;
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server + Socket.IO running on http://0.0.0.0:${PORT}`);
   });
 };
 
@@ -88,5 +92,4 @@ if (process.env.NODE_ENV !== 'test') {
   startServer();
   initScheduler(); // Only initialize the scheduler if not in test mode
 }
-
 module.exports = app;

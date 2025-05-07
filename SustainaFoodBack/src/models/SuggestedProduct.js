@@ -4,7 +4,7 @@ const SuggestedProductSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true, // Ensure the product name is unique
+    unique: true,
   },
   aisle: {
     type: String,

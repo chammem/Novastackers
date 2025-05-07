@@ -204,6 +204,9 @@ function HeaderMid() {
                       <li>
                         <NavLink to="/food-sales">Food Sales</NavLink>
                       </li>
+                      <li>
+                        <NavLink to="/suggested-products-list">Suggested</NavLink>
+                      </li>
                     </>
                   )}
                   {user?.role === "supermarket" && (
@@ -214,6 +217,14 @@ function HeaderMid() {
                       <li>
                         <NavLink to="/my-donations">Confirm Pickups</NavLink>
                       </li>
+                    </>
+                  )}
+                  {user?.role === "user" && (
+                    <>
+                      <li>
+                        <NavLink to="/available-food">Food sale</NavLink>
+                      </li>
+                     
                     </>
                   )}
                 </ul>

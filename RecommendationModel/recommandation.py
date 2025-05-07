@@ -33,8 +33,8 @@ logger = logging.getLogger(__name__)
 
 # Constantes
 SAMPLE_SIZE = 0.1  # Fraction des données à utiliser
-MIN_PRODUCT_PURCHASES = 5  # Nombre minimum d'achats pour considérer un produit
-MIN_USER_ORDERS = 3  # Nombre minimum de commandes pour considérer un utilisateur
+MIN_PRODUCT_PURCHASES = 5  # Nombre minimum d'achats 
+MIN_USER_ORDERS = 3  # Nombre minimum de commandes 
 DATA_DIR = 'data'
 MODEL_DIR = 'model'
 
