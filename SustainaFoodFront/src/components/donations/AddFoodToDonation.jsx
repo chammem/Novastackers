@@ -1,15 +1,6 @@
-<<<<<<< HEAD
-import React, { useState, useEffect } from "react";
-import axiosInstance from "../../config/axiosInstance";
-import { toast } from "react-toastify";
-import { FaCloudUploadAlt } from "react-icons/fa";
-import { MdDelete } from "react-icons/md";
-import uploadImage from "../../helpers/uploadImage";
-=======
 import React, { useState } from "react";
 import axiosInstance from "../../config/axiosInstance";
 import { toast } from "react-toastify";
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 
 const AddFoodToDonation = ({
   donationId,
@@ -20,32 +11,11 @@ const AddFoodToDonation = ({
   const [formData, setFormData] = useState({
     name: "",
     quantity: "",
-<<<<<<< HEAD
-    expiry_date: "",
-    allergens: "",
-    nutritional_category: "",
-    category: "",
-    buisiness_id: businessId,
-    size: "",
-    image_url: "",
-  });
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [openFullScreenImage, setOpenFullScreenImage] = useState(false);
-  const [fullScreenImage, setFullScreenImage] = useState("");
-
-  useEffect(() => {
-    console.log("Updated formData:", formData);
-  }, [formData]);
-=======
     category: "",
     buisiness_id: businessId, // Keep this with correct spelling to match backend
     size: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 
   const handleChange = (e) => {
     setFormData({
@@ -54,74 +24,9 @@ const AddFoodToDonation = ({
     });
   };
 
-<<<<<<< HEAD
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
-      setIsUploadingImage(true);
-
-      try {
-        const uploadImageCloudinary = await uploadImage(file);
-        console.log("Cloudinary response:", uploadImageCloudinary);
-        console.log("Does secure_url exist?:", !!uploadImageCloudinary.secure_url);
-        if (uploadImageCloudinary.secure_url) {
-          setFormData((prev) => {
-            const updatedFormData = {
-              ...prev,
-              image_url: uploadImageCloudinary.secure_url,
-            };
-            console.log("Updated formData after image upload:", updatedFormData);
-            return updatedFormData;
-          });
-          // Wait for state to update before allowing submission
-          await new Promise((resolve) => setTimeout(resolve, 0));
-        } else {
-          toast.error("Failed to upload image to Cloudinary");
-        }
-      } catch (error) {
-        console.error("Error uploading to Cloudinary:", error);
-        toast.error("Error uploading image");
-      } finally {
-        setIsUploadingImage(false);
-      }
-    }
-  };
-
-  const handleDeleteImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
-    setFormData((prev) => ({ ...prev, image_url: "" }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("Attempting to submit form...");
-
-    if (isUploadingImage) {
-      toast.error("Please wait, image is still uploading...");
-      return;
-    }
-
-    setIsSubmitting(true);
-    console.log("Form data being sent:", formData);
-
-    if (formData.expiry_date) {
-      const expiryDate = new Date(formData.expiry_date);
-      const now = new Date();
-      if (expiryDate <= now) {
-        toast.error("Expiry date must be in the future");
-        setIsSubmitting(false);
-        return;
-      }
-    }
-=======
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 
     try {
       const response = await axiosInstance.post(
@@ -140,14 +45,6 @@ const AddFoodToDonation = ({
     }
   };
 
-<<<<<<< HEAD
-  const getMinDate = () => {
-    const today = new Date();
-    return today.toISOString().slice(0, 16);
-  };
-
-=======
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
   return (
     <div className="modal modal-open">
       <div className="modal-box">
@@ -170,11 +67,7 @@ const AddFoodToDonation = ({
 
           <div className="form-control">
             <label className="label">
-<<<<<<< HEAD
-              <span className="label-text">Quantity (in Kg)</span>
-=======
               <span className="label-text">Quantity</span>
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
             </label>
             <input
               type="number"
@@ -211,10 +104,6 @@ const AddFoodToDonation = ({
               <span className="label-text">Size/Volume</span>
             </label>
             <select
-<<<<<<< HEAD
-              name="size"
-=======
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
               className="select select-bordered w-full"
               value={formData.size}
               onChange={(e) =>
@@ -236,179 +125,27 @@ const AddFoodToDonation = ({
             </label>
           </div>
 
-<<<<<<< HEAD
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Expiry Date</span>
-            </label>
-            <input
-              type="datetime-local"
-              name="expiry_date"
-              value={formData.expiry_date}
-              onChange={handleChange}
-              className="input input-bordered"
-              min={getMinDate()}
-              required
-            />
-            <label className="label">
-              <span className="label-text-alt">
-                When does this food expire?
-              </span>
-            </label>
-          </div>
-
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Allergens</span>
-            </label>
-            <input
-              type="text"
-              name="allergens"
-              value={formData.allergens}
-              onChange={handleChange}
-              className="input input-bordered"
-              placeholder="e.g., Peanuts, Gluten, Dairy"
-            />
-            <label className="label">
-              <span className="label-text-alt">
-                List any allergens (optional)
-              </span>
-            </label>
-          </div>
-
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Nutritional Category</span>
-            </label>
-            <select
-              name="nutritional_category"
-              value={formData.nutritional_category}
-              onChange={handleChange}
-              className="select select-bordered"
-            >
-              <option value="">Select Nutritional Category (optional)</option>
-              <option value="vegetarian">Vegetarian</option>
-              <option value="vegan">Vegan</option>
-              <option value="high-protein">High-Protein</option>
-              <option value="low-carb">Low-Carb</option>
-              <option value="gluten-free">Gluten-Free</option>
-              <option value="dairy-free">Dairy-Free</option>
-            </select>
-          </div>
-
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Food Image (optional)</span>
-            </label>
-            <label htmlFor="uploadFoodImageInput">
-              <div className="p-2 bg-base-100 border rounded h-32 w-full flex justify-center items-center cursor-pointer">
-                <div className="text-base-content/50 flex justify-center items-center flex-col gap-2">
-                  <span className="text-4xl">
-                    <FaCloudUploadAlt />
-                  </span>
-                  <p className="text-sm">Upload Food Image</p>
-                  <input
-                    type="file"
-                    id="uploadFoodImageInput"
-                    className="hidden"
-                    onChange={handleFileChange}
-                    accept="image/*"
-                  />
-                </div>
-              </div>
-            </label>
-            <div>
-              {imagePreview ? (
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="relative group">
-                    <img
-                      src={imagePreview}
-                      alt="Food Preview"
-                      width={80}
-                      height={80}
-                      className="bg-base-100 border cursor-pointer rounded"
-                      onClick={() => {
-                        setOpenFullScreenImage(true);
-                        setFullScreenImage(imagePreview);
-                      }}
-                    />
-                    <div
-                      className="absolute bottom-0 right-0 p-1 text-white bg-red-600 rounded-full hidden group-hover:block cursor-pointer"
-                      onClick={handleDeleteImage}
-                    >
-                      <MdDelete />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-error text-xs mt-2">
-                  No image uploaded yet !
-                </p>
-              )}
-            </div>
-          </div>
-
-=======
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
           <div className="modal-action">
             <button
               type="button"
               onClick={onClose}
               className="btn btn-ghost"
-<<<<<<< HEAD
-              disabled={isSubmitting || isUploadingImage}
-=======
               disabled={isSubmitting}
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
             >
               Cancel
             </button>
             <button
               type="submit"
-<<<<<<< HEAD
-              className={`btn btn-primary ${isSubmitting || isUploadingImage ? "loading" : ""}`}
-              disabled={isSubmitting || isUploadingImage}
-            >
-              {isSubmitting ? "Adding..." : isUploadingImage ? "Uploading Image..." : "Add Food"}
-=======
               className={`btn btn-primary ${isSubmitting ? "loading" : ""}`}
               disabled={isSubmitting}
             >
               {isSubmitting ? "Adding..." : "Add Food"}
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
             </button>
           </div>
         </form>
       </div>
-<<<<<<< HEAD
-
-      {openFullScreenImage && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
-          <div className="relative max-w-3xl w-full">
-            <button
-              className="absolute top-2 right-2 btn btn-circle btn-ghost text-white"
-              onClick={() => setOpenFullScreenImage(false)}
-            >
-              ✕
-            </button>
-            <img
-              src={fullScreenImage}
-              alt="Full Screen Food Image"
-              className="w-full h-auto rounded-lg"
-            />
-          </div>
-        </div>
-      )}
-=======
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
     </div>
   );
 };
 
-<<<<<<< HEAD
 export default AddFoodToDonation;
-=======
-export default AddFoodToDonation;
-
-
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
