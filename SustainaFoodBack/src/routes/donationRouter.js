@@ -156,9 +156,4 @@ donationRouter.post(
   batchController.verifyBatchDelivery
 );
 
-donationRouter.get(
-  "/volunteer/:userId/campaigns",
-  donationController.getMyVolunteeredCampaigns
-);
-
 module.exports = donationRouter;
