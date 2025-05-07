@@ -3,18 +3,12 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-<<<<<<< HEAD
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js",
-    "dev": "nodemon app.js"
-=======
     "test": "jest --coverage",
     "start": "node app.js",
     "dev": "nodemon app.js",
     "seed": "node src/seeder.js",
     "test:coverage": "jest --coverage",
     "sonar": "node ./node_modules/sonarqube-scanner/bin/sonar-scanner -Dsonar.token=sqa_e70c9f3c89d643fa9db70bffcbee28ce879c2ac4"
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
   },
   "keywords": [],
   "author": "",
@@ -22,14 +16,8 @@
   "description": "",
   "dependencies": {
     "@hookform/resolvers": "^4.1.1",
-<<<<<<< HEAD
-    "axios": "^1.8.1",
-    "bcryptjs": "^2.4.3",
-    "cloudinary": "^2.6.0",
-=======
     "axios": "^1.9.0",
     "bcryptjs": "^2.4.3",
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -50,10 +38,6 @@
     "stripe": "^18.0.0",
     "universal-cookie": "^7.2.2",
     "yup": "^1.6.1"
-<<<<<<< HEAD
-  }
-}
-=======
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.0.0",
@@ -64,4 +48,3 @@
     "supertest": "^6.3.4"
   }
 }
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
