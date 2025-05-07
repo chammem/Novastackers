@@ -44,20 +44,10 @@ async function generateOtp(req,res) {
         });
       }
   
-<<<<<<< HEAD
-    
-      const otp = generateVerificationCode(6);
-  
-      
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); 
-  
-      
-=======
       const otp = generateVerificationCode(6);
   
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000); 
   
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
       let verification = await Verification.findOne({ email });
   
       if (verification) {
@@ -75,10 +65,6 @@ async function generateOtp(req,res) {
   
       await verification.save();
   
-<<<<<<< HEAD
-      
-=======
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
       const subject = 'Your OTP for Password Reset';
       const text = `Your OTP is: ${otp}. This OTP is valid for 10 minutes.`;
   
@@ -127,44 +113,6 @@ async function userSendVerificationMail(req,res) {
         })
     }  
 }
-<<<<<<< HEAD
-// async function registerVerification (req,res){
-//     const {code,userInput} = req.body;
-
-//     const verification = await Verification.findOne({email:userInput.email,code:code});
-
-//     if(!verification){
-//         return res.status(400).json({message:"invalid verification"});
-//     }
-    
-//     return res.status(200).json({message:"Verification sent to you email"})
-// }
-async function registerVerification(req, res) {
-    const { code, userInput } = req.body;
-    
-    console.log(userInput.email);
-    console.log(code);
-    try {
-        const verification = await Verification.findOne({ email:userInput.email,code:code });
-
-        console.log(verification);
-        
-        if (!verification) {
-            return res.status(400).json({ message: "Invalid verification code." });
-        }
-        if (verification.expiresAt < new Date()) {
-            return res.status(400).json({ message: "Verification code expired." });
-        }
-        // Create user after successful verification
-        const newUser = new userModel(userInput);
-        const savedUser = await newUser.save();
-
-        // Remove verification record after successful registration
-        await Verification.deleteOne({ email:userInput.email,code:code });
-
-        return res.status(200).json({ message: "User registered successfully!", user: savedUser });
-
-=======
 
 async function registerVerification(req, res) {
     const { code, userInput } = req.body;
@@ -208,7 +156,6 @@ async function registerVerification(req, res) {
             message: "User registered successfully!",
             user: { id: savedUser._id, email: savedUser.email },
         });
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
     } catch (error) {
         console.error("Error during verification:", error);
         return res.status(500).json({ message: "Internal server error." });

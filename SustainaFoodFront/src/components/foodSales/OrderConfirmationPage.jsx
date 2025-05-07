@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-<<<<<<< HEAD
-import { motion } from "framer-motion";
-=======
 import { motion, AnimatePresence } from "framer-motion";
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 import { toast } from "react-toastify";
 import axiosInstance from "../../config/axiosInstance";
 import {
@@ -16,25 +12,17 @@ import {
 } from "react-icons/fi";
 import HeaderMid from "../HeaderMid";
 import { useAuth } from "../../context/AuthContext";
-<<<<<<< HEAD
-=======
 import { FiArrowRight, FiChevronLeft, FiChevronRight, FiShoppingCart } from 'react-icons/fi';
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
 
 const OrderConfirmationPage = () => {
   const { foodId } = useParams();
   const navigate = useNavigate();
   const { user, isLoading, isAuthenticated } = useAuth();
 
-<<<<<<< HEAD
-  const [foodSale, setFoodSale] = useState(null);
-  const [loading, setLoading] = useState(true);
-=======
   const [recommendations, setRecommendations] = useState([]);
   const [foodSale, setFoodSale] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
   const [quantity, setQuantity] = useState(1);
   const [deliveryAddress, setDeliveryAddress] = useState({
     street: "",
@@ -44,39 +32,6 @@ const OrderConfirmationPage = () => {
     country: "USA",
   });
   const [specialInstructions, setSpecialInstructions] = useState("");
-<<<<<<< HEAD
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      console.log("Auth state:", { isAuthenticated, isLoading, user });
-      toast.error("Please log in to place an order");
-      navigate("/login", { state: { from: `/order-confirmation/${foodId}` } });
-    }
-  }, [isAuthenticated, isLoading, foodId, navigate]);
-
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      const fetchFoodSaleDetails = async () => {
-        try {
-          const response = await axiosInstance.get(`/food-sale/${foodId}`);
-          setFoodSale(response.data.data);
-          setLoading(false);
-        } catch (err) {
-          console.error("Error fetching food sale details:", err);
-          setError(
-            err.response?.data?.message || "Failed to load food item details"
-          );
-          setLoading(false);
-          toast.error("Could not load food item details");
-        }
-      };
-
-      fetchFoodSaleDetails();
-    }
-  }, [foodId, isAuthenticated, isLoading]);
-
-=======
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -145,7 +100,6 @@ useEffect(() => {
   }, [foodSale]);
 
  
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value);
     if (value > 0 && value <= (foodSale?.quantityAvailable || 1)) {
@@ -506,8 +460,6 @@ useEffect(() => {
             </motion.div>
           </div>
         </div>
-<<<<<<< HEAD
-=======
 
         {/* Section for similar products */}
 {recommendationsLoading ? (
@@ -621,14 +573,9 @@ useEffect(() => {
   </motion.div>
 ) : null}
 
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
       </div>
     </>
   );
 };
 
 export default OrderConfirmationPage;
-<<<<<<< HEAD
-=======
-
->>>>>>> 70ed007175c654acdf2834d2f0d751da864c8954
