@@ -236,7 +236,29 @@ async function resetPassword(req, res) {
   }
 }
 
+// ...existing code...
 
+/**
+ * Get campaigns the volunteer has participated in.
+ */
+const getMyVolunteeredCampaigns = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    // Replace the following with actual logic to fetch campaigns
+    const campaigns = await Campaign.find({ volunteers: userId });
+    res.status(200).json(campaigns);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch volunteered campaigns" });
+  }
+};
 
+// ...existing code...
 
-module.exports = {resetPassword,verifyOtp,registerVerification, userSendVerificationMail,generateOtp}
+module.exports = {
+  resetPassword,
+  verifyOtp,
+  registerVerification,
+  userSendVerificationMail,
+  generateOtp,
+  getMyVolunteeredCampaigns,
+};
