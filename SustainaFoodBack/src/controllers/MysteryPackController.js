@@ -86,6 +86,7 @@ const createMysteryPack = async (req, res) => {
         const existingItems = await FoodSale.find({
           _id: { $in: itemIds }
         });
+        console.log('Articles existants:', existingItems);
         
         if (existingItems.length !== itemIds.length) {
           return res.status(400).json({ 

@@ -101,7 +101,9 @@ const MysteryPackList = () => {
       const response = await mysteryPackApi.getFoodSales();
       setFoodSales(response.data || []);
     } catch (err) {
-      toast.error("Erreur lors du chargement des articles");
+      console.error('Erreur détaillée:', err);
+      toast.error(`Erreur lors du chargement des articles: ${err.response?.status === 404 ? "Service indisponible" : err.message}`);
+      setFoodSales([]);
     }
   };
 
@@ -109,6 +111,27 @@ const MysteryPackList = () => {
     fetchPacks();
     fetchFoodSales();
   }, []);
+
+  useEffect(() => {
+    if (showItemModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showItemModal]);
+
+  useEffect(() => {
+    if (selectedItems.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        originalPrice: selectedItems.reduce((sum, item) => sum + parseFloat(item.price || 0), 0).toFixed(2)
+      }));
+    }
+  }, [selectedItems]);
 
   const pageVariants = {
     initial: { opacity: 0, y: 20 },
@@ -246,7 +269,12 @@ const MysteryPackList = () => {
         )}
 
         {showItemModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          >
             <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
               <h2 className="text-xl font-bold mb-4">Sélectionner des articles</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -275,7 +303,7 @@ const MysteryPackList = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {error && (

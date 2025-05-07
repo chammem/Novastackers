@@ -18,30 +18,16 @@ const AvailableFoodList = () => {
   useEffect(() => {
     const fetchFoodSales = async () => {
       try {
-        let data;
-        if (filter === 'all') {
-          const response = await getAllFoodSales();
-          data = response.data;
-        } else {
-          const response = await getFoodSalesByRole(filter);
-          data = response.data;
+        setLoading(true);
+        const response = await getAllFoodSales();
+        console.log('Food sales response:', response);
+        if (response && response.data) {
+          setFoodItems(response.data);
         }
-        console.log('Filter:', filter); // Log the current filter
-        console.log('API Response:', data); // Log the API response to verify its structure
-        if (!data || (Array.isArray(data) && data.length === 0)) {
-          console.warn('No food items available:', data);
-          setFoodItems([]); // Handle empty data
-        } else if (!Array.isArray(data)) {
-          console.warn('API returned a single item, wrapping in an array:', data);
-          setFoodItems([data]); // Wrap single item in an array
-        } else {
-          setFoodItems(data); // Set the food items if the response is valid
-        }
-        setLoading(false);
-        setError(null); // Reset the error state when data is successfully fetched
       } catch (err) {
-        console.error('Error fetching food sales:', err);
-        setError('Failed to load food sales. Please try again later.');
+        console.error('Error details:', err);
+        setError('Unable to load food items. Please try again later.');
+      } finally {
         setLoading(false);
       }
     };
