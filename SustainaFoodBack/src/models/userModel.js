@@ -28,7 +28,7 @@ const userSchema = new Schema(
 
     facebook: { type: String, optional: true },
     isDisabled: { type: Boolean, default: false }, // Désactivé = true
-    googleId: { type: String, unique: true },
+    googleId: { type: String },
    
    
    
@@ -113,5 +113,5 @@ userSchema.pre("save", async function (next) {
     return next(error);
   }
 });
-
+userSchema.index({ googleId: 1 }, { unique: true, sparse: true });
 module.exports = mongoose.model("User", userSchema);

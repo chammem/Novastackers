@@ -58,6 +58,13 @@ import FoodRecommendations from './components/FoodRecommendations.jsx';
 import SuggestedProducts from './components/SuggestedProducts';
 import AvailableSuggestions from './components/AvailableSuggestions';
 import SuggestedProductsList from './components/SuggestedProductsList';
+import MyOrdersPage from './components/foodSales/MyOrdersPage.jsx'
+import OrderDetailPage from './components/foodSales/OrderDetailPage.jsx';
+import DriverDashboard from './components/driver/DriverDashboard.jsx';
+import DeliveryNotification from './components/driver/DeliveryNotification.jsx';
+import AllDeliveriesMap from './components/driver/AllDeliveriesMap.jsx';
+import RequestedDeliveries from './components/driver/RequestedDeliveries.jsx';
+import DeliveryRouteDetails from './components/driver/DeliveryRouteDetails.jsx';
 
 const router = createBrowserRouter([
   {
@@ -67,22 +74,13 @@ const router = createBrowserRouter([
     children: [
       // Routes publiques
       { index: true, element: <Home /> },
-      { path: "login", element: <Connect /> },
+      { path: "/login", element: <Connect /> },
       { path: "register/:role", element: <UserForm /> },
+      { path: "roleVerification", element: <AdminVerificationComponent /> },
       { path: "activateAccount", element: <ActivateAccount /> },
-      { path: "forgot-password", element: <ForgotPasswordFlow /> },
+      { path: "forgot-password", element: <ForgotPasswordFlow /> }, 
       { path: "role", element: <RoleChoice /> },
       { path: "verify", element: <VerifyAccount /> },
-      { path: "/available-food", element: <AvailableFoodList /> },
-      { path: '/available-suggestions', element: <AvailableSuggestions threshold={0.5} /> },
-      {
-        path: "/recommendations",
-        element: <ProtectedRoute><FoodRecommendations /></ProtectedRoute>
-      },
-      { path: '/suggested-products', element: <SuggestedProducts /> },
-      { path: '/suggested-products-list', element: <SuggestedProductsList /> },
-
-      // Routes protégées normales
       {path:"/donationForm",element:<CreateDonationForm/>},
       {path:"/donations",element:<DonationsList/>},
       {path:"/addfoodtodonation",element:<AddFoodToDonation/>},
@@ -106,6 +104,20 @@ const router = createBrowserRouter([
       {path:"/order-confirmation/:foodId", element:<OrderConfirmationPage />},
       {path:"/order-success/:orderId", element:<OrderSuccessPage />},
       {path:"/order-payment", element:<OrderPaymentPage />},
+      {path:"/orders",element:<MyOrdersPage />},
+      {path:"/orders/:orderId",element:<OrderDetailPage/>},
+      {path:"/driver-dashboard",element:<DriverDashboard/>},
+      {path:"/driver-notification",element:<DeliveryNotification/>},
+      {path:"/driver-dashboard",element:<DriverDashboard/>},
+      {path:"/delivery-route/:orderId",element:<DeliveryRouteDetails/>},
+      {path:"/requested-deliveries",element:<RequestedDeliveries/>},
+      {path:"/deliveries-map",element:<AllDeliveriesMap/>},
+      //sinda
+      { path: "/available-food", element: <AvailableFoodList /> },
+      { path: '/available-suggestions', element: <AvailableSuggestions threshold={0.5} /> },
+      { path: "/recommendations",element: <ProtectedRoute><FoodRecommendations /></ProtectedRoute>},
+      { path: '/suggested-products', element: <SuggestedProducts /> },
+      { path: '/suggested-products-list', element: <SuggestedProductsList /> },
       
       {
         element: <ProtectedRoute />,

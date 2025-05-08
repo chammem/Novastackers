@@ -13,6 +13,7 @@ import {
 import HeaderMid from "../HeaderMid";
 import { useAuth } from "../../context/AuthContext";
 import { FiArrowRight, FiChevronLeft, FiChevronRight, FiShoppingCart } from 'react-icons/fi';
+import LocationSelector from "../common/LocationSelector";
 
 const OrderConfirmationPage = () => {
   const { foodId } = useParams();
@@ -30,6 +31,8 @@ const OrderConfirmationPage = () => {
     state: "",
     zipCode: "",
     country: "USA",
+    lat: null,
+    lng: null,
   });
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
@@ -37,29 +40,33 @@ const OrderConfirmationPage = () => {
 
 
 useEffect(() => {
-  console.log('OrderConfirmationPage mounted with foodId:', foodId); // Ajoutez ce log
-  
-  if (!foodId) {
-    console.error('No foodId provided in URL');
-    setError('Invalid product ID');
-    setLoading(false);
-    return;
-  }
-
-  const fetchFoodSaleDetails = async () => {
-    try {
-      const response = await axiosInstance.get(`/food-sale/${foodId}`);
-      setFoodSale(response.data.data);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching food sale details:', err);
-      setError(err.response?.data?.message || 'Failed to load food item details');
-      setLoading(false);
+    if (!isLoading && !isAuthenticated) {
+      console.log("Auth state:", { isAuthenticated, isLoading, user });
+      toast.error("Please log in to place an order");
+      navigate("/login", { state: { from: `/order-confirmation/${foodId}` } });
     }
-  };
+  }, [isAuthenticated, isLoading, foodId, navigate]);
 
-  fetchFoodSaleDetails();
-}, [foodId]);
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      const fetchFoodSaleDetails = async () => {
+        try {
+          const response = await axiosInstance.get(`/food-sale/${foodId}`);
+          setFoodSale(response.data.data);
+          setLoading(false);
+        } catch (err) {
+          console.error("Error fetching food sale details:", err);
+          setError(
+            err.response?.data?.message || "Failed to load food item details"
+          );
+          setLoading(false);
+          toast.error("Could not load food item details");
+        }
+      };
+
+      fetchFoodSaleDetails();
+    }
+  }, [foodId, isAuthenticated, isLoading]);
 
   useEffect(() => {
     const fetchProductRecommendations = async () => {
@@ -115,6 +122,25 @@ useEffect(() => {
     }));
   };
 
+  const handleLocationSelect = (location) => {
+    setDeliveryAddress((prev) => ({
+      ...prev,
+      lat: location.lat,
+      lng: location.lng,
+    }));
+
+    if (location.addressDetails) {
+      setDeliveryAddress((prev) => ({
+        ...prev,
+        street: location.addressDetails.street || prev.street,
+        city: location.addressDetails.city || prev.city,
+        state: location.addressDetails.state || prev.state,
+        zipCode: location.addressDetails.zipCode || prev.zipCode,
+        country: location.addressDetails.country || prev.country,
+      }));
+    }
+  };
+
   const calculateTotal = () => {
     if (!foodSale) return 0;
     const price = foodSale.discountedPrice || foodSale.price;
@@ -122,7 +148,6 @@ useEffect(() => {
   };
 
   const handleProceedToPayment = async () => {
-    // Validate form
     if (
       !deliveryAddress.street ||
       !deliveryAddress.city ||
@@ -132,8 +157,12 @@ useEffect(() => {
       return;
     }
 
+    if (!deliveryAddress.lat || !deliveryAddress.lng) {
+      toast.error("Please select a delivery location on the map");
+      return;
+    }
+
     try {
-      // Navigate to payment page with order details
       navigate("/order-payment", {
         state: {
           foodId: foodId,
@@ -142,7 +171,6 @@ useEffect(() => {
           specialInstructions,
           totalAmount: calculateTotal(),
           foodSale,
-          // No need to pass userId here, we'll get it from AuthContext
         },
       });
     } catch (err) {
@@ -152,7 +180,7 @@ useEffect(() => {
   };
 
   // Show a loading state while auth is being checked
-  if (isLoading) {
+   if (isLoading) {
     return (
       <>
         <HeaderMid />
@@ -358,6 +386,18 @@ useEffect(() => {
                   Delivery Information
                 </h2>
 
+                <LocationSelector
+                  onLocationSelect={handleLocationSelect}
+                  initialLocation={
+                    deliveryAddress.lat && deliveryAddress.lng
+                      ? { lat: deliveryAddress.lat, lng: deliveryAddress.lng }
+                      : null
+                  }
+                  address={deliveryAddress}
+                />
+
+                <div className="divider">Address Details</div>
+
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text">Street Address*</span>
@@ -461,7 +501,8 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Section for similar products */}
+        
+         {/* Section for similar products */}
 {recommendationsLoading ? (
   <div className="mt-12 flex justify-center">
     <span className="loading loading-spinner"></span>
@@ -579,3 +620,4 @@ useEffect(() => {
 };
 
 export default OrderConfirmationPage;
+
