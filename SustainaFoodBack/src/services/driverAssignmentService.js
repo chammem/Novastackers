@@ -546,7 +546,7 @@ const checkIfDeliveryFitsCriteria = async (
     );
 
     // Verify both conditions are met
-    const isBusinessesClose = businessDistance <= 0.5; // 500 meters threshold
+    const isBusinessesClose = businessDistance <= 2.0; // 500 meters threshold
     const isDeliveriesClose = deliveryDistance <= 2.0; // 2 km threshold for deliveries
 
     if (isBusinessesClose && isDeliveriesClose) {
