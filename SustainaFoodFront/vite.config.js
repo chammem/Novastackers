@@ -11,5 +11,10 @@ export default defineConfig({
       }
     },
   },
-  plugins: [react()]
+  plugins: [react()],
+  build: {
+    rollupOptions: {
+      external: ['react', 'react-dom'], // Add external dependencies here
+    },
+  },
 })
