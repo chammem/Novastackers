@@ -1,35 +1,28 @@
-# Use Node.js 18 for the build stage
-FROM node:18 AS build
+# Use a Node.js base image
+FROM node:18-alpine as build
 
 # Set the working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package.json and package-lock.json
 COPY package*.json ./
-RUN npm ci
-RUN npm install react@18.2.0 react-dom@18.2.0
-RUN npm install date-fns --legacy-peer-deps
+
+# Install dependencies
+RUN npm install
 
 # Copy the rest of the application code
 COPY . .
 
-# Build the application (assuming Vite outputs to 'dist')
+# Build the React application
 RUN npm run build
 
-# Use Nginx for serving the built application
+# Use a lightweight web server to serve the built files
 FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Copy the built application to the Nginx HTML directory
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Copy the nginx.conf file into the Nginx container
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port 5173 for the web server
+# Expose ports 80 and 5173
+EXPOSE 80
 EXPOSE 5173
 
-# Expose port 80 for the web server
-EXPOSE 80
-
-# Default command to run Nginx
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
