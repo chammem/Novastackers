@@ -35,8 +35,6 @@ donationRouter.patch(
   "/decline-assignment/:foodId",
   donationController.declineAssignment
 );
-donationRouter.delete('/deleteDonation/:id',donationController.deleteDonation);
-
 
 // donationRouter.put('/pickup/volunteer/:foodId', donationController.markAsPickedUpByVolunteer);
 donationRouter.put(

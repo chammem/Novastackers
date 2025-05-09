@@ -44,10 +44,13 @@ async function generateOtp(req,res) {
         });
       }
   
+    
       const otp = generateVerificationCode(6);
   
+      
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000); 
   
+      
       let verification = await Verification.findOne({ email });
   
       if (verification) {
@@ -65,6 +68,7 @@ async function generateOtp(req,res) {
   
       await verification.save();
   
+      
       const subject = 'Your OTP for Password Reset';
       const text = `Your OTP is: ${otp}. This OTP is valid for 10 minutes.`;
   
@@ -113,49 +117,42 @@ async function userSendVerificationMail(req,res) {
         })
     }  
 }
+// async function registerVerification (req,res){
+//     const {code,userInput} = req.body;
 
+//     const verification = await Verification.findOne({email:userInput.email,code:code});
+
+//     if(!verification){
+//         return res.status(400).json({message:"invalid verification"});
+//     }
+    
+//     return res.status(200).json({message:"Verification sent to you email"})
+// }
 async function registerVerification(req, res) {
     const { code, userInput } = req.body;
-
-    if (!userInput || !userInput.email || !code) {
-        return res.status(400).json({ message: "Email and verification code are required." });
-    }
-
+    
+    console.log(userInput.email);
+    console.log(code);
     try {
-        console.log("Verifying user:", userInput.email, "with code:", code);
+        const verification = await Verification.findOne({ email:userInput.email,code:code });
 
-        const verification = await Verification.findOne({ email: userInput.email, code });
-
+        console.log(verification);
+        
         if (!verification) {
             return res.status(400).json({ message: "Invalid verification code." });
         }
-
         if (verification.expiresAt < new Date()) {
-            return res.status(400).json({ message: "Verification code has expired." });
+            return res.status(400).json({ message: "Verification code expired." });
         }
-
-        // Remove googleId if it is null or undefined
-        if (!userInput.googleId) {
-            delete userInput.googleId;
-        }
-
-        // Hash the password before saving the user
-        if (userInput.password) {
-            const salt = await bcrypt.genSalt(10);
-            userInput.password = await bcrypt.hash(userInput.password, salt);
-        }
-
-        // Create the user after successful verification
+        // Create user after successful verification
         const newUser = new userModel(userInput);
         const savedUser = await newUser.save();
 
-        // Remove the verification record after successful registration
-        await Verification.deleteOne({ email: userInput.email, code });
+        // Remove verification record after successful registration
+        await Verification.deleteOne({ email:userInput.email,code:code });
 
-        return res.status(200).json({
-            message: "User registered successfully!",
-            user: { id: savedUser._id, email: savedUser.email },
-        });
+        return res.status(200).json({ message: "User registered successfully!", user: savedUser });
+
     } catch (error) {
         console.error("Error during verification:", error);
         return res.status(500).json({ message: "Internal server error." });

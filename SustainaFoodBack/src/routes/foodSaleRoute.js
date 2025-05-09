@@ -11,6 +11,8 @@ router.post('/', upload.single('image'), foodSaleController.createFoodSale);
 router.get('/restaurant/:restaurantId', foodSaleController.getRestaurantDetails);
 router.get('/restaurant/:restaurantId/items', foodSaleController.getRestaurantFoodSales);
 
+router.get('/:id', foodSaleController.getFoodSaleById);
+
 // Route to get food sales by role (restaurant or supermarket)
 router.get('/role/:role', foodSaleController.getFoodSalesByRole);
 

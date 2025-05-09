@@ -36,4 +36,3 @@ export const getFoodSalesByRole = async (role) => {
   }
 };
 
-

@@ -13,10 +13,14 @@ const foodSaleRoutes = require('./src/routes/foodSaleRoute');
 const paymentRoutes = require('./src/routes/paymentRoutes');
 const recommendationRoutes = require('./src/routes/recommendationRoutes');
 const suggestedProductRoutes = require('./src/routes/suggestedProductRoutes');
+const orderRoutes = require('./src/routes/orderRoutes');
+const locationRoutes = require('./src/routes/locationRoutes');
+const driverRoutes = require('./src/routes/driverRoutes');
 // Create Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
 const paymentController = require('./src/controllers/payment/paymentController');
+const driverAssignmentService = require('./src/services/driverAssignmentService');
 
 // Configure Socket.IO
 const io = new Server(server, {
@@ -47,7 +51,7 @@ app.use((req, res, next) => {
   req.io = io;
   next();
 });
-
+driverAssignmentService.initialize(io);
 // This line MUST come BEFORE any Express JSON parsing middleware
 app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), paymentController.handleWebhook);
 
@@ -75,6 +79,9 @@ app.use('/api', router);
 app.use('/api/donations', donationRouter);
 app.use('/api/food-sale', foodSaleRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/location', locationRoutes);
+app.use('/api/driver', driverRoutes);
 // Recommendation routes
 app.use('/api', recommendationRoutes);
 // Suggested Products API

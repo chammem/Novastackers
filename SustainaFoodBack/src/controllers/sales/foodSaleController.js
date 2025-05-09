@@ -2,6 +2,7 @@ const FoodSaleItem = require('../../models/sales/FoodSaleItem');
 const FoodItem = require('../../models/foodItem');
 const User = require('../../models/userModel');
 const path = require('path'); // Import path for handling file paths
+const Order = require('../../models/sales/Order');
 
 exports.createFoodSale = async (req, res) => {
   try {

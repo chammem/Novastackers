@@ -18,7 +18,7 @@ const notificationSchema = new mongoose.Schema({
       'pickup_code',
       'delivery_code',
       'status_update',
-      'assignment','assignment-request','batch-assignment',
+      'assignment','assignment-request','batch-assignment','order_update',
     ],
     required: false,
   },

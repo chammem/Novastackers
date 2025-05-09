@@ -69,7 +69,30 @@ exports.addFoodToDonation = async (req, res) => {
     res.status(500).json({ message: "Error adding food item", error });
   }
 };
+exports.getAllDonations = async (req, res) => {
+  try {
+    const search = req.query.search || "";
+    const sanitizedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+    let query = {};
+
+    if (sanitizedSearch) {
+      const ngos = await UserModel.find({
+        fullName: { $regex: new RegExp(`\\b${sanitizedSearch}`, "i") },
+        role: "charity",
+      });
+      query.ngoId = { $in: ngos.map((n) => n._id) };
+    }
+
+    const donations = await FoodDonation.find(query)
+      .populate("foods")
+      .populate("ngoId", "fullName");
+
+    res.status(200).json(donations);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching donations", error });
+  }
+};
 
 
 
