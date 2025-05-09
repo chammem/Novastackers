@@ -49,7 +49,6 @@ build/
 .cache/
 
 # Package files
-package-lock.json
 yarn.lock
 
 # Compiled output
