@@ -14,7 +14,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     rollupOptions: {
-      external: ['react', 'react-dom'], // Add external dependencies here
+      external: ['react', 'react-dom', 'date-fns'], // Add 'date-fns' here
     },
   },
 })
