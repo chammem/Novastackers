@@ -11,10 +11,5 @@ export default defineConfig({
       }
     },
   },
-  plugins: [react()],
-  build: {
-    rollupOptions: {
-      external: ['react', 'react-dom', 'react-dom/client', 'date-fns'], // Added 'react-dom/client'
-    },
-  },
+  plugins: [react()]
 })
