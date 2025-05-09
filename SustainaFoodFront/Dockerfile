@@ -1,4 +1,4 @@
-# Use Node.js for the build stage
+# Use Node.js 20 for the build stage
 FROM node:18 AS build
 
 # Set the working directory
@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy package files and install dependencies
 COPY package*.json ./
 RUN npm ci
-RUN npm install react react-dom
+RUN npm install react@17.0.2 react-dom@17.0.2
 RUN npm install date-fns
 
 # Copy the rest of the application code
