@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 RUN npm install react@17.0.2 react-dom@17.0.2
-RUN npm install date-fns
+RUN npm install date-fns --legacy-peer-deps
 
 # Copy the rest of the application code
 COPY . .
