@@ -7,6 +7,8 @@ WORKDIR /app
 # Copy package files and install dependencies
 COPY package*.json ./
 RUN npm ci
+RUN npm install react react-dom
+RUN npm install date-fns
 
 # Copy the rest of the application code
 COPY . .
