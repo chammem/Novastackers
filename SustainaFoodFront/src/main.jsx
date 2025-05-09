@@ -1,5 +1,5 @@
-import React from 'react';
-import ReactDOM from 'react-dom'; // Use 'react-dom' instead of 'react-dom/client'
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
 
 import { createBrowserRouter,RouterProvider,BrowserRouter} from 'react-router-dom'
 import App from './App.jsx'
@@ -146,14 +146,13 @@ const router = createBrowserRouter([
   }
 ]);
 
-ReactDOM.render(
-  <React.StrictMode>
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
     <AuthProvider>
       <NotificationProvider>
         <ToastContainer />
         <RouterProvider router={router} />
       </NotificationProvider>
     </AuthProvider>
-  </React.StrictMode>,
-  document.getElementById('root') // Ensure this matches your HTML structure
+  </StrictMode>
 );

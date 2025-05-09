@@ -1,8 +1,7 @@
 version: '3.8'
 services:
   backend:
-    image: sinda12/sustainafood-backend:1.0.80
-    container_name: backend
+    image: sinda12/sustainafood-backend:1.0.83
     ports:
       - "8082:8082"
     environment:
@@ -18,7 +17,7 @@ services:
       - sustainafood-network
 
   frontend:
-    image: sinda12/sustainafood-frontend:1.0.80
+    image: sinda12/sustainafood-frontend:1.0.83
     container_name: frontend
     ports:
       - "5173:80"
