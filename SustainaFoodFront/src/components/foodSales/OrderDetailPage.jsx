@@ -1,3 +1,4 @@
+import React from 'react'; // Ensure this is the correct import
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
