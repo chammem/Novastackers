@@ -78,7 +78,7 @@ const AvailableFoodList = () => {
         <HeaderMid />
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-primary">Available Food Deals</h1>
+            <h1 className="text-3xl font-bold text-primary">Available Food Deals </h1>
             <div className="flex gap-4">
               <button 
                 className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-outline'}`}
@@ -203,8 +203,8 @@ const AvailableFoodList = () => {
                   <h2 className="card-title">{item.foodItem.name}</h2>
                   {item.discountedPrice && (
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-semibold text-accent">${item.discountedPrice}</span>
-                      <span className="text-sm line-through text-gray-500">${item.price}</span>
+                        <span className="text-lg font-semibold text-yellow-700">${item.discountedPrice}</span>
+                        <span className="text-sm line-through text-gray-700">${item.price}</span>
                       <span className="badge badge-secondary">
                         {Math.round((1 - item.discountedPrice / item.price) * 100)}% off
                       </span>
@@ -214,24 +214,26 @@ const AvailableFoodList = () => {
                     <p className="text-lg font-semibold text-accent">${item.price}</p>
                   )}
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      {item.foodItem.category && <span className="badge badge-outline mr-2">{item.foodItem.category}</span>}
-                      {item.foodItem.size && <span className="badge badge-outline">{item.foodItem.size}</span>}
-                    </p>
+                  <p className="text-sm text-gray-800">
+                  {item.foodItem.category && <span className="badge badge-outline mr-2 text-gray-800">{item.foodItem.category}</span>}
+                  {item.foodItem.size && <span className="badge badge-outline text-gray-800">{item.foodItem.size}</span>}
+                  </p>
+
                   </div>
                   {getTimeRemaining(item.expiresAt || item.foodItem.expiry_date) !== 'Expired' && (
                     <div className="flex justify-between items-center mt-2">
-                      <div className="flex items-center gap-2 text-warning">
-                        <FiClock />
-                        <span className="text-sm font-medium">
-                          {getTimeRemaining(item.expiresAt || item.foodItem.expiry_date)}
-                        </span>
-                      </div>
-                      <span className="text-sm text-gray-500">
-                        {item.quantityAvailable} available
-                      </span>
-                    </div>
-                  )}
+                      <div className="flex items-center gap-2 text-yellow-800">
+                      <FiClock className="text-yellow-800" />
+                       <span className="text-sm font-semibold">
+                       {getTimeRemaining(item.expiresAt || item.foodItem.expiry_date)}
+                          </span>
+                          </div>
+                        <span className="text-sm text-gray-800 font-medium">
+                             {item.quantityAvailable} available
+                            </span>
+                            </div>
+                        )}
+
                   <div className="flex flex-col mt-3 pt-3 border-t border-base-200">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="avatar">
@@ -244,16 +246,17 @@ const AvailableFoodList = () => {
                       </span>
                     </div>
                     <motion.button 
-                      className="btn btn-sm btn-outline btn-secondary"
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/restaurant/${item.foodItem.buisiness_id}`);
-                      }}
+                    className="btn btn-sm border border-gray-700 text-gray-800 hover:bg-gray-100"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={(e) => {
+                    e.stopPropagation();
+                     navigate(`/restaurant/${item.foodItem.buisiness_id}`);
+                   }}
                     >
-                      <FiMapPin className="mr-1" /> View Restaurant Details
-                    </motion.button>
+                   <FiMapPin className="mr-1" /> View Restaurant Details
+                   </motion.button>
+
                   </div>
 
                   <div className="mt-3">

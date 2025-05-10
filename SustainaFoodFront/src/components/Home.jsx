@@ -5,6 +5,7 @@ import Footer from "./Footer";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import axiosInstance from "../config/axiosInstance";
+
 import {
   FiUsers,
   FiTruck,
@@ -18,6 +19,11 @@ function Home() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({ meals: 0, partners: 0, pounds: 0 });
+
+  useEffect(() => {
+  document.title = "Sustainafood | Home";
+}, []);
+
 
   // Fetch user details
   useEffect(() => {
@@ -59,13 +65,14 @@ function Home() {
 
   return (
     <>
+    
       <HeaderMid />
 
       {/* HERO SECTION - Redesigned with background image */}
       <div className="relative overflow-hidden">
         <div className="hero min-h-[80vh] bg-gradient-to-br from-primary/5 to-primary/20 relative">
-          {/* Background pattern */}
-          <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974')]"></div>
+          {/* Background pattern 
+          <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974')]"></div>  */}
 
           <div className="hero-content p-8 flex-col lg:flex-row-reverse max-w-7xl mx-auto">
             {/* Hero image */}
@@ -92,9 +99,15 @@ function Home() {
               <div className="badge badge-secondary mb-4">
                 Making An Impact Together
               </div>
-              <h1 className="text-5xl font-bold leading-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Save Food, Change Lives
-              </h1>
+            <div>
+            <h1 className="text-5xl font-bold leading-tight text-black">
+            Save Food, Change Lives
+            </h1>
+            <div className="w-20 h-1 bg-primary mt-2"></div>
+            </div>
+
+
+
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -238,8 +251,8 @@ function Home() {
       {/* PARTNERS BANNER */}
       <div className="bg-base-200 py-6">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-4 text-sm font-medium text-base-content/60">
-            TRUSTED BY ORGANIZATIONS WORLDWIDE
+          <div className="text-center mb-4 text-sm font-medium text-base-content/80">
+            TRUSTED BY ORGANIZATIONS WORLDWIDE 
           </div>
           <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
             <img
@@ -294,13 +307,13 @@ function Home() {
                 step: "Sign Up",
                 text: "Create an account as a restaurant, volunteer, or charity in just a few minutes.",
                 icon: <FiUsers className="w-8 h-8" />,
-                image: "/images/signup.jpg", // Local image path
+                image: "/images/login2.svg", // Local image path
               },
               {
                 step: "Connect",
                 text: "Restaurants list surplus food, volunteers transport it, and charities receive donations.",
                 icon: <FiTruck className="w-8 h-8" />,
-                image: "/images/connect.jpg", // Local image path
+                image: "/images/hero.png", // Local image path
               },
               {
                 step: "Make an Impact",
@@ -313,22 +326,26 @@ function Home() {
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.03 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.2 }}
                 className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all overflow-hidden"
               >
                 <figure className="h-48">
-                  <img
-                    src={item.image}
-                    alt={item.step}
-                    className="w-full h-full object-cover"
-                  />
+               <img
+                src={item.image}
+                alt={`Illustration for ${item.step} step`}
+                className="w-full h-full object-cover"
+                />
+
                 </figure>
                 <div className="card-body">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                      {item.icon}
-                    </div>
+                   <div className="w-12 h-12 rounded-full bg-primary text-primary-content flex items-center justify-center shadow">
+                  {item.icon}
+                  </div>
+
+
                     <h3 className="card-title text-xl">
                       Step {i + 1}: {item.step}
                     </h3>
@@ -381,12 +398,14 @@ function Home() {
                 className="card bg-base-100 shadow-lg hover:shadow-xl transition-all text-center"
               >
                 <div className="card-body p-8">
-                  <div className="rounded-full w-16 h-16 bg-primary/10 flex items-center justify-center mx-auto mb-4 text-primary">
+                  <div className="rounded-full w-16 h-16 bg-primary/30 flex items-center justify-center mx-auto mb-4 text-primary-content">
                     {stat.icon}
                   </div>
-                  <h3 className="text-5xl font-bold text-primary mb-2">
-                    {stat.value}
-                  </h3>
+                  <h3 className="text-5xl font-bold tracking-tight drop-shadow-sm mb-2" style={{ color: '#06668C' }}>
+  {stat.value}
+</h3>
+
+
                   <p className="text-base-content/70">{stat.label}</p>
                 </div>
               </motion.div>
@@ -435,7 +454,7 @@ function Home() {
                   <div className="flex items-center gap-4 mb-4">
                     <div className="avatar">
                       <div className="w-16 h-16 rounded-full">
-                        <img src={t.avatar} alt={t.author} />
+                        <img src={t.avatar} alt={`Portrait of ${t.author}, ${t.role}`} />
                       </div>
                     </div>
                     <div>
@@ -451,7 +470,7 @@ function Home() {
                     {[...Array(5)].map((_, i) => (
                       <svg
                         key={i}
-                        className="w-5 h-5 text-yellow-400"
+                        className="w-5 h-5 text-amber-700"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -466,50 +485,63 @@ function Home() {
         </div>
       </section>
 
-      {/* CALL TO ACTION - Enhanced with background and button */}
-      <section className="py-20 px-4 relative">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1531425566628-564f4b433a43?q=80&w=1932')] bg-cover bg-center opacity-10"></div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-4xl mx-auto relative z-10"
-        >
-          <div className="card bg-primary text-primary-content shadow-2xl">
-            <div className="card-body p-12 text-center">
-              <h2 className="text-4xl font-bold mb-4">
-                Ready to Make a Difference?
-              </h2>
-              <p className="mb-8 text-lg max-w-xl mx-auto">
-                Join SustainaFood today and be part of our mission to reduce
-                food waste while helping communities in need.
-              </p>
-              {user ? (
-                <div className="flex justify-center">
-                  <Link
-                    to="/dashboard"
-                    className="btn btn-lg btn-secondary gap-2"
-                  >
-                    Go to Dashboard <FiArrowRight />
-                  </Link>
-                </div>
-              ) : (
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link to="/signup" className="btn btn-lg btn-secondary gap-2">
-                    Sign Up Now <FiArrowRight />
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="btn btn-lg btn-outline btn-secondary"
-                  >
-                    Login
-                  </Link>
-                </div>
-              )}
-            </div>
+      {/* CALL TO ACTION - Enhanced with high contrast */}
+
+<section className="py-20 px-4 bg-gradient-to-br from-primary/5 to-primary/20 relative">
+  <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1531425566628-564f4b433a43?q=80&w=1932')] bg-cover bg-center opacity-15"></div>
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.4 }}
+    className="max-w-3xl mx-auto relative z-10"
+  >
+    <div className="card bg-white text-gray-800 shadow-lg rounded-2xl">
+      <div className="card-body p-10 text-center">
+        {/* Rating element */}
+      <div className="mb-4 flex justify-center items-center gap-2">
+        <span className="text-yellow-700 text-lg">★★★★★</span>
+        <span className="text-sm font-semibold text-gray-800">5.0 (1.2k+ reviews)</span>
+      </div>
+        
+        <h2 className="text-3xl font-bold mb-5">
+          Ready to Make a Difference?
+        </h2>
+        
+        <p className="mb-8 text-lg max-w-lg mx-auto leading-relaxed">
+          Join SustainaFood today and be part of our mission to reduce
+          food waste while helping communities in need.
+        </p>
+        
+        {user ? (
+          <div className="flex justify-center">
+            <Link
+              to="/dashboard"
+              className="btn btn-md bg-green-600 hover:bg-green-700 text-white gap-2 px-6"
+            >
+              Go to Dashboard <FiArrowRight />
+            </Link>
           </div>
-        </motion.div>
-      </section>
+        ) : (
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+           <Link 
+  to="/signup" 
+  className="btn btn-md bg-green-700 hover:bg-green-800 text-white gap-2 px-6 font-semibold"
+>
+  Sign Up Now <FiArrowRight />
+</Link>
+            <Link
+  to="/login"
+  className="btn btn-md border-2 border-gray-900 text-gray-900 bg-white hover:bg-gray-50 px-6 font-semibold"
+>
+  Login
+</Link>
+          </div>
+        )}
+      </div>
+    </div>
+  </motion.div>
+</section>
 
       <Footer />
     </>
