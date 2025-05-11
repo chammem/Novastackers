@@ -4,7 +4,7 @@ import HeaderMid from "./HeaderMid";
 import Footer from "./Footer";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import axiosInstance from "../config/axiosInstance";
+import axios from "axios";
 import {
   FiUsers,
   FiTruck,
@@ -18,16 +18,27 @@ function Home() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({ meals: 0, partners: 0, pounds: 0 });
+  const [error, setError] = useState(null);
 
   // Fetch user details
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const response = await axiosInstance.get("/user-details");
-        setUser(response.data.data);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('No authentication token found');
+          return;
+        }
+
+        const response = await axios.get('http://localhost:8082/api/auth/user', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setUser(response.data);
       } catch (error) {
-        console.error("Error fetching user details:", error);
-        toast.error("Failed to fetch user details.");
+        console.error('Error fetching user details:', error);
+        setError(error.response?.data?.message || 'Failed to fetch user details');
       } finally {
         setIsLoading(false);
       }

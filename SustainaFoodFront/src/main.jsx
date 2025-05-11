@@ -55,7 +55,8 @@ import AvailableFoodList from './components/AvailableFoodList.jsx';
 import FoodRecommendations from './components/FoodRecommendations.jsx';
 import MysteryPackList from "./components/MysteryPacks/MysteryPackList.jsx";
 import MysteryPackCard from "./components/MysteryPacks/MysteryPackCard.jsx";
-import { initializeCopyFeature } from './utils/modernCopy';
+import { initializeCopyFeature } from './utils/copyUtils';
+import TwoFactorAuth from './components/TwoFactorAuth';
 
 // Initialize modern copy functionality
 initializeCopyFeature();
@@ -103,6 +104,7 @@ const router = createBrowserRouter([
       { path: "order-confirmation/:foodId", element: <OrderConfirmationPage /> },
       { path: "order-success/:orderId", element: <OrderSuccessPage /> },
       { path: "order-payment", element: <OrderPaymentPage /> },
+      { path: "/2fa", element:<TwoFactorAuth /> },
 
       {
         element: <ProtectedRoute />,
