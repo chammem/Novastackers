@@ -1,48 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import axiosInstance from '../../config/axiosInstance';
-import HeaderMid from '../HeaderMid';
-import Footer from '../Footer';
-import { FiPackage, FiNavigation, FiCheckCircle, FiClock, FiBell, FiTruck, FiShoppingBag, FiCheck } from 'react-icons/fi';
-import { toast } from 'react-toastify';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNotifications } from '../../context/NotificationContext';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
+import axiosInstance from "../../config/axiosInstance";
+import HeaderMid from "../HeaderMid";
+import Footer from "../Footer";
+import {
+  FiPackage,
+  FiNavigation,
+  FiCheckCircle,
+  FiClock,
+  FiBell,
+  FiTruck,
+  FiShoppingBag,
+  FiCheck,
+} from "react-icons/fi";
+import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNotifications } from "../../context/NotificationContext";
+import DriverLocationInitializer from "./DriverLocationInitializer";
 
 const DriverDashboard = () => {
   const { user } = useAuth();
   const { unreadCount } = useNotifications();
   const [activeDeliveries, setActiveDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+  const [currentOrder, setCurrentOrder] = useState(null);
+
   // Code verification state
   const [showCodeModal, setShowCodeModal] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationCode, setVerificationCode] = useState("");
   const [selectedDelivery, setSelectedDelivery] = useState(null);
-  const [actionType, setActionType] = useState(''); // 'pickup' or 'delivery'
+  const [actionType, setActionType] = useState(""); // 'pickup' or 'delivery'
   const [inProgress, setInProgress] = useState(false);
-  
+
   useEffect(() => {
     if (!user || !user._id) return;
-    
+
     const fetchActiveDeliveries = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.get(`/driver/assignments/${user._id}`);
+        const response = await axiosInstance.get(
+          `/driver/assignments/${user._id}`
+        );
         setActiveDeliveries(response.data.assignments || []);
       } catch (error) {
-        console.error('Error fetching active deliveries:', error);
-        toast.error('Failed to load active deliveries');
+        console.error("Error fetching active deliveries:", error);
+        toast.error("Failed to load active deliveries");
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchActiveDeliveries();
-    
+
     // Refresh every 30 seconds
     const intervalId = setInterval(fetchActiveDeliveries, 30000);
-    
+
     return () => clearInterval(intervalId);
   }, [user]);
 
@@ -50,12 +63,14 @@ const DriverDashboard = () => {
     if (!user || !user._id) return;
     setLoading(true);
     try {
-      const response = await axiosInstance.get(`/driver/assignments/${user._id}`);
+      const response = await axiosInstance.get(
+        `/driver/assignments/${user._id}`
+      );
       setActiveDeliveries(response.data.assignments || []);
-      toast.success('Deliveries refreshed!');
+      toast.success("Deliveries refreshed!");
     } catch (error) {
-      console.error('Error refreshing deliveries:', error);
-      toast.error('Failed to refresh deliveries');
+      console.error("Error refreshing deliveries:", error);
+      toast.error("Failed to refresh deliveries");
     } finally {
       setLoading(false);
     }
@@ -66,20 +81,25 @@ const DriverDashboard = () => {
     setInProgress(true);
     setSelectedDelivery(delivery);
     try {
-      const response = await axiosInstance.post(`/driver/delivery/${delivery._id}/start`, {
-        driverId: user._id
-      });
-      
+      const response = await axiosInstance.post(
+        `/driver/delivery/${delivery._id}/start`,
+        {
+          driverId: user._id,
+        }
+      );
+
       if (response.data.success) {
-        toast.success('Pickup initiated. Get the code from the restaurant.');
-        setActionType('pickup');
+        toast.success("Pickup initiated. Get the code from the restaurant.");
+        setActionType("pickup");
         setShowCodeModal(true);
       } else {
-        toast.error(response.data.message || 'Failed to start pickup process');
+        toast.error(response.data.message || "Failed to start pickup process");
       }
     } catch (error) {
-      console.error('Error starting pickup:', error);
-      toast.error(error.response?.data?.message || 'Failed to start pickup process');
+      console.error("Error starting pickup:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to start pickup process"
+      );
     } finally {
       setInProgress(false);
     }
@@ -88,25 +108,30 @@ const DriverDashboard = () => {
   // Verify pickup code and start delivery
   const handleVerifyPickupCode = async () => {
     if (!selectedDelivery || !verificationCode) return;
-    
+
     setInProgress(true);
     try {
-      const response = await axiosInstance.post(`/driver/delivery/${selectedDelivery._id}/pickup`, {
-        driverId: user._id,
-        pickupCode: verificationCode
-      });
-      
+      const response = await axiosInstance.post(
+        `/driver/delivery/${selectedDelivery._id}/pickup`,
+        {
+          driverId: user._id,
+          pickupCode: verificationCode,
+        }
+      );
+
       if (response.data.success) {
-        toast.success('Pickup verified! You can now start delivering the order.');
+        toast.success(
+          "Pickup verified! You can now start delivering the order."
+        );
         setShowCodeModal(false);
-        setVerificationCode('');
+        setVerificationCode("");
         refreshDeliveries();
       } else {
-        toast.error(response.data.message || 'Invalid pickup code');
+        toast.error(response.data.message || "Invalid pickup code");
       }
     } catch (error) {
-      console.error('Error verifying pickup code:', error);
-      toast.error(error.response?.data?.message || 'Invalid pickup code');
+      console.error("Error verifying pickup code:", error);
+      toast.error(error.response?.data?.message || "Invalid pickup code");
     } finally {
       setInProgress(false);
     }
@@ -117,22 +142,31 @@ const DriverDashboard = () => {
     setInProgress(true);
     try {
       // First, generate the delivery code
-      const response = await axiosInstance.post(`/driver/delivery/${delivery._id}/complete/start`, {
-        driverId: user._id
-      });
-      
+      const response = await axiosInstance.post(
+        `/driver/delivery/${delivery._id}/complete/start`,
+        {
+          driverId: user._id,
+        }
+      );
+
       if (response.data.success) {
-        toast.success('Code sent to customer. Ask for the code to complete delivery.');
+        toast.success(
+          "Code sent to customer. Ask for the code to complete delivery."
+        );
         // Then show the code entry modal
         setSelectedDelivery(delivery);
-        setActionType('delivery');
+        setActionType("delivery");
         setShowCodeModal(true);
       } else {
-        toast.error(response.data.message || 'Failed to start delivery completion');
+        toast.error(
+          response.data.message || "Failed to start delivery completion"
+        );
       }
     } catch (error) {
-      console.error('Error starting delivery completion:', error);
-      toast.error(error.response?.data?.message || 'Failed to start delivery completion');
+      console.error("Error starting delivery completion:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to start delivery completion"
+      );
     } finally {
       setInProgress(false);
     }
@@ -141,25 +175,28 @@ const DriverDashboard = () => {
   // Verify delivery code
   const handleVerifyDeliveryCode = async () => {
     if (!selectedDelivery || !verificationCode) return;
-    
+
     setInProgress(true);
     try {
-      const response = await axiosInstance.post(`/driver/delivery/${selectedDelivery._id}/complete`, {
-        driverId: user._id,
-        deliveryCode: verificationCode
-      });
-      
+      const response = await axiosInstance.post(
+        `/driver/delivery/${selectedDelivery._id}/complete`,
+        {
+          driverId: user._id,
+          deliveryCode: verificationCode,
+        }
+      );
+
       if (response.data.success) {
-        toast.success('Delivery completed successfully!');
+        toast.success("Delivery completed successfully!");
         setShowCodeModal(false);
-        setVerificationCode('');
+        setVerificationCode("");
         refreshDeliveries();
       } else {
-        toast.error(response.data.message || 'Invalid delivery code');
+        toast.error(response.data.message || "Invalid delivery code");
       }
     } catch (error) {
-      console.error('Error verifying delivery code:', error);
-      toast.error(error.response?.data?.message || 'Invalid delivery code');
+      console.error("Error verifying delivery code:", error);
+      toast.error(error.response?.data?.message || "Invalid delivery code");
     } finally {
       setInProgress(false);
     }
@@ -167,7 +204,7 @@ const DriverDashboard = () => {
 
   // Handle verification for both pickup and delivery
   const handleVerifyCode = () => {
-    if (actionType === 'pickup') {
+    if (actionType === "pickup") {
       handleVerifyPickupCode();
     } else {
       handleVerifyDeliveryCode();
@@ -176,10 +213,10 @@ const DriverDashboard = () => {
 
   // Get appropriate action button based on delivery status
   const getActionButton = (delivery) => {
-    switch(delivery.deliveryStatus) {
-      case 'driver_assigned':
+    switch (delivery.deliveryStatus) {
+      case "driver_assigned":
         return (
-          <button 
+          <button
             className="btn btn-sm btn-primary"
             onClick={() => handleStartPickup(delivery)}
             disabled={inProgress}
@@ -187,9 +224,9 @@ const DriverDashboard = () => {
             <FiShoppingBag className="mr-1" /> Start Pickup
           </button>
         );
-      case 'pickup_ready':
+      case "pickup_ready":
         return (
-          <button 
+          <button
             className="btn btn-sm btn-primary"
             onClick={() => handleStartPickup(delivery)}
             disabled={inProgress}
@@ -197,9 +234,9 @@ const DriverDashboard = () => {
             <FiShoppingBag className="mr-1" /> Enter Pickup Code
           </button>
         );
-      case 'delivering':
+      case "delivering":
         return (
-          <button 
+          <button
             className="btn btn-sm btn-success"
             onClick={() => handleCompleteDelivery(delivery)}
             disabled={inProgress}
@@ -207,10 +244,8 @@ const DriverDashboard = () => {
             <FiCheckCircle className="mr-1" /> Complete Delivery
           </button>
         );
-      case 'delivered':
-        return (
-          <div className="badge badge-success">Delivered</div>
-        );
+      case "delivered":
+        return <div className="badge badge-success">Delivered</div>;
       default:
         return null;
     }
@@ -218,13 +253,21 @@ const DriverDashboard = () => {
 
   // Get readable status for display
   const getStatusText = (status) => {
-    switch(status) {
-      case 'driver_assigned': return 'Ready for Pickup';
-      case 'pickup_ready': return 'Awaiting Pickup';
-      case 'picked_up': return 'Picked Up';
-      case 'delivering': return 'Out for Delivery';
-      case 'delivered': return 'Delivered';
-      default: return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    switch (status) {
+      case "driver_assigned":
+        return "Ready for Pickup";
+      case "pickup_ready":
+        return "Awaiting Pickup";
+      case "picked_up":
+        return "Picked Up";
+      case "delivering":
+        return "Out for Delivery";
+      case "delivered":
+        return "Delivered";
+      default:
+        return status
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase());
     }
   };
 
@@ -246,30 +289,33 @@ const DriverDashboard = () => {
               Manage your deliveries and track your progress
             </p>
           </div>
-          
+
           <div className="flex gap-2">
-            <button 
-              onClick={refreshDeliveries} 
+            <button
+              onClick={refreshDeliveries}
               className="btn btn-outline btn-sm"
               disabled={loading}
             >
-              {loading ? <span className="loading loading-spinner loading-xs"></span> : 'Refresh'}
+              {loading ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                "Refresh"
+              )}
             </button>
-            <Link 
-              to="/requested-deliveries" 
-              className="btn btn-primary"
-            >
-              <FiBell /> 
+            <Link to="/requested-deliveries" className="btn btn-primary">
+              <FiBell />
               View Requests
               {unreadCount > 0 && (
-                <span className="badge badge-sm badge-accent">{unreadCount}</span>
+                <span className="badge badge-sm badge-accent">
+                  {unreadCount}
+                </span>
               )}
             </Link>
           </div>
         </motion.div>
 
         {/* Status Card */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -277,19 +323,25 @@ const DriverDashboard = () => {
         >
           <h2 className="font-medium text-base-content mb-2">Driver Status</h2>
           <div className="flex items-center">
-            <div className={`w-3 h-3 rounded-full mr-2 ${user?.status === 'available' ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-            <span className="font-medium">{user?.status === 'available' ? 'Available' : 'On Delivery'}</span>
+            <div
+              className={`w-3 h-3 rounded-full mr-2 ${
+                user?.status === "available" ? "bg-green-500" : "bg-blue-500"
+              }`}
+            ></div>
+            <span className="font-medium">
+              {user?.status === "available" ? "Available" : "On Delivery"}
+            </span>
           </div>
         </motion.div>
-        
+
         {/* Current Deliveries */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
           <h2 className="text-xl font-semibold mb-3">Current Deliveries</h2>
-          
+
           {loading ? (
             <div className="flex justify-center items-center py-20">
               <span className="loading loading-spinner loading-lg text-primary"></span>
@@ -297,7 +349,9 @@ const DriverDashboard = () => {
           ) : activeDeliveries.length === 0 ? (
             <div className="bg-base-100 rounded-lg shadow-md p-8 text-center">
               <FiPackage className="mx-auto text-base-300 mb-3" size={40} />
-              <p className="text-base-content/70">No active deliveries at the moment.</p>
+              <p className="text-base-content/70">
+                No active deliveries at the moment.
+              </p>
               <p className="text-sm text-base-content/50 mt-2">
                 Check the notifications page for new delivery requests.
               </p>
@@ -309,58 +363,74 @@ const DriverDashboard = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {activeDeliveries.map(delivery => (
-                <motion.div 
-                  key={delivery._id} 
+              {activeDeliveries.map((delivery) => (
+                <motion.div
+                  key={delivery._id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="card bg-base-100 shadow-md overflow-hidden"
                 >
                   <div className="bg-primary text-primary-content p-4">
                     <div className="flex justify-between items-center">
-                      <h3 className="font-medium">Order #{delivery._id.substr(-6)}</h3>
+                      <h3 className="font-medium">
+                        Order #{delivery._id.substr(-6)}
+                      </h3>
                       <span className="badge badge-outline badge-sm">
                         {getStatusText(delivery.deliveryStatus)}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="p-4">
                     {delivery.user && (
                       <div className="mb-3">
                         <p className="text-sm text-base-content/70">Customer</p>
-                        <p className="font-medium">{delivery.user?.fullName || 'Customer'}</p>
+                        <p className="font-medium">
+                          {delivery.user?.fullName || "Customer"}
+                        </p>
                       </div>
                     )}
-                    
+
                     <div className="mb-3">
-                      <p className="text-sm text-base-content/70">Delivery Address</p>
+                      <p className="text-sm text-base-content/70">
+                        Delivery Address
+                      </p>
                       <p className="font-medium">
-                        {delivery.deliveryAddress?.street}, {delivery.deliveryAddress?.city}
+                        {delivery.deliveryAddress?.street},{" "}
+                        {delivery.deliveryAddress?.city}
                       </p>
                     </div>
-                    
+
                     <div className="mb-3">
                       <p className="text-sm text-base-content/70">Order</p>
-                      <p className="font-medium">{delivery.quantity}x {delivery.foodSale?.name || 'Food Item'}</p>
-                      <p className="text-sm">${delivery.totalPrice?.toFixed(2) || '0.00'}</p>
+                      <p className="font-medium">
+                        {delivery.quantity}x{" "}
+                        {delivery.foodSale?.name || "Food Item"}
+                      </p>
+                      <p className="text-sm">
+                        ${delivery.totalPrice?.toFixed(2) || "0.00"}
+                      </p>
                     </div>
-                    
+
                     {delivery.specialInstructions && (
                       <div className="mb-3">
-                        <p className="text-sm text-base-content/70">Special Instructions</p>
-                        <p className="italic text-sm">{delivery.specialInstructions}</p>
+                        <p className="text-sm text-base-content/70">
+                          Special Instructions
+                        </p>
+                        <p className="italic text-sm">
+                          {delivery.specialInstructions}
+                        </p>
                       </div>
                     )}
-                    
+
                     <div className="flex justify-between mt-4">
-                      <Link 
+                      <Link
                         to={`/delivery-route/${delivery._id}`}
                         className="btn btn-sm btn-outline"
                       >
                         <FiNavigation className="mr-1" /> View Route
                       </Link>
-                      
+
                       {getActionButton(delivery)}
                     </div>
                   </div>
@@ -370,7 +440,10 @@ const DriverDashboard = () => {
           )}
         </motion.div>
       </div>
-      
+
+      {/* Initialize driver location */}
+      <DriverLocationInitializer orderId={currentOrder?._id} />
+
       {/* Verification Code Modal */}
       <AnimatePresence>
         {showCodeModal && (
@@ -384,7 +457,7 @@ const DriverDashboard = () => {
             >
               <div className="flex justify-center mb-6">
                 <div className="w-16 h-16 flex items-center justify-center rounded-full bg-primary/10 text-primary">
-                  {actionType === 'pickup' ? (
+                  {actionType === "pickup" ? (
                     <FiShoppingBag className="w-8 h-8" />
                   ) : (
                     <FiCheck className="w-8 h-8" />
@@ -392,12 +465,12 @@ const DriverDashboard = () => {
                 </div>
               </div>
               <h3 className="font-bold text-xl text-center">
-                Enter {actionType === 'pickup' ? 'Pickup' : 'Delivery'} Code
+                Enter {actionType === "pickup" ? "Pickup" : "Delivery"} Code
               </h3>
               <p className="py-4 text-center">
-                {actionType === 'pickup' 
-                  ? 'Please enter the pickup code provided by the restaurant.' 
-                  : 'Please enter the delivery code provided by the customer.'}
+                {actionType === "pickup"
+                  ? "Please enter the pickup code provided by the restaurant."
+                  : "Please enter the delivery code provided by the customer."}
               </p>
               <div className="form-control w-full max-w-xs mx-auto">
                 <input
@@ -410,10 +483,13 @@ const DriverDashboard = () => {
                 />
               </div>
               <div className="modal-action">
-                <button className="btn" onClick={() => {
-                  setShowCodeModal(false);
-                  setVerificationCode('');
-                }}>
+                <button
+                  className="btn"
+                  onClick={() => {
+                    setShowCodeModal(false);
+                    setVerificationCode("");
+                  }}
+                >
                   Cancel
                 </button>
                 <button
@@ -438,21 +514,3 @@ const DriverDashboard = () => {
 };
 
 export default DriverDashboard;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

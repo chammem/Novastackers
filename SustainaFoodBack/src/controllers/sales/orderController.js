@@ -544,3 +544,117 @@ exports.getOrderCoordinates = async (req, res) => {
     });
   }
 };
+
+// Add this function to your orderController
+exports.getOrderTrackingData = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    
+    // Find the order
+    const order = await Order.findById(orderId)
+      .populate('assignedDriver')
+      .populate({
+        path: 'foodSale',
+        populate: {
+          path: 'foodItem',
+          populate: 'buisiness_id'
+        }
+      });
+    
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+    
+    // For now, return default demo locations
+    // Later you can replace these with actual data from your database
+    const trackingData = {
+      driverLocation: {
+        lat: 36.8065,
+        lng: 10.1815, // Default Tunis coordinates
+        timestamp: new Date()
+      },
+      restaurantLocation: {
+        lat: 36.8125,
+        lng: 10.1765 // Nearby coordinates
+      },
+      deliveryLocation: {
+        lat: 36.8015,
+        lng: 10.1865 // Nearby coordinates
+      }
+    };
+    
+    return res.status(200).json({
+      success: true,
+      data: trackingData
+    });
+    
+  } catch (error) {
+    console.error('Error fetching tracking data:', error);
+    return res.status(500).json({
+      success: false, 
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
+
+// Add this function to your existing controller
+exports.getOrderLocations = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    
+    // Find the order with related data
+    const order = await Order.findById(orderId)
+      .populate({
+        path: 'foodSale',
+        populate: {
+          path: 'foodItem',
+          populate: 'buisiness_id'
+        }
+      });
+    
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+    
+    // Extract delivery address location
+    const deliveryLocation = order.deliveryAddress ? {
+      lat: order.deliveryAddress.lat,
+      lng: order.deliveryAddress.lng,
+      address: `${order.deliveryAddress.street}, ${order.deliveryAddress.city}`
+    } : null;
+    
+    // Extract restaurant location
+    let restaurantLocation = null;
+    if (order.foodSale?.foodItem?.buisiness_id) {
+      const business = order.foodSale.foodItem.buisiness_id;
+      restaurantLocation = {
+        lat: business.lat,
+        lng: business.lng,
+        name: business.fullName || business.restaurantName || "Restaurant"
+      };
+    }
+    
+    return res.status(200).json({
+      success: true,
+      data: {
+        restaurantLocation,
+        deliveryLocation
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error fetching order locations:', error);
+    return res.status(500).json({
+      success: false, 
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};

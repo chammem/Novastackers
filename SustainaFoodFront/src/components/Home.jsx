@@ -108,7 +108,7 @@ function Home() {
 
               {/* Account Activation Alert */}
               {user &&
-                (user.role === "restaurant" || user.role === "volunteer") &&
+                (user.role === "restaurant" || user.role === "volunteer" || user.role ==="driver") &&
                 !user.isActive && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}

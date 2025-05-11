@@ -84,7 +84,16 @@ const userSchema = new Schema(
       enum: ['small', 'medium', 'large'],
       default: 'small'
     },
-
+    currentLocation: {
+    lat: {
+      type: Number,
+      default: null
+    },
+    lng: {
+      type: Number,
+      default: null
+    }
+  },
 
     // volunteer/driver maybe 
     availability: {

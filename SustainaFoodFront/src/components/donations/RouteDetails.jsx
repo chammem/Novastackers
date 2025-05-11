@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MapView2 from "../MapView2";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMapPin, FiBox, FiHome, FiInfo, FiNavigation } from "react-icons/fi";
+import { useAuth } from "../../context/AuthContext"; // Import auth context
 
 const RouteDetails = ({ food, destinationUser, userLocation }) => {
+  const { user } = useAuth(); // Get current user
   const isPickup = food.status === "assigned" || food.status === "pending";
   const [transportMode, setTransportMode] = useState("driving-car");
   const destinationAvailable =
@@ -16,6 +18,31 @@ const RouteDetails = ({ food, destinationUser, userLocation }) => {
     { value: "foot-walking", label: "Walking", emoji: "🚶" },
     { value: "cycling-electric", label: "Scooter", emoji: "🛵" },
   ];
+
+  // Map user transport type to route transport mode on component mount
+  useEffect(() => {
+    if (user?.transportType) {
+      switch (user.transportType) {
+        case "walking":
+          setTransportMode("foot-walking");
+          break;
+        case "bicycle":
+          setTransportMode("cycling-regular");
+          break;
+        case "motor":
+          setTransportMode("cycling-electric");
+          break;
+        case "car":
+        case "truck":
+          setTransportMode("driving-car");
+          break;
+        default:
+          // Keep default "driving-car"
+          break;
+      }
+      console.log(`Set transport mode to ${transportMode} based on user preference: ${user.transportType}`);
+    }
+  }, [user]);
 
   // Get status badge color based on food status
   const getStatusColor = (status) => {
@@ -152,7 +179,14 @@ const RouteDetails = ({ food, destinationUser, userLocation }) => {
             >
               <div className="flex items-center gap-2 mb-3">
                 <FiNavigation className="text-primary" size={20} />
-                <h3 className="text-lg font-semibold">Select Transport Mode</h3>
+                <h3 className="text-lg font-semibold">
+                  Transport Mode
+                  {user?.transportType && (
+                    <span className="ml-2 text-sm font-normal text-base-content/60">
+                      (Default: {user.transportType})
+                    </span>
+                  )}
+                </h3>
               </div>
 
               <div className="flex flex-wrap gap-2">

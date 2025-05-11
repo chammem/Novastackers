@@ -529,7 +529,10 @@ exports.detectNearbyOrders = async (req, res) => {
     for (const order of nearbyOrders) {
       // Check if the pickup location is near the current pickup location
       const isPickupNearby = geolib.isPointWithinRadius(
-        { latitude: order.deliveryAddress.lat, longitude: order.deliveryAddress.lng },
+        {
+          latitude: order.deliveryAddress.lat,
+          longitude: order.deliveryAddress.lng,
+        },
         { latitude: currentPickup.lat, longitude: currentPickup.lng },
         radius
       );
@@ -537,10 +540,19 @@ exports.detectNearbyOrders = async (req, res) => {
       if (!isPickupNearby) continue;
 
       // Check if the delivery location is along the same route
-      const currentRoute = await routeOptimizer.getRoute(currentPickup, currentDelivery);
-      const newRoute = await routeOptimizer.getRoute(currentPickup, order.deliveryAddress);
+      const currentRoute = await routeOptimizer.getRoute(
+        currentPickup,
+        currentDelivery
+      );
+      const newRoute = await routeOptimizer.getRoute(
+        currentPickup,
+        order.deliveryAddress
+      );
 
-      const isSameDirection = routeOptimizer.isSameDirection(currentRoute, newRoute);
+      const isSameDirection = routeOptimizer.isSameDirection(
+        currentRoute,
+        newRoute
+      );
 
       if (isSameDirection) {
         validOrders.push(order);
@@ -550,7 +562,9 @@ exports.detectNearbyOrders = async (req, res) => {
     return res.status(200).json({ success: true, orders: validOrders });
   } catch (error) {
     console.error("Error detecting nearby orders:", error);
-    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
   }
 };
 
@@ -560,54 +574,56 @@ exports.detectNearbyOrders = async (req, res) => {
 exports.getDriverDeliveriesForMap = async (req, res) => {
   try {
     const { driverId } = req.params;
-    
+
     // Check if driver exists
     const driver = await User.findById(driverId);
     if (!driver) {
       return res.status(404).json({
         success: false,
-        message: "Driver not found"
+        message: "Driver not found",
       });
     }
-    
+
     // Get driver's current location
     if (!driver.lat || !driver.lng) {
       return res.status(400).json({
         success: false,
-        message: "Driver location not available"
+        message: "Driver location not available",
       });
     }
-    
+
     // Get all active deliveries for the driver
     const deliveries = await Order.find({
       assignedDriver: driverId,
-      deliveryStatus: { 
-        $in: ["driver_assigned", "pickup_ready", "picked_up", "delivering"] 
-      }
-    }).populate({
-      path: "foodSale",
-      populate: {
-        path: "foodItem",
+      deliveryStatus: {
+        $in: ["driver_assigned", "pickup_ready", "picked_up", "delivering"],
+      },
+    })
+      .populate({
+        path: "foodSale",
         populate: {
-          path: "buisiness_id", 
-          select: "fullName lat lng"
-        }
-      }
-    }).populate("user", "fullName")
-    .lean();
-    
+          path: "foodItem",
+          populate: {
+            path: "buisiness_id",
+            select: "fullName lat lng",
+          },
+        },
+      })
+      .populate("user", "fullName")
+      .lean();
+
     if (deliveries.length === 0) {
       return res.status(200).json({
         success: true,
         message: "No active deliveries",
-        data: []
+        data: [],
       });
     }
-    
+
     // Process deliveries to include business location and delivery location
-    const processedDeliveries = deliveries.map(delivery => {
+    const processedDeliveries = deliveries.map((delivery) => {
       const businessDetails = delivery.foodSale?.foodItem?.buisiness_id || {};
-      
+
       return {
         _id: delivery._id,
         deliveryStatus: delivery.deliveryStatus,
@@ -621,41 +637,44 @@ exports.getDriverDeliveriesForMap = async (req, res) => {
             fullName: businessDetails.fullName || "Restaurant",
             location: {
               lat: businessDetails.lat || null,
-              lng: businessDetails.lng || null
-            }
-          }
-        }
+              lng: businessDetails.lng || null,
+            },
+          },
+        },
       };
     });
-    
+
     // Filter out any deliveries missing critical location data
-    const validDeliveries = processedDeliveries.filter(delivery => {
-      const hasBusinessLocation = delivery.foodSale?.businessDetails?.location?.lat && 
-                                 delivery.foodSale?.businessDetails?.location?.lng;
-      
-      const hasDeliveryLocation = delivery.deliveryAddress?.lat && 
-                                 delivery.deliveryAddress?.lng;
-      
+    const validDeliveries = processedDeliveries.filter((delivery) => {
+      const hasBusinessLocation =
+        delivery.foodSale?.businessDetails?.location?.lat &&
+        delivery.foodSale?.businessDetails?.location?.lng;
+
+      const hasDeliveryLocation =
+        delivery.deliveryAddress?.lat && delivery.deliveryAddress?.lng;
+
       // Keep if it has at least one valid location based on delivery status
-      if (delivery.deliveryStatus === "driver_assigned" || delivery.deliveryStatus === "pickup_ready") {
+      if (
+        delivery.deliveryStatus === "driver_assigned" ||
+        delivery.deliveryStatus === "pickup_ready"
+      ) {
         return hasBusinessLocation; // Need business location for pickup
       } else {
         return hasDeliveryLocation; // Need delivery location for delivery
       }
     });
-    
+
     return res.status(200).json({
       success: true,
       data: validDeliveries,
-      driverLocation: [driver.lat, driver.lng]
+      driverLocation: [driver.lat, driver.lng],
     });
-    
   } catch (error) {
     console.error("Error fetching driver deliveries for map:", error);
     return res.status(500).json({
       success: false,
       message: "Server error",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -663,67 +682,74 @@ exports.getDriverDeliveriesForMap = async (req, res) => {
 exports.getDriverRouteOptimization = async (req, res) => {
   try {
     const { driverId } = req.params;
-    
+
     // Get driver's current location
     const driver = await User.findById(driverId);
     if (!driver || !driver.lat || !driver.lng) {
       return res.status(400).json({
         success: false,
-        message: "Driver location not available"
+        message: "Driver location not available",
       });
     }
-    
+
     // Get all active deliveries for the driver
     const activeDeliveries = await Order.find({
       assignedDriver: driverId,
-      deliveryStatus: { $in: ["driver_assigned", "pickup_ready", "picked_up", "delivering"] }
+      deliveryStatus: {
+        $in: ["driver_assigned", "pickup_ready", "picked_up", "delivering"],
+      },
     }).populate({
       path: "foodSale",
       populate: {
         path: "foodItem",
         populate: {
           path: "buisiness_id",
-          select: "lat lng fullName"
-        }
-      }
+          select: "lat lng fullName",
+        },
+      },
     });
-    
+
     if (activeDeliveries.length === 0) {
       return res.status(200).json({
         success: true,
         message: "No active deliveries",
         route: {
           directMode: true,
-          stops: [{
-            type: "driver",
-            location: [driver.lng, driver.lat], // [lng, lat] format for ORS
-            businessName: "Your Location",
-            description: "Current location"
-          }]
-        }
+          stops: [
+            {
+              type: "driver",
+              location: [driver.lng, driver.lat], // [lng, lat] format for ORS
+              businessName: "Your Location",
+              description: "Current location",
+            },
+          ],
+        },
       });
     }
-    
+
     // Collect all stops
     const points = [];
     const stops = [];
-    
+
     // Add driver current location as start point
     points.push([driver.lng, driver.lat]);
     stops.push({
       type: "driver",
       location: [driver.lng, driver.lat],
       businessName: "Your Location",
-      description: "Current location"
+      description: "Current location",
     });
-    
+
     // Separate pickups and deliveries
     const pickupStops = [];
     const deliveryStops = [];
-    
-    activeDeliveries.forEach(delivery => {
+
+    activeDeliveries.forEach((delivery) => {
       // Add restaurant/business location for orders that need pickup
-      if (delivery.deliveryStatus === "driver_assigned" || delivery.deliveryStatus === "pickup_ready") {
+      if (
+        delivery.deliveryStatus === "driver_assigned" ||
+        delivery.deliveryStatus === "pickup_ready"
+      ) {
         const business = delivery.foodSale?.foodItem?.buisiness_id;
         if (business && business.lat && business.lng) {
           points.push([business.lng, business.lat]);
@@ -733,41 +759,58 @@ exports.getDriverRouteOptimization = async (req, res) => {
             businessName: business.fullName,
             description: "Restaurant pickup",
             orderId: delivery._id,
-            items: [{
-              _id: delivery._id,
-              name: delivery.foodSale?.foodItem?.name || "Food item",
-              status: delivery.deliveryStatus
-            }]
+            items: [
+              {
+                _id: delivery._id,
+                name: delivery.foodSale?.foodItem?.name || "Food item",
+                status: delivery.deliveryStatus,
+              },
+            ],
           });
         }
       }
-      
+
       // Add customer locations for all deliveries
-      if (delivery.deliveryAddress && delivery.deliveryAddress.lat && delivery.deliveryAddress.lng) {
-        points.push([delivery.deliveryAddress.lng, delivery.deliveryAddress.lat]);
+      if (
+        delivery.deliveryAddress &&
+        delivery.deliveryAddress.lat &&
+        delivery.deliveryAddress.lng
+      ) {
+        points.push([
+          delivery.deliveryAddress.lng,
+          delivery.deliveryAddress.lat,
+        ]);
         deliveryStops.push({
           type: "delivery",
-          location: [delivery.deliveryAddress.lng, delivery.deliveryAddress.lat],
+          location: [
+            delivery.deliveryAddress.lng,
+            delivery.deliveryAddress.lat,
+          ],
           businessName: delivery.user?.fullName || "Customer",
           description: `${delivery.deliveryAddress.street}, ${delivery.deliveryAddress.city}`,
           orderId: delivery._id,
-          items: [{
-            _id: delivery._id,
-            name: delivery.foodSale?.foodItem?.name || "Food item",
-            status: delivery.deliveryStatus
-          }]
+          items: [
+            {
+              _id: delivery._id,
+              name: delivery.foodSale?.foodItem?.name || "Food item",
+              status: delivery.deliveryStatus,
+            },
+          ],
         });
       }
     });
-    
+
     // Sort stops to prioritize pickups before deliveries
     stops.push(...pickupStops, ...deliveryStops);
-    
+
     // Optimize the route if there are multiple stops
     if (points.length > 2) {
       try {
-        const optimizedRoute = await routeOptimizer.optimizeRoute(points, "driving-car");
-        
+        const optimizedRoute = await routeOptimizer.optimizeRoute(
+          points,
+          "driving-car"
+        );
+
         return res.status(200).json({
           success: true,
           route: {
@@ -775,19 +818,19 @@ exports.getDriverRouteOptimization = async (req, res) => {
             stops: stops,
             segments: optimizedRoute.route.segments,
             totalDistance: optimizedRoute.totalDistance,
-            totalDuration: optimizedRoute.route.totalDuration
-          }
+            totalDuration: optimizedRoute.route.totalDuration,
+          },
         });
       } catch (error) {
         console.error("Route optimization error:", error);
-        
+
         // Fallback to direct mode if optimization fails
         return res.status(200).json({
           success: true,
           route: {
             directMode: true,
-            stops: stops
-          }
+            stops: stops,
+          },
         });
       }
     } else {
@@ -796,8 +839,8 @@ exports.getDriverRouteOptimization = async (req, res) => {
         success: true,
         route: {
           directMode: true,
-          stops: stops
-        }
+          stops: stops,
+        },
       });
     }
   } catch (error) {
@@ -805,7 +848,123 @@ exports.getDriverRouteOptimization = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error",
-      error: error.message
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Get the current location of a driver for a specific order
+ */
+exports.getDriverLocation = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (!order.assignedDriver) {
+      return res.status(404).json({
+        success: false,
+        message: "No driver assigned to this order",
+      });
+    }
+
+    const driver = await User.findById(order.assignedDriver);
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver not found",
+      });
+    }
+
+    // Return the driver's current location or fallback coordinates
+    return res.status(200).json({
+      success: true,
+      driverLocation:
+        driver.currentLocation?.lat && driver.currentLocation?.lng
+          ? {
+              lat: driver.currentLocation.lat,
+              lng: driver.currentLocation.lng,
+            }
+          : {
+              lat: 36.8075, // Fallback location near the middle of restaurant and delivery
+              lng: 10.1815,
+            },
+      driverDetails: {
+        name: driver.fullName || "Driver",
+        phone: driver.phone,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting driver location:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Update driver location
+ */
+exports.updateDriverLocation = async (req, res) => {
+  try {
+    const { driverId } = req.params;
+    const { lat, lng, orderId } = req.body;
+
+    if (!lat || !lng) {
+      return res.status(400).json({
+        success: false,
+        message: "Location coordinates are required",
+      });
+    }
+
+    // Update driver location in database regardless of orderId
+    const driver = await User.findByIdAndUpdate(
+      driverId,
+      {
+        $set: {
+          "currentLocation.lat": lat,
+          "currentLocation.lng": lng,
+        },
+      },
+      { new: true }
+    );
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver not found",
+      });
+    }
+
+    // If orderId is provided, emit to that specific order room
+    if (req.io && orderId) {
+      req.io.to(`order-${orderId}`).emit("driver-location-update", {
+        orderId,
+        driverId,
+        location: { lat, lng },
+        timestamp: new Date(),
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Location updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating driver location:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
     });
   }
 };
