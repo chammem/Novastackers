@@ -63,7 +63,16 @@ exports.addFoodToDonation = async (req, res) => {
     }
     donation.foods.push(Food);
 
+    // Update impact score immediately
+    const foodItems = await FoodItem.find({ donationId });
+    const itemCount = foodItems.length;
+    
+    // Basic impact score update (simpler than the full calculation)
+    donation.impactScore = Math.min(100, itemCount * 5);
+    console.log(`Updated impact score to ${donation.impactScore} after adding food item`);
+
     await donation.save();
+    
     res.status(201).json(donation);
   } catch (error) {
     res.status(500).json({ message: "Error adding food item", error });
@@ -712,3 +721,185 @@ exports.deleteDonation = async (req, res) => {
     });
   }
 };
+
+// Update a donation campaign
+exports.updateDonation = async (req, res) => {
+  try {
+    const donationId = req.params.id;
+    const { name, description, location, startingDate, endingDate, status } = req.body;
+    
+    // Vérifier que la donation existe
+    const donation = await FoodDonation.findById(donationId);
+    if (!donation) {
+      return res.status(404).json({ success: false, message: "Donation not found" });
+    }
+    
+    // Préparer les données de mise à jour
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (description) updateData.description = description;
+    if (location) updateData.location = location;
+    if (startingDate) updateData.startingDate = startingDate;
+    if (endingDate) updateData.endingDate = endingDate;
+    if (status) updateData.status = status;
+    
+    // Traiter l'image si elle est fournie
+    if (req.files && req.files.image && req.files.image[0]) {
+      // Supprimer l'ancienne image si elle existe
+      if (donation.imageUrl) {
+        const fs = require('fs');
+        const path = require('path');
+        const oldImagePath = path.join(__dirname, '../../../', donation.imageUrl);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      
+      // Ajouter la nouvelle image
+      updateData.imageUrl = `uploads/${req.files.image[0].filename}`;
+    }
+    
+    // Mettre à jour la donation
+    const updatedDonation = await FoodDonation.findByIdAndUpdate(
+      donationId,
+      updateData,
+      { new: true, runValidators: true }
+    ).populate("ngoId", "fullName");
+    
+    return res.status(200).json({
+      success: true,
+      message: "Donation updated successfully",
+      data: updatedDonation
+    });
+    
+  } catch (error) {
+    console.error("Error updating donation:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update donation",
+      error: error.message
+    });
+  }
+};
+
+exports.forceUpdateMetrics = async (req, res) => {
+  try {
+    const { donationId } = req.params;
+    console.log(`Force update requested for donation: ${donationId}`);
+    
+    // Find the donation first to make sure it exists
+    const donation = await FoodDonation.findById(donationId);
+    if (!donation) {
+      return res.status(404).json({ success: false, message: 'Donation not found' });
+    }
+    
+    // Enhanced impact score calculation with multiple factors
+    const foodItems = await FoodItem.find({ donationId });
+    console.log(`Found ${foodItems.length} food items for this campaign`);
+    
+    // Base calculation: count of items
+    const itemCount = foodItems.length;
+    
+    // Factor 1: Food quantity/size value
+    let sizeValue = 0;
+    foodItems.forEach(item => {
+      if (item.quantity) {
+        sizeValue += item.quantity;
+      } else {
+        // Add points based on size if quantity not specified
+        switch(item.size) {
+          case 'large': sizeValue += 5; break;
+          case 'medium': sizeValue += 3; break; 
+          case 'small': sizeValue += 1; break;
+          default: sizeValue += 1;
+        }
+      }
+    });
+    
+    // Factor 2: Food category diversity (nutritional value)
+    const uniqueCategories = new Set();
+    foodItems.forEach(item => {
+      if (item.category) uniqueCategories.add(item.category);
+    });
+    const categoryDiversityBonus = uniqueCategories.size * 3; // 3 points per unique category
+    
+    // Factor 3: Recency bonus (items added recently have more impact)
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const recentItems = foodItems.filter(item => 
+      item.created_at && new Date(item.created_at) >= oneWeekAgo
+    ).length;
+    const recencyBonus = Math.min(20, recentItems * 2); // Up to 20 points for recent items
+    
+    // Calculate final impact score with all factors
+    const baseScore = itemCount * 2; // 2 points per item
+    const sizeBonus = Math.min(25, sizeValue); // Cap size bonus at 25
+    
+    // Total score calculation with all factors
+    const rawImpactScore = baseScore + sizeBonus + categoryDiversityBonus + recencyBonus;
+    const impactScore = Math.min(100, Math.round(rawImpactScore));
+    
+    console.log(`Impact score breakdown:
+      - Base (items): ${baseScore}
+      - Size/quantity bonus: ${sizeBonus}
+      - Category diversity: ${categoryDiversityBonus}
+      - Recency bonus: ${recencyBonus}
+      - Total capped score: ${impactScore}`);
+    
+    const metrics = {
+      campaignId: donationId,
+      impactScore: impactScore,
+      itemsCount: itemCount,
+      breakdown: {
+        baseScore,
+        sizeBonus,
+        categoryDiversityBonus,
+        recencyBonus
+      },
+      lastCalculated: new Date()
+    };
+    
+    // IMPORTANT: Save the impact score to the donation document
+    // This ensures it's available when the donation is fetched
+    donation.impactScore = impactScore;
+    await donation.save();
+    console.log(`Saved impact score ${impactScore} to donation ${donationId}`);
+    
+    // Also look for a CampaignMetrics document and update it if it exists
+    try {
+      const CampaignMetrics = mongoose.model('CampaignMetrics');
+      const campaignMetrics = await CampaignMetrics.findOneAndUpdate(
+        { campaignId: donationId },
+        { 
+          impactScore,
+          itemsCount,
+          donorsCount: itemCount > 0 ? Math.ceil(itemCount / 3) : 0, // estimate
+          foodCollected: sizeValue,
+          donationsCount: itemCount,
+          lastUpdated: new Date()
+        },
+        { upsert: true, new: true }
+      );
+      console.log(`Updated campaign metrics record: ${campaignMetrics._id}`);
+    } catch (metricsError) {
+      console.log('No CampaignMetrics model found, skipping metrics record update');
+    }
+    
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Impact score calculated and saved successfully',
+      metrics 
+    });
+  } catch (error) {
+    console.error('Error calculating impact score:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Failed to calculate impact score', 
+      error: error.message 
+    });
+  }
+};
+
+/**
+ * Get all food items with pagination, filtering and sorting options
+ */

@@ -182,34 +182,153 @@ const MyFoodDonations = () => {
             </motion.div>
           </motion.div>
 
-          {/* Status Tabs */}
+          {/* Ultra-Creative Status Tabs with 3D effects and animations */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.4 }}
-            className="tabs tabs-boxed bg-base-100 p-1 mb-6 flex justify-start overflow-x-auto"
+            className="mb-10 perspective-1000 relative"
           >
-            {Object.entries({
-              all: 'All Items',
-              pending: 'Pending',
-              'picked-up': 'In Transit',
-              delivered: 'Delivered'
-            }).map(([status, label]) => (
-              <motion.a
-                key={status}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`tab gap-2 ${statusFilter === status ? 'tab-active' : ''}`}
-                onClick={() => setStatusFilter(status)}
-              >
-                {status === 'all' && <FiPackage />}
-                {status === 'pending' && <FiClock />}
-                {status === 'picked-up' && <FiTruck />}
-                {status === 'delivered' && <FiCheckCircle />}
-                {label} 
-                <span className="badge badge-sm">{statusCounts[status] || 0}</span>
-              </motion.a>
-            ))}
+            {/* Decorative background elements */}
+            <div className="absolute -top-5 -left-5 w-20 h-20 bg-green-50 rounded-full mix-blend-multiply filter blur-xl opacity-70"></div>
+            <div className="absolute -bottom-5 -right-5 w-20 h-20 bg-blue-50 rounded-full mix-blend-multiply filter blur-xl opacity-70"></div>
+            
+            <div className="bg-white rounded-2xl p-3 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden border border-gray-100 relative z-10">
+              {/* Background pattern */}
+              <div className="absolute inset-0 opacity-5 pointer-events-none">
+                <div className="absolute right-0 bottom-0 w-64 h-64 border-8 border-green-600 rounded-full transform translate-x-1/3 translate-y-1/3"></div>
+                <div className="absolute left-1/4 top-0 w-16 h-16 border-4 border-blue-600 rounded-full transform -translate-y-1/2"></div>
+              </div>
+              
+              <div className="flex flex-wrap md:flex-nowrap relative z-10">
+                {Object.entries({
+                  all: 'All Items',
+                  pending: 'Pending',
+                  'picked-up': 'In Transit',
+                  delivered: 'Delivered'
+                }).map(([status, label]) => (
+                  <motion.div
+                    key={status}
+                    className="relative flex-1 min-w-[120px] p-1"
+                    whileHover={{ scale: 1.02, z: 1 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <motion.button
+                      onClick={() => setStatusFilter(status)}
+                      className={`w-full py-4 px-2 rounded-xl relative z-10 transition-all duration-300 overflow-hidden ${
+                        statusFilter === status 
+                          ? 'text-white font-medium shadow-lg' 
+                          : 'text-gray-600 hover:text-gray-800 bg-gray-50 hover:bg-gray-100'
+                      }`}
+                      whileHover={{ 
+                        boxShadow: statusFilter !== status ? "0 4px 12px rgba(0,0,0,0.05)" : "0 8px 25px rgba(0,0,0,0.15)" 
+                      }}
+                    >
+                      {/* Background gradient when active */}
+                      {statusFilter === status && (
+                        <motion.div 
+                          layoutId="activeTabBackground"
+                          className="absolute inset-0 rounded-xl"
+                          style={{
+                            background: status === 'all' 
+                              ? 'linear-gradient(135deg, #4ade80, #22c55e)' 
+                              : status === 'pending' 
+                              ? 'linear-gradient(135deg, #60a5fa, #3b82f6)' 
+                              : status === 'picked-up' 
+                              ? 'linear-gradient(135deg, #facc15, #eab308)' 
+                              : 'linear-gradient(135deg, #4ade80, #22c55e)'
+                          }}
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                      
+                      {/* Subtle animated particles */}
+                      {statusFilter === status && (
+                        <>
+                          <motion.div 
+                            className="absolute right-3 top-2 w-2 h-2 rounded-full bg-white/30"
+                            animate={{ y: [0, -10, 0], opacity: [0.3, 0.7, 0.3] }}
+                            transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
+                          />
+                          <motion.div 
+                            className="absolute right-8 bottom-2 w-1.5 h-1.5 rounded-full bg-white/20"
+                            animate={{ y: [0, -7, 0], opacity: [0.2, 0.5, 0.2] }}
+                            transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}
+                          />
+                          <motion.div 
+                            className="absolute left-5 bottom-3 w-1 h-1 rounded-full bg-white/30"
+                            animate={{ y: [0, -5, 0], opacity: [0.3, 0.6, 0.3] }}
+                            transition={{ duration: 2.2, repeat: Infinity, delay: 0.8 }}
+                          />
+                        </>
+                      )}
+                      
+                      <div className="flex flex-col items-center justify-center gap-2 relative z-10">
+                        {/* Enhanced icon container with subtle animations */}
+                        <motion.div 
+                          className={`w-12 h-12 rounded-full flex items-center justify-center relative ${
+                            statusFilter === status
+                              ? 'bg-white/20'
+                              : 'bg-white'
+                          }`}
+                          animate={statusFilter === status ? {
+                            boxShadow: ["0 0 0 0 rgba(255,255,255,0.3)", "0 0 0 8px rgba(255,255,255,0)", "0 0 0 0 rgba(255,255,255,0)"],
+                          } : {}}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          {/* Icon based on status */}
+                          {status === 'all' && (
+                            <motion.div
+                              animate={statusFilter === status ? { rotate: [0, 10, -10, 0] } : {}}
+                              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            >
+                              <FiPackage className={`w-5 h-5 ${statusFilter === status ? 'text-white' : 'text-gray-500'}`} />
+                            </motion.div>
+                          )}
+                          {status === 'pending' && (
+                            <motion.div
+                              animate={statusFilter === status ? { scale: [1, 1.1, 1] } : {}}
+                              transition={{ duration: 2, repeat: Infinity }}
+                            >
+                              <FiClock className={`w-5 h-5 ${statusFilter === status ? 'text-white' : 'text-gray-500'}`} />
+                            </motion.div>
+                          )}
+                          {status === 'picked-up' && (
+                            <motion.div
+                              animate={statusFilter === status ? { x: [-1, 1, -1] } : {}}
+                              transition={{ duration: 1.5, repeat: Infinity }}
+                            >
+                              <FiTruck className={`w-5 h-5 ${statusFilter === status ? 'text-white' : 'text-gray-500'}`} />
+                            </motion.div>
+                          )}
+                          {status === 'delivered' && (
+                            <motion.div
+                              animate={statusFilter === status ? { rotate: [0, 360] } : {}}
+                              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                            >
+                              <FiCheckCircle className={`w-5 h-5 ${statusFilter === status ? 'text-white' : 'text-gray-500'}`} />
+                            </motion.div>
+                          )}
+                        </motion.div>
+                        
+                        {/* Enhanced label and count */}
+                        <span className="font-medium">{label}</span>
+                        <motion.span 
+                          className={`text-xs px-3 py-1 rounded-full ${
+                            statusFilter === status 
+                              ? 'bg-white/25 text-white shadow-inner' 
+                              : 'bg-white text-gray-600 border border-gray-200'
+                          }`}
+                          whileHover={{ scale: 1.05 }}
+                        >
+                          {statusCounts[status] || 0}
+                        </motion.span>
+                      </div>
+                    </motion.button>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
           </motion.div>
 
           {/* Filters Row */}

@@ -131,282 +131,250 @@ const NGOProfileUpdate = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-4xl mx-auto py-12 px-6"
+        className="min-h-screen bg-gradient-to-b from-green-50 to-green-50 py-12 px-4"
       >
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="bg-base-100 shadow-xl rounded-xl overflow-hidden"
-        >
-          <div className="bg-primary text-primary-content p-6">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <FiEdit /> Update NGO Profile
-            </h2>
-            <p className="mt-2 opacity-90">
-              Enhance your organization's presence and reach more supporters
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="flex flex-col items-center mb-8"
-            >
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative"
-                onHoverStart={() => setUploadHover(true)}
-                onHoverEnd={() => setUploadHover(false)}
-              >
-                <label htmlFor="logoUpload" className="cursor-pointer block">
-                  <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-primary/20 flex items-center justify-center shadow-lg relative group">
-                    {previewUrl ? (
-                      <img
-                        src={previewUrl}
-                        alt="Logo Preview"
-                        className="w-full h-full object-cover transition-all duration-300"
-                      />
-                    ) : (
-                      <div className="bg-base-200 w-full h-full flex items-center justify-center">
-                        <FiUser className="w-16 h-16 text-base-content/30" />
-                      </div>
-                    )}
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: uploadHover ? 0.9 : 0 }}
-                      className="absolute inset-0 bg-primary/80 flex items-center justify-center text-white"
+        <div className="max-w-5xl mx-auto">
+          {/* Profile header with gradient background */}
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", damping: 15 }}
+            className="bg-white rounded-2xl shadow-xl mb-8 overflow-hidden"
+          >
+            <div className="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-600 h-40 relative">
+              {/* Animated floating bubbles for visual effect */}
+              <div className="absolute w-20 h-20 rounded-full bg-white/10 top-5 left-10 animate-pulse"></div>
+              <div className="absolute w-12 h-12 rounded-full bg-white/10 top-20 left-40 animate-pulse" style={{ animationDelay: "1s" }}></div>
+              <div className="absolute w-16 h-16 rounded-full bg-white/10 top-10 right-20 animate-pulse" style={{ animationDelay: "0.5s" }}></div>
+              
+              {/* Logo/Profile image */}
+              <div className="absolute -bottom-16 left-10">
+                <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-white shadow-lg">
+                  {previewUrl ? (
+                    <img
+                      src={previewUrl}
+                      alt="Logo Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center w-full h-full bg-green-100 text-green-600">
+                      <FiUser className="w-16 h-16" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="pt-20 pb-6 px-10">
+              <div className="flex flex-col md:flex-row justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800">Organization Profile</h1>
+                  <p className="text-green-600 font-medium mt-1">Enhance your organization's presence</p>
+                </div>
+                
+                <div className="mt-4 md:mt-0">
+                  <label htmlFor="logoUpload" className="cursor-pointer">
+                    <button 
+                      type="button"
+                      onClick={() => document.getElementById('logoUpload').click()}
+                      className="inline-flex items-center px-4 py-2 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
                     >
-                      <div className="text-center">
-                        <FiUpload className="mx-auto w-8 h-8 mb-2" />
-                        <span className="text-sm font-medium">Update Logo</span>
-                      </div>
-                    </motion.div>
-                  </div>
-                </label>
+                      <FiUpload size={16} className="mr-2" />
+                      Update Logo
+                    </button>
+                  </label>
+                  <input
+                    id="logoUpload"
+                    type="file"
+                    accept="image/*"
+                    {...register("logo")}
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setPreviewUrl(reader.result);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
-                <input
-                  id="logoUpload"
-                  type="file"
-                  accept="image/*"
-                  {...register("logo")}
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setPreviewUrl(reader.result);
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                />
-              </motion.div>
-              <span className="text-xs text-base-content/60 mt-2">
-                Click to upload a new logo
-              </span>
-            </motion.div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="md:col-span-2"
-              >
-                <label className="form-control w-full">
-                  <div className="label">
-                    <span className="label-text font-medium">Mission</span>
-                  </div>
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <motion.div
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="md:col-span-2"
+                >
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mission</label>
                   <input
                     {...register("mission")}
-                    className="input input-bordered w-full focus:input-primary transition-all duration-300"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="Your organization's mission"
                   />
                   {errors.mission && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">
-                        {errors.mission.message}
-                      </span>
-                    </div>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.mission.message}
+                    </p>
                   )}
-                </label>
-              </motion.div>
+                </motion.div>
 
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="md:col-span-2"
-              >
-                <label className="form-control w-full">
-                  <div className="label">
-                    <span className="label-text font-medium">Description</span>
-                  </div>
+                <motion.div
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="md:col-span-2"
+                >
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                   <textarea
                     {...register("description")}
-                    className="textarea textarea-bordered w-full h-32 focus:textarea-primary transition-all duration-300"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 h-32"
                     placeholder="Describe your organization's work and impact"
                   />
                   {errors.description && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">
-                        {errors.description.message}
-                      </span>
-                    </div>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.description.message}
+                    </p>
                   )}
-                </label>
-              </motion.div>
+                </motion.div>
 
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                <label className="form-control w-full">
-                  <div className="label">
-                    <span className="label-text font-medium flex items-center gap-1">
-                      <FiLink className="text-primary" /> Website
+                <motion.div
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <span className="flex items-center">
+                      <FiLink className="mr-2 text-green-600" /> Website
                     </span>
-                  </div>
+                  </label>
                   <input
                     {...register("website")}
-                    className="input input-bordered w-full focus:input-primary transition-all duration-300"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="https://yourwebsite.com"
                   />
                   {errors.website && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">
-                        {errors.website.message}
-                      </span>
-                    </div>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.website.message}
+                    </p>
                   )}
-                </label>
-              </motion.div>
+                </motion.div>
 
-              <motion.div
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                <label className="form-control w-full">
-                  <div className="label">
-                    <span className="label-text font-medium flex items-center gap-1">
-                      <FiFacebook className="text-blue-600" /> Facebook
+                <motion.div
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <span className="flex items-center">
+                      <FiFacebook className="mr-2 text-green-600" /> Facebook
                     </span>
-                  </div>
+                  </label>
                   <input
                     {...register("facebook")}
-                    className="input input-bordered w-full focus:input-primary transition-all duration-300"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="https://facebook.com/yourpage"
                   />
                   {errors.facebook && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">
-                        {errors.facebook.message}
-                      </span>
-                    </div>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.facebook.message}
+                    </p>
                   )}
-                </label>
-              </motion.div>
+                </motion.div>
 
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.7 }}
-              >
-                <label className="form-control w-full">
-                  <div className="label">
-                    <span className="label-text font-medium flex items-center gap-1">
-                      <FiInstagram className="text-pink-600" /> Instagram
+                <motion.div
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <span className="flex items-center">
+                      <FiInstagram className="mr-2 text-green-600" /> Instagram
                     </span>
-                  </div>
+                  </label>
                   <input
                     {...register("instagram")}
-                    className="input input-bordered w-full focus:input-primary transition-all duration-300"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="https://instagram.com/yourpage"
                   />
                   {errors.instagram && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">
-                        {errors.instagram.message}
-                      </span>
-                    </div>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.instagram.message}
+                    </p>
                   )}
-                </label>
-              </motion.div>
+                </motion.div>
 
-              <motion.div
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.7 }}
-              >
-                <label className="form-control w-full">
-                  <div className="label">
-                    <span className="label-text font-medium flex items-center gap-1">
-                      <FiTwitter className="text-sky-500" /> Twitter
+                <motion.div
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <span className="flex items-center">
+                      <FiTwitter className="mr-2 text-green-600" /> Twitter
                     </span>
-                  </div>
+                  </label>
                   <input
                     {...register("twitter")}
-                    className="input input-bordered w-full focus:input-primary transition-all duration-300"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     placeholder="https://twitter.com/yourhandle"
                   />
                   {errors.twitter && (
-                    <div className="label">
-                      <span className="label-text-alt text-error">
-                        {errors.twitter.message}
-                      </span>
-                    </div>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.twitter.message}
+                    </p>
                   )}
-                </label>
-              </motion.div>
-            </div>
+                </motion.div>
+              </div>
 
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="pt-4 flex justify-end"
-            >
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                type="submit"
-                disabled={!isValid || isSubmitting || loading}
-                className={`btn btn-primary gap-2 px-8 ${
-                  loading ? "loading" : ""
-                }`}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="pt-4 flex justify-end"
               >
-                {loading ? (
-                  <>
-                    <span className="loading loading-spinner loading-sm"></span>
-                    Updating...
-                  </>
-                ) : (
-                  <>
-                    <FiSave /> Update Profile
-                  </>
-                )}
-              </motion.button>
-            </motion.div>
-          </form>
-        </motion.div>
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  type="submit"
+                  disabled={isSubmitting || loading}
+                  className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-medium shadow-lg hover:shadow-green-200/50 transition-all"
+                >
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <FiSave className="inline mr-2" /> Update Profile
+                    </>
+                  )}
+                </motion.button>
+              </motion.div>
+            </form>
+          </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="text-center text-base-content/60 text-sm mt-8"
-        >
-          Keep your profile updated to increase visibility and trust with donors
-          and volunteers
-        </motion.p>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="text-center text-gray-500 text-sm mt-8"
+          >
+            Keep your profile updated to increase visibility and trust with donors and volunteers
+          </motion.p>
+        </div>
       </motion.div>
     </>
   );

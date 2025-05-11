@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../config/axiosInstance";
 
-function VerificationImages() {
+function VerificationImages({ sidebarOpen }) { // Ajout du prop sidebarOpen
   const [verifications, setVerifications] = useState([]);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -48,110 +48,130 @@ function VerificationImages() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Verification Images</h1>
-      <button onClick={fetchVerifications} className="btn btn-primary mb-6">
-        Refresh
-      </button>
-
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {verifications.map((verification) => (
-          <div key={verification._id} className="card bg-base-100 shadow-md">
-            <div className="card-body">
-              {/* Display User Information */}
-              <h2 className="card-title">{verification.userId?.fullName}</h2>
-              <p>Role: {verification.userId?.role}</p>
-              <p>Status: {verification.status}</p>
-
-              {/* Display Driver License Image */}
-              {verification.driverLicense?.url && (
-                <div>
-                  <p>Driver License:</p>
-                  <img
-                    src={`http://localhost:8082/${verification.driverLicense.url}`}
-                    alt="Driver License"
-                    className="cursor-pointer w-32 h-32 object-cover"
-                    onClick={() => openImageModal(verification.driverLicense.url)}
-                  />
-                </div>
-              )}
-
-              {/* Display Vehicle Registration Image */}
-              {verification.vehiculeRegistration?.url && (
-                <div>
-                  <p>Vehicle Registration:</p>
-                  <img
-                    src={`http://localhost:8082/${verification.vehiculeRegistration.url}`}
-                    alt="Vehicle Registration"
-                    className="cursor-pointer w-32 h-32 object-cover"
-                    onClick={() => openImageModal(verification.vehiculeRegistration.url)}
-                  />
-                </div>
-              )}
-
-              {/* Display Business License Number Image */}
-              {verification.businessLicenseNumber?.url && (
-                <div>
-                  <p>Business License Number:</p>
-                  <img
-                    src={`http://localhost:8082/${verification.businessLicenseNumber.url}`}
-                    alt="Business License Number"
-                    className="cursor-pointer w-32 h-32 object-cover"
-                    onClick={() => openImageModal(verification.businessLicenseNumber.url)}
-                  />
-                </div>
-              )}
-
-              {/* Display Tax ID Image */}
-              {verification.taxId?.url && (
-                <div>
-                  <p>Tax ID:</p>
-                  <img
-                    src={`http://localhost:8082/${verification.taxId.url}`}
-                    alt="Tax ID"
-                    className="cursor-pointer w-32 h-32 object-cover"
-                    onClick={() => openImageModal(verification.taxId.url)}
-                  />
-                </div>
-              )}
-
-              {/* Accept and Reject Buttons */}
-              <div className="flex justify-between mt-4">
-                <button
-                  onClick={() => handleVerificationAction(verification._id, "accept")}
-                  className="btn btn-success"
-                >
-                  Accept
-                </button>
-                <button
-                  onClick={() => handleVerificationAction(verification._id, "reject")}
-                  className="btn btn-error"
-                >
-                  Reject
-                </button>
-              </div>
-            </div>
+    <div 
+      className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-16'} pt-8 pb-8 px-2 md:px-8`}
+      style={{ minHeight: "" }}
+    >
+      <div className="max-w-7xl mx-auto">
+        {/* Header créatif et simple */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-green-700 mb-1">
+              User Verification Panel
+            </h1>
+            <p className="text-gray-500 text-base md:text-lg">
+              Verify user documents and manage role permissions effectively.
+            </p>
           </div>
-        ))}
-      </div>
-
-      {/* Image Modal */}
-      {selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-base-100 p-6 rounded-lg">
-            <img
-              src={`http://localhost:8082/${selectedImage}`}
-              alt="Enlarged"
-              className="max-w-full max-h-screen"
-            />
-            <button onClick={closeImageModal} className="btn btn-primary mt-4">
-              Close
+          <div className="flex gap-2">
+            <button 
+              onClick={fetchVerifications} 
+              className="inline-block px-4 py-2 bg-green-100 text-green-700 rounded-full font-semibold shadow hover:bg-green-200 transition-colors"
+            >
+              Refresh
             </button>
           </div>
         </div>
-      )}
+
+        {error && <p className="text-red-500 mb-4 p-3 bg-red-50 rounded-lg">{error}</p>}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {verifications.map((verification) => (
+            <div key={verification._id} className="card bg-base-100 shadow-md">
+              <div className="card-body">
+                {/* Display User Information */}
+                <h2 className="card-title">{verification.userId?.fullName}</h2>
+                <p>Role: {verification.userId?.role}</p>
+                <p>Status: {verification.status}</p>
+
+                {/* Display Driver License Image */}
+                {verification.driverLicense?.url && (
+                  <div>
+                    <p>Driver License:</p>
+                    <img
+                      src={`http://localhost:8082/${verification.driverLicense.url}`}
+                      alt="Driver License"
+                      className="cursor-pointer w-32 h-32 object-cover"
+                      onClick={() => openImageModal(verification.driverLicense.url)}
+                    />
+                  </div>
+                )}
+
+                {/* Display Vehicle Registration Image */}
+                {verification.vehiculeRegistration?.url && (
+                  <div>
+                    <p>Vehicle Registration:</p>
+                    <img
+                      src={`http://localhost:8082/${verification.vehiculeRegistration.url}`}
+                      alt="Vehicle Registration"
+                      className="cursor-pointer w-32 h-32 object-cover"
+                      onClick={() => openImageModal(verification.vehiculeRegistration.url)}
+                    />
+                  </div>
+                )}
+
+                {/* Display Business License Number Image */}
+                {verification.businessLicenseNumber?.url && (
+                  <div>
+                    <p>Business License Number:</p>
+                    <img
+                      src={`http://localhost:8082/${verification.businessLicenseNumber.url}`}
+                      alt="Business License Number"
+                      className="cursor-pointer w-32 h-32 object-cover"
+                      onClick={() => openImageModal(verification.businessLicenseNumber.url)}
+                    />
+                  </div>
+                )}
+
+                {/* Display Tax ID Image */}
+                {verification.taxId?.url && (
+                  <div>
+                    <p>Tax ID:</p>
+                    <img
+                      src={`http://localhost:8082/${verification.taxId.url}`}
+                      alt="Tax ID"
+                      className="cursor-pointer w-32 h-32 object-cover"
+                      onClick={() => openImageModal(verification.taxId.url)}
+                    />
+                  </div>
+                )}
+
+                {/* Accept and Reject Buttons */}
+                <div className="flex justify-between mt-4">
+                  <button
+                    onClick={() => handleVerificationAction(verification._id, "accept")}
+                    className="btn btn-success"
+                  >
+                    Accept
+                  </button>
+                  <button
+                    onClick={() => handleVerificationAction(verification._id, "reject")}
+                    className="btn btn-error"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Image Modal */}
+        {selectedImage && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-base-100 p-6 rounded-lg">
+              <img
+                src={`http://localhost:8082/${selectedImage}`}
+                alt="Enlarged"
+                className="max-w-full max-h-screen"
+              />
+              <button onClick={closeImageModal} className="btn btn-primary mt-4">
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

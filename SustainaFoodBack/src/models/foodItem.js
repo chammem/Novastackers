@@ -50,5 +50,40 @@ const foodSchema = new mongoose.Schema({
   },
 });
 
+// Remplacer le hook post-save existant par une version plus robuste
+foodSchema.post('save', async function(doc) {
+  console.log(`FoodItem saved with ID: ${doc._id}, donationId: ${doc.donationId}`);
+  
+  if (!doc.donationId) {
+    console.log('No donationId found, skipping metrics update');
+    return;
+  }
+  
+  try {
+    // Importer directement les modèles pour éviter les problèmes de référence circulaire
+    const CampaignMetrics = mongoose.model('CampaignMetrics');
+    
+    // Méthode de mise à jour directe qui recalcule immédiatement
+    await CampaignMetrics.updateMetricsForCampaign(doc.donationId.toString());
+    console.log(`Metrics updated successfully for campaign: ${doc.donationId}`);
+  } catch (error) {
+    console.error(`Error updating metrics after food item save: ${error.message}`);
+    console.error(error.stack);
+  }
+});
+
+// Hook pour mettre à jour le score d'impact à chaque ajout d'item
+foodSchema.post('save', async function() {
+  if (!this.donationId) return;
+  
+  try {
+    // Appeler la fonction de mise à jour des métriques
+    const metricsController = require('../controllers/campaignMetricsController');
+    await metricsController.updateMetricsForCampaign(this.donationId);
+  } catch (error) {
+    console.error('Error updating impact score:', error);
+  }
+});
+
 const FoodItem = mongoose.model("FoodItem", foodSchema);
 module.exports = FoodItem;

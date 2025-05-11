@@ -271,7 +271,7 @@ const ViewCampaignProgress = () => {
     <>
       <HeaderMid />
 
-      {/* Campaign Header */}
+      {/* Campaign Header with Enhanced UI */}
       <AnimatePresence mode="wait">
         {isLoading && !campaign ? (
           <motion.div
@@ -280,16 +280,27 @@ const ViewCampaignProgress = () => {
             exit={{ opacity: 0 }}
             className="flex justify-center items-center py-20"
           >
-            <span className="loading loading-spinner loading-lg text-primary"></span>
+            <div className="flex space-x-2">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="w-4 h-4 rounded-full bg-primary" 
+                     style={{ animation: `bounce 1.4s ease-in-out ${i * 0.16}s infinite both` }} />
+              ))}
+            </div>
           </motion.div>
         ) : campaign ? (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="py-10 bg-gradient-to-b from-base-200 to-base-100"
+            className="relative py-10 overflow-hidden"
           >
-            <div className="max-w-6xl mx-auto px-4">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 z-0 opacity-10">
+              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-primary blur-3xl"></div>
+              <div className="absolute bottom-40 -left-10 w-40 h-40 rounded-full bg-secondary blur-3xl"></div>
+            </div>
+            
+            <div className="max-w-6xl mx-auto px-4 relative z-10">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -297,7 +308,7 @@ const ViewCampaignProgress = () => {
                 className="flex flex-col md:flex-row gap-8 items-start"
               >
                 <div className="md:w-2/5">
-                  <div className="relative overflow-hidden rounded-2xl shadow-lg">
+                  <div className="relative overflow-hidden rounded-3xl shadow-xl border border-base-content/5">
                     <motion.img
                       whileHover={{ scale: 1.05 }}
                       transition={{ duration: 0.4 }}
@@ -305,14 +316,10 @@ const ViewCampaignProgress = () => {
                       alt={campaign.name}
                       className="w-full h-64 object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
-                      <div className="p-4 text-white">
-                        <div className="flex items-center gap-2">
-                          <FiCalendar className="text-primary-content" />
-                          <span className="text-sm font-medium">
-                            Ends{" "}
-                            {new Date(campaign.endingDate).toLocaleDateString()}
-                          </span>
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black/90 flex items-end">
+                      <div className="p-6 w-full">
+                        <div className="flex flex-col gap-1">
+                          
                         </div>
                       </div>
                     </div>
@@ -320,56 +327,61 @@ const ViewCampaignProgress = () => {
                 </div>
 
                 <div className="md:w-3/5">
-                  <motion.h1
+                  <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.4 }}
-                    className="text-3xl md:text-4xl font-bold text-primary"
+                    className="bg-gradient-to-br from-primary/10 to-secondary/10 p-6 rounded-2xl border border-base-content/5 hover-lift backdrop-blur-sm relative overflow-hidden"
                   >
-                    {campaign.name}
-                  </motion.h1>
+                    {/* Background decorative elements */}
+                    <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-primary/10 blur-xl"></div>
+                    <div className="absolute -left-8 -bottom-8 w-32 h-32 rounded-full bg-secondary/10 blur-xl"></div>
+                    
+                    {/* Campaign title and badges */}
+                    <div className="relative">
+                     
+                      
+                      <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary mb-4">
+                        {campaign.name}
+                      </h2>
 
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4, duration: 0.4 }}
-                    className="mt-3 text-base-content/80 text-lg"
-                  >
-                    {campaign.description}
-                  </motion.p>
-
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5, duration: 0.4 }}
-                    className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4"
-                  >
-                    <div className="bg-base-100 p-3 rounded-lg shadow-sm border border-base-300">
-                      <div className="flex items-center gap-2 text-primary">
-                        <FiMapPin />
-                        <span className="font-medium">Location</span>
+                      {/* Campaign timing information */}
+                      <div className="flex flex-wrap gap-4 mb-4">
+                        <div className="badge badge-outline badge-secondary p-3 flex items-center gap-2">
+                          <FiCalendar className="h-4 w-4" />
+                          <span>Created: {new Date(campaign.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        
+                        <div className="badge badge-outline badge-primary p-3 flex items-center gap-2">
+                          <FiClock className="h-4 w-4" />
+                          <span>
+                            {(() => {
+                              const endDate = new Date(campaign.endingDate);
+                              const now = new Date();
+                              const diff = endDate - now;
+                              
+                              if (diff <= 0) return "Campaign has ended";
+                              
+                              const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                              const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                              const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                              
+                              return `Ends in: ${days}d ${hours}h ${minutes}m`;
+                            })()}
+                          </span>
+                        </div>
                       </div>
-                      <p className="mt-1 text-sm">{campaign.location}</p>
-                    </div>
 
-                    <div className="bg-base-100 p-3 rounded-lg shadow-sm border border-base-300">
-                      <div className="flex items-center gap-2 text-primary">
-                        <FiCalendar />
-                        <span className="font-medium">End Date</span>
-                      </div>
-                      <p className="mt-1 text-sm">
-                        {new Date(campaign.endingDate).toLocaleDateString()}
-                      </p>
-                    </div>
-
-                    <div className="bg-base-100 p-3 rounded-lg shadow-sm border border-base-300">
-                      <div className="flex items-center gap-2 text-primary">
-                        <FiClock />
-                        <span className="font-medium">Created</span>
-                      </div>
-                      <p className="mt-1 text-sm">
-                        {new Date(campaign.createdAt).toLocaleDateString()}
-                      </p>
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4, duration: 0.4 }}
+                        className="relative z-10"
+                      >
+                        <p className="text-base-content/80 text-lg leading-relaxed border-l-4 border-primary/20 pl-3">
+                          {campaign.description || "Help us make a difference with your generous donations of food items."}
+                        </p>
+                      </motion.div>
                     </div>
                   </motion.div>
                 </div>
@@ -379,55 +391,44 @@ const ViewCampaignProgress = () => {
         ) : null}
       </AnimatePresence>
 
-      {/* Tab Buttons */}
+      {/* Interactive Tabbed Navigation */}
       <motion.section
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.4 }}
-        className="sticky top-16 z-10 py-3 bg-base-100 shadow-sm"
+        className="sticky top-16 z-30 py-3 bg-base-100/80 backdrop-blur-md shadow-sm border-y border-base-300"
       >
         <div className="max-w-6xl mx-auto px-4">
-          <div className="tabs tabs-boxed bg-base-200 p-1 inline-flex">
-            <motion.button
-              variants={tabVariants}
-              animate={view === "food" ? "active" : "inactive"}
-              whileTap={{ scale: 0.95 }}
-              className={`tab gap-2 ${view === "food" ? "tab-active" : ""}`}
-              onClick={() => setView("food")}
-            >
-              <FiPackage /> Food Items
-            </motion.button>
-            <motion.button
-              variants={tabVariants}
-              animate={view === "businesses" ? "active" : "inactive"}
-              whileTap={{ scale: 0.95 }}
-              className={`tab gap-2 ${
-                view === "businesses" ? "tab-active" : ""
-              }`}
-              onClick={() => setView("businesses")}
-            >
-              <FiShoppingBag /> Businesses
-            </motion.button>
-            <motion.button
-              variants={tabVariants}
-              animate={view === "volunteers" ? "active" : "inactive"}
-              whileTap={{ scale: 0.95 }}
-              className={`tab gap-2 ${
-                view === "volunteers" ? "tab-active" : ""
-              }`}
-              onClick={() => setView("volunteers")}
-            >
-              <FiUsers /> Volunteers
-            </motion.button>
-            <motion.button
-              variants={tabVariants}
-              animate={view === "batches" ? "active" : "inactive"}
-              whileTap={{ scale: 0.95 }}
-              className={`tab gap-2 ${view === "batches" ? "tab-active" : ""}`}
-              onClick={() => setView("batches")}
-            >
-              <FiLayers /> Batch Pickup
-            </motion.button>
+          <div className="tabs tabs-boxed bg-base-200/50 p-1 inline-flex mx-auto relative">
+            <div className="absolute inset-0 bg-base-200/50 backdrop-blur-sm rounded-lg"></div>
+            {[
+              { id: "food", icon: <FiPackage />, label: "Food Items" },
+              { id: "businesses", icon: <FiShoppingBag />, label: "Businesses" },
+              { id: "volunteers", icon: <FiUsers />, label: "Volunteers" },
+              { id: "batches", icon: <FiLayers />, label: "Batch Pickup" }
+            ].map((tab) => (
+              <motion.button
+                key={tab.id}
+                variants={tabVariants}
+                animate={view === tab.id ? "active" : "inactive"}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`tab gap-2 relative z-10 ${view === tab.id ? "tab-active" : ""}`}
+                onClick={() => setView(tab.id)}
+              >
+                {view === tab.id && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute inset-0 bg-primary/10 rounded-lg"
+                    initial={false}
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-2">
+                  {tab.icon} {tab.label}
+                </span>
+              </motion.button>
+            ))}
           </div>
         </div>
       </motion.section>
@@ -1146,3 +1147,56 @@ const ViewCampaignProgress = () => {
 };
 
 export default ViewCampaignProgress;
+
+// Add the following CSS at the end of your file or in a separate CSS file
+// This adds custom animations and effects for enhanced UI experience
+const style = document.createElement('style');
+style.textContent = `
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(to right, var(--p), var(--s));
+  }
+  
+  .border-gradient {
+    border: 2px solid transparent;
+    background-image: linear-gradient(var(--b1), var(--b1)), 
+                      linear-gradient(to right, var(--p), var(--s));
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+  }
+  
+  .card-glass {
+    backdrop-filter: blur(8px);
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+  
+  .animate-float {
+    animation: float 5s ease-in-out infinite;
+  }
+  
+  .btn-glow:hover {
+    box-shadow: 0 0 15px var(--p);
+  }
+`;
+document.head.appendChild(style);

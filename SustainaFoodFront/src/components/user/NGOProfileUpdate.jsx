@@ -155,60 +155,71 @@ const NGOProfileUpdate = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="min-h-screen bg-base-200 py-12 px-4"
+        className="min-h-screen bg-gradient-to-b from-green-50 to-green-50 py-12 px-4"
       >
         <div className="max-w-5xl mx-auto">
+          {/* Profile header with gradient background */}
           <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="mb-8"
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", damping: 15 }}
+            className="bg-white rounded-2xl shadow-xl mb-8 overflow-hidden"
           >
-            <h1 className="text-3xl font-bold text-center">
-              Organization Profile
-            </h1>
-            <p className="text-center text-base-content/70 mt-2">
-              Update your organization's information and presence
-            </p>
-          </motion.div>
+            <div className="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-600 h-40 relative">
+              {/* Animated floating bubbles for visual effect */}
+              <div className="absolute w-20 h-20 rounded-full bg-white/10 top-5 left-10 animate-pulse"></div>
+              <div
+                className="absolute w-12 h-12 rounded-full bg-white/10 top-20 left-40 animate-pulse"
+                style={{ animationDelay: "1s" }}
+              ></div>
+              <div
+                className="absolute w-16 h-16 rounded-full bg-white/10 top-10 right-20 animate-pulse"
+                style={{ animationDelay: "0.5s" }}
+              ></div>
 
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Sidebar with Profile Image */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="lg:w-1/3"
-            >
-              <div className="card bg-base-100 shadow-lg overflow-hidden">
-                <div className="card-body items-center text-center p-6">
-                  <div className="avatar">
-                    <div className="w-40 h-40 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden bg-base-300">
-                      {logoPreview ? (
-                        <motion.img
-                          whileHover={{ scale: 1.05 }}
-                          src={logoPreview}
-                          alt="Organization Logo"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center w-full h-full bg-base-300 text-4xl font-bold text-base-content/40">
-                          {profile.organizationName?.charAt(0) ||
-                            profile.fullName?.charAt(0) ||
-                            "?"}
-                        </div>
-                      )}
+              {/* Logo/Profile image */}
+              <div className="absolute -bottom-16 left-10">
+                <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-white">
+                  {logoPreview ? (
+                    <motion.img
+                      whileHover={{ scale: 1.05 }}
+                      src={logoPreview}
+                      alt="Organization Logo"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center w-full h-full bg-green-100 text-4xl font-bold text-green-700">
+                      {profile.organizationName?.charAt(0) ||
+                        profile.fullName?.charAt(0) ||
+                        "?"}
                     </div>
-                  </div>
+                  )}
+                </div>
+              </div>
+            </div>
 
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
+            <div className="pt-20 pb-6 px-10">
+              <div className="flex flex-col md:flex-row justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800">
+                    {profile.organizationName || "Your Organization"}
+                  </h1>
+                  <p className="text-green-600 font-medium mt-1">
+                    {profile.fullName || "Contact Person"}
+                  </p>
+                  <p className="text-gray-500 mt-2">
+                    {profile.mission || "Your organization's mission statement"}
+                  </p>
+                </div>
+
+                <div className="mt-4 md:mt-0">
+                  <button
                     onClick={triggerFileInput}
-                    className="btn btn-outline btn-sm mt-4 gap-2"
+                    className="inline-flex items-center px-4 py-2 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
                   >
-                    <FiUpload size={14} />
+                    <FiUpload size={16} className="mr-2" />
                     Change Logo
-                  </motion.button>
-
+                  </button>
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -216,327 +227,331 @@ const NGOProfileUpdate = () => {
                     className="hidden"
                     accept="image/*"
                   />
-
-                  <div className="mt-6 w-full">
-                    <ul className="menu bg-base-200 rounded-xl">
-                      <li>
-                        <button
-                          className={activeSection === "basic" ? "active" : ""}
-                          onClick={() => setActiveSection("basic")}
-                        >
-                          <FiUser /> Basic Information
-                        </button>
-                      </li>
-                      <li>
-                        <button
-                          className={
-                            activeSection === "details" ? "active" : ""
-                          }
-                          onClick={() => setActiveSection("details")}
-                        >
-                          <FiInfo /> Organization Details
-                        </button>
-                      </li>
-                      <li>
-                        <button
-                          className={activeSection === "social" ? "active" : ""}
-                          onClick={() => setActiveSection("social")}
-                        >
-                          <FiGlobe /> Online Presence
-                        </button>
-                      </li>
-                    </ul>
-
-                    <div className="mt-6">
-                      <motion.button
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
-                        className="btn btn-primary btn-block"
-                        onClick={handleSubmit}
-                        disabled={isSaving}
-                      >
-                        {isSaving ? (
-                          <>
-                            <span className="loading loading-spinner loading-sm"></span>
-                            Saving...
-                          </>
-                        ) : (
-                          <>
-                            <FiSave size={16} />
-                            Save Changes
-                          </>
-                        )}
-                      </motion.button>
-                    </div>
-                  </div>
                 </div>
               </div>
-            </motion.div>
 
-            {/* Profile Form */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="lg:w-2/3"
+              <div className="flex flex-wrap gap-2 mt-4">
+                <div className="flex items-center text-gray-500 text-sm">
+                  <FiMail className="mr-2" />{" "}
+                  {profile.email || "email@example.com"}
+                </div>
+                {profile.phone && (
+                  <div className="flex items-center text-gray-500 text-sm ml-4">
+                    <FiPhone className="mr-2" /> {profile.phone}
+                  </div>
+                )}
+                {profile.address && (
+                  <div className="flex items-center text-gray-500 text-sm ml-4">
+                    <FiMapPin className="mr-2" /> {profile.address}
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Tab Selection */}
+          <div className="flex mb-6 border-b border-gray-200">
+            <button
+              className={`py-3 px-5 font-medium ${
+                activeSection === "basic"
+                  ? "text-green-600 border-b-2 border-green-600"
+                  : "text-gray-500 hover:text-gray-800"
+              }`}
+              onClick={() => setActiveSection("basic")}
             >
-              <div className="card bg-base-100 shadow-lg">
-                <div className="card-body p-6 md:p-8">
-                  <form onSubmit={handleSubmit}>
-                    <AnimatePresence mode="wait">
-                      {activeSection === "basic" && (
-                        <motion.div
-                          key="basic"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2 }}
-                          className="space-y-4"
-                        >
-                          <h2 className="text-xl font-bold border-b pb-2">
-                            Basic Information
-                          </h2>
+              <FiUser className="inline mr-2" /> Basic Information
+            </button>
+            <button
+              className={`py-3 px-5 font-medium ${
+                activeSection === "details"
+                  ? "text-green-600 border-b-2 border-green-600"
+                  : "text-gray-500 hover:text-gray-800"
+              }`}
+              onClick={() => setActiveSection("details")}
+            >
+              <FiInfo className="inline mr-2" /> Organization Details
+            </button>
+            <button
+              className={`py-3 px-5 font-medium ${
+                activeSection === "social"
+                  ? "text-green-600 border-b-2 border-green-600"
+                  : "text-gray-500 hover:text-gray-800"
+              }`}
+              onClick={() => setActiveSection("social")}
+            >
+              <FiGlobe className="inline mr-2" /> Online Presence
+            </button>
+          </div>
 
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text">
-                                Organization Name
-                              </span>
-                            </label>
-                            <input
-                              type="text"
-                              name="organizationName"
-                              value={profile.organizationName}
-                              onChange={handleInputChange}
-                              className="input input-bordered"
-                              placeholder="Your organization's name"
-                            />
+          {/* Form Sections */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <form onSubmit={handleSubmit}>
+              <AnimatePresence mode="wait">
+                {activeSection === "basic" && (
+                  <motion.div
+                    key="basic"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-4"
+                  >
+                    <h2 className="text-xl font-bold text-gray-800 mb-4">
+                      Basic Information
+                    </h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="form-control">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Organization Name
+                        </label>
+                        <input
+                          type="text"
+                          name="organizationName"
+                          value={profile.organizationName}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          placeholder="Your organization's name"
+                        />
+                      </div>
+
+                      <div className="form-control">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Contact Person Name
+                        </label>
+                        <input
+                          type="text"
+                          name="fullName"
+                          value={profile.fullName}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          placeholder="Full name of the contact person"
+                        />
+                      </div>
+
+                      <div className="form-control">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Email
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <FiMail className="text-gray-500" />
                           </div>
+                          <input
+                            type="email"
+                            name="email"
+                            value={profile.email}
+                            onChange={handleInputChange}
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            placeholder="contact@organization.org"
+                          />
+                        </div>
+                      </div>
 
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text">
-                                Contact Person Name
-                              </span>
-                            </label>
-                            <input
-                              type="text"
-                              name="fullName"
-                              value={profile.fullName}
-                              onChange={handleInputChange}
-                              className="input input-bordered"
-                              placeholder="Full name of the contact person"
-                            />
+                      <div className="form-control">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Phone
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <FiPhone className="text-gray-500" />
                           </div>
+                          <input
+                            type="text"
+                            name="phone"
+                            value={profile.phone}
+                            onChange={handleInputChange}
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            placeholder="Your phone number"
+                          />
+                        </div>
+                      </div>
 
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text">Email</span>
-                            </label>
-                            <div className="input-group">
-                              <span>
-                                <FiMail />
-                              </span>
-                              <input
-                                type="email"
-                                name="email"
-                                value={profile.email}
-                                onChange={handleInputChange}
-                                className="input input-bordered w-full"
-                                placeholder="contact@organization.org"
-                              />
-                            </div>
+                      <div className="form-control md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Address
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <FiMapPin className="text-gray-500" />
                           </div>
+                          <input
+                            type="text"
+                            name="address"
+                            value={profile.address}
+                            onChange={handleInputChange}
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            placeholder="Organization address"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text">Phone</span>
-                            </label>
-                            <div className="input-group">
-                              <span>
-                                <FiPhone />
-                              </span>
-                              <input
-                                type="text"
-                                name="phone"
-                                value={profile.phone}
-                                onChange={handleInputChange}
-                                className="input input-bordered w-full"
-                                placeholder="Your phone number"
-                              />
-                            </div>
-                          </div>
+                {activeSection === "details" && (
+                  <motion.div
+                    key="details"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-4"
+                  >
+                    <h2 className="text-xl font-bold text-gray-800 mb-4">
+                      Organization Details
+                    </h2>
 
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text">Address</span>
-                            </label>
-                            <div className="input-group">
-                              <span>
-                                <FiMapPin />
-                              </span>
-                              <input
-                                type="text"
-                                name="address"
-                                value={profile.address}
-                                onChange={handleInputChange}
-                                className="input input-bordered w-full"
-                                placeholder="Organization address"
-                              />
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
+                    <div className="form-control">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Mission Statement
+                      </label>
+                      <input
+                        type="text"
+                        name="mission"
+                        value={profile.mission}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        placeholder="A brief statement of your organization's mission"
+                      />
+                    </div>
 
-                      {activeSection === "details" && (
-                        <motion.div
-                          key="details"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2 }}
-                          className="space-y-4"
-                        >
-                          <h2 className="text-xl font-bold border-b pb-2">
-                            Organization Details
-                          </h2>
+                    <div className="form-control">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Description
+                      </label>
+                      <textarea
+                        name="description"
+                        value={profile.description}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 h-32"
+                        placeholder="Detailed description of your organization, its history, and its activities"
+                      ></textarea>
+                    </div>
+                  </motion.div>
+                )}
 
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text">
-                                Mission Statement
-                              </span>
-                            </label>
-                            <input
-                              type="text"
-                              name="mission"
-                              value={profile.mission}
-                              onChange={handleInputChange}
-                              className="input input-bordered"
-                              placeholder="A brief statement of your organization's mission"
-                            />
-                          </div>
+                {activeSection === "social" && (
+                  <motion.div
+                    key="social"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-4"
+                  >
+                    <h2 className="text-xl font-bold text-gray-800 mb-4">
+                      Online Presence
+                    </h2>
 
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text">Description</span>
-                            </label>
-                            <textarea
-                              name="description"
-                              value={profile.description}
-                              onChange={handleInputChange}
-                              className="textarea textarea-bordered h-32"
-                              placeholder="Detailed description of your organization, its history, and its activities"
-                            ></textarea>
-                          </div>
-                        </motion.div>
-                      )}
+                    <div className="form-control">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Website
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <FiGlobe className="text-gray-500" />
+                        </div>
+                        <input
+                          type="url"
+                          name="website"
+                          value={profile.website}
+                          onChange={handleInputChange}
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          placeholder="https://yourorganization.org"
+                        />
+                      </div>
+                    </div>
 
-                      {activeSection === "social" && (
-                        <motion.div
-                          key="social"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2 }}
-                          className="space-y-4"
-                        >
-                          <h2 className="text-xl font-bold border-b pb-2">
-                            Online Presence
-                          </h2>
+                    <div className="form-control">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Instagram
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <FiInstagram className="text-gray-500" />
+                        </div>
+                        <input
+                          type="url"
+                          name="instagram"
+                          value={profile.instagram}
+                          onChange={handleInputChange}
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          placeholder="https://instagram.com/yourorganization"
+                        />
+                      </div>
+                    </div>
 
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text">Website</span>
-                            </label>
-                            <div className="input-group">
-                              <span>
-                                <FiGlobe />
-                              </span>
-                              <input
-                                type="url"
-                                name="website"
-                                value={profile.website}
-                                onChange={handleInputChange}
-                                className="input input-bordered w-full"
-                                placeholder="https://yourorganization.org"
-                              />
-                            </div>
-                          </div>
+                    <div className="form-control">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Twitter
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <FiTwitter className="text-gray-500" />
+                        </div>
+                        <input
+                          type="url"
+                          name="twitter"
+                          value={profile.twitter}
+                          onChange={handleInputChange}
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          placeholder="https://twitter.com/yourorganization"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text">Instagram</span>
-                            </label>
-                            <div className="input-group">
-                              <span>
-                                <FiInstagram />
-                              </span>
-                              <input
-                                type="url"
-                                name="instagram"
-                                value={profile.instagram}
-                                onChange={handleInputChange}
-                                className="input input-bordered w-full"
-                                placeholder="https://instagram.com/yourorganization"
-                              />
-                            </div>
-                          </div>
+              <div className="flex justify-between mt-8 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => window.history.back()}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  <FiX size={16} className="inline mr-2" /> Cancel
+                </button>
 
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text">Twitter</span>
-                            </label>
-                            <div className="input-group">
-                              <span>
-                                <FiTwitter />
-                              </span>
-                              <input
-                                type="url"
-                                name="twitter"
-                                value={profile.twitter}
-                                onChange={handleInputChange}
-                                className="input input-bordered w-full"
-                                placeholder="https://twitter.com/yourorganization"
-                              />
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </form>
-
-                  <div className="card-actions justify-between mt-8 pt-4 border-t">
-                    <button
-                      onClick={() => window.history.back()}
-                      className="btn btn-ghost gap-2"
-                    >
-                      <FiX size={16} /> Cancel
-                    </button>
-
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      disabled={isSaving}
-                      onClick={handleSubmit}
-                      className="btn btn-primary gap-2"
-                    >
-                      {isSaving ? (
-                        <>
-                          <span className="loading loading-spinner loading-sm"></span>
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <FiCheckCircle size={16} />
-                          Save Changes
-                        </>
-                      )}
-                    </motion.button>
-                  </div>
-                </div>
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  disabled={isSaving}
+                  onClick={handleSubmit}
+                  className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
+                >
+                  {isSaving ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <FiCheckCircle size={16} className="inline mr-2" />
+                      Save Changes
+                    </>
+                  )}
+                </motion.button>
               </div>
-            </motion.div>
+            </form>
           </div>
         </div>
       </motion.div>

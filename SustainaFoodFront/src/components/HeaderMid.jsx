@@ -47,8 +47,8 @@ function HeaderMid() {
       const activationToastShown = sessionStorage.getItem('activationToastShown');
       
       // Check if the user is a restaurant or volunteer and not active, and toast hasn't been shown
-      if ((user.role === "restaurant" || user.role === "volunteer") && 
-          !user.isActive && 
+      if ((user.role === "restaurant" || user.role === "volunteer" || user.role === "supermarket" || user.role === "driver") && 
+          !user.active && 
           activationToastShown !== 'true') {
         
         // Set the flag before showing toast
@@ -131,8 +131,188 @@ function HeaderMid() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-2">
+            {/* Home link first */}
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                `btn btn-sm ${
+                  isActive
+                    ? "btn-primary text-white"
+                    : "btn-ghost text-gray-700"
+                }`
+              }
+            >
+              Home
+            </NavLink>
+
+            {/* Role-specific links directly after Home */}
+            {user?.role === "charity" && (
+              <>
+                <NavLink
+                  to="/my-campaigns"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  My Campaigns
+                </NavLink>
+              </>
+            )}
+            {user?.role === "volunteer" && (
+              <>
+                <NavLink
+                  to="/volunteer"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  Dashboard
+                </NavLink>
+                <NavLink
+                  to="/volunteer-availability"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  Availability
+                </NavLink>
+                <NavLink
+                  to="/requested-assignments"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  Assignments
+                </NavLink>
+                <NavLink
+                  to="/donations"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  Volunteer
+                </NavLink>
+              </>
+            )}
+            {user?.role === "restaurant" && (
+              <>
+                <NavLink
+                  to="/donations"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  Donate
+                </NavLink>
+                <NavLink
+                  to="/my-donations"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  My Donations
+                </NavLink>
+                <NavLink
+                  to="/food-sales"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  Food Sales
+                </NavLink>
+                <NavLink
+                  to="/suggested-products-list"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  Suggested
+                </NavLink>
+              </>
+            )}
+            {user?.role === "supermarket" && (
+              <>
+                <NavLink
+                  to="/donations"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  Donate
+                </NavLink>
+                <NavLink
+                  to="/my-donations"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  Confirm Pickups
+                </NavLink>
+              </>
+            )}
+            {user?.role === "user" && (
+              <>
+                <NavLink
+                  to="/available-food"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  Food Sale
+                </NavLink>
+              </>
+            )}
+
+            {/* Other common links after role-specific ones */}
             {[
-              { to: "/", label: "Home" },
               { to: "/features", label: "Features" },
               { to: "/about", label: "About" },
               { to: "/contact", label: "Contact" },
@@ -151,85 +331,6 @@ function HeaderMid() {
                 {link.label}
               </NavLink>
             ))}
-
-            {/* Role-specific links with dropdown */}
-            {user && (
-              <div className="dropdown dropdown-end">
-                <label tabIndex={0} className="btn btn-sm btn-ghost m-1">
-                  Actions
-                  <FiChevronDown className="ml-1" />
-                </label>
-                <ul
-                  tabIndex={0}
-                  className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-30"
-                >
-                  {user?.role === "charity" && (
-                    <>
-                      <li>
-                        <NavLink to="/donationForm">Create Campaign</NavLink>
-                      </li>
-                      <li>
-                        <NavLink to="/my-campaigns">My Campaigns</NavLink>
-                      </li>
-                    </>
-                  )}
-                  {user?.role === "volunteer" && (
-                    <>
-                      <li>
-                        <NavLink to="/volunteer">Volunteer Dashboard</NavLink>
-                      </li>
-                      <li>
-                        <NavLink to="/volunteer-availability">
-                          Manage Availability
-                        </NavLink>
-                      </li>
-                      <li>
-                        <NavLink to="/requested-assignments">
-                          Requested Assignments
-                        </NavLink>
-                      </li>
-                      <li>
-                        <NavLink to="/donations">Volunteer</NavLink>
-                      </li>
-                    </>
-                  )}
-                  {user?.role === "restaurant" && (
-                    <>
-                      <li>
-                        <NavLink to="/donations">Donate</NavLink>
-                      </li>
-                      <li>
-                        <NavLink to="/my-donations">My donations</NavLink>
-                      </li>
-                      <li>
-                        <NavLink to="/food-sales">Food Sales</NavLink>
-                      </li>
-                      <li>
-                        <NavLink to="/suggested-products-list">Suggested</NavLink>
-                      </li>
-                    </>
-                  )}
-                  {user?.role === "supermarket" && (
-                    <>
-                      <li>
-                        <NavLink to="/donations">Donate</NavLink>
-                      </li>
-                      <li>
-                        <NavLink to="/my-donations">Confirm Pickups</NavLink>
-                      </li>
-                    </>
-                  )}
-                  {user?.role === "user" && (
-                    <>
-                      <li>
-                        <NavLink to="/available-food">Food sale</NavLink>
-                      </li>
-                     
-                    </>
-                  )}
-                </ul>
-              </div>
-            )}
           </nav>
 
           {/* User Actions Section */}
@@ -426,6 +527,7 @@ function HeaderMid() {
             className="fixed top-16 left-0 right-0 z-40 bg-white shadow-lg md:hidden overflow-hidden"
           >
             <ul className="menu menu-sm p-4">
+              {/* Home link first */}
               <li>
                 <NavLink
                   to="/"
@@ -435,35 +537,8 @@ function HeaderMid() {
                   Home
                 </NavLink>
               </li>
-              <li>
-                <NavLink
-                  to="/features"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) => (isActive ? "active" : "")}
-                >
-                  Features
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/about"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) => (isActive ? "active" : "")}
-                >
-                  About
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/contact"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) => (isActive ? "active" : "")}
-                >
-                  Contact
-                </NavLink>
-              </li>
 
-              {/* Role specific links */}
+              {/* Role specific links directly after Home */}
               {user?.role === "charity" && (
                 <>
                   <li>
@@ -560,6 +635,36 @@ function HeaderMid() {
                 </li>
               )}
 
+              {/* Other common links after role-specific ones */}
+              <li>
+                <NavLink
+                  to="/features"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                >
+                  Features
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/about"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                >
+                  About
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/contact"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) => (isActive ? "active" : "")}
+                >
+                  Contact
+                </NavLink>
+              </li>
+
+              {/* User section */}
               <div className="divider"></div>
 
               {user ? (
