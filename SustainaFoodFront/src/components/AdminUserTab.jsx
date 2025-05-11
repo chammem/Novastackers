@@ -225,23 +225,61 @@ const AdminUsersTab = ({ sidebarOpen }) => {
 
   return (
     <div
-      className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-16'} pt-8 pb-8 px-2 md:px-8`}
-      style={{ minHeight: "" }}
+      className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-16'} pt-20 pb-8 px-2 md:px-8`}
+      style={{ minHeight: "calc(100vh - 64px)" }}
     >
       <div className="max-w-7xl mx-auto">
-        {/* Header créatif et simple */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-green-700 mb-1">
-              User Management
-            </h1>
-            <p className="text-gray-500 text-base md:text-lg">
-              Manage all platform users, roles and permissions in one place.
-            </p>
+        {/* Innovative Header with Animated Background */}
+        <div className="relative mb-12 rounded-2xl overflow-hidden bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg">
+          <div className="absolute top-0 left-0 w-full h-full opacity-10">
+            <div className="absolute right-0 bottom-0 w-96 h-96 bg-white rounded-full transform translate-x-1/3 translate-y-1/3"></div>
+            <div className="absolute right-20 top-10 w-24 h-24 bg-white rounded-full"></div>
+            <div className="absolute left-20 top-20 w-32 h-32 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+          </div>
+          
+          <div className="relative z-10 p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-1">
+                  User Management
+                </h1>
+                <p className="text-green-50 text-sm md:text-base max-w-2xl">
+                  Manage all platform users, roles and permissions in one place.
+                </p>
+              </div>
+              
+              {/* Add search bar to header with white background */}
+              <div className="md:w-96">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search users..."
+                    className="w-full px-4 py-3 pr-10 rounded-xl border-none bg-white text-gray-700 shadow-md placeholder-gray-500"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  {searchTerm && (
+                    <button 
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setSearchTerm('')}
+                    >
+                      <svg className="w-5 h-5 text-gray-500 hover:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Quick stats cards */}
+        {/* Quick stats cards - keep existing code */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {quickStats.map(stat => (
             <div key={stat.label} className={`flex items-center gap-3 p-4 rounded-xl shadow bg-white hover:shadow-lg transition ${stat.color}`}>
@@ -254,31 +292,21 @@ const AdminUsersTab = ({ sidebarOpen }) => {
           ))}
         </div>
 
-        {/* Search bar */}
-        <div className="mb-6 flex gap-4 flex-wrap">
-          <div className="flex-1 max-w-[400px]">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              aria-label="Rechercher des utilisateurs"
-            />
-          </div>
-          
+        {/* Move filter dropdown to be positioned above the table, directly below the stats cards */}
+        <div className="flex items-center mb-4">
           <select 
             className="px-4 py-2 border rounded-lg bg-white"
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
-            aria-label="Filtrer par champ"
+            aria-label="Filter by field"
           >
             <option value="all">All Fields</option>
             <option value="name">Name</option>
             <option value="email">Email</option>
             <option value="role">Role</option>
-            <option value="status">Statut</option>
+            <option value="status">Status</option>
           </select>
+          <span className="text-sm text-gray-500 ml-2">Filter by field</span>
         </div>
 
         {/* Users table */}

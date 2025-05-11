@@ -64,22 +64,31 @@ const AdminVerificationComponent = (props) => {
         style={{ minHeight: "calc(100vh - 64px)" }}
       >
         <div className="max-w-7xl mx-auto">
-          {/* Header créatif et simple */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-green-700 mb-1">
-                Verification Management
-              </h1>
-              <p className="text-gray-500 text-base md:text-lg">
-                Review and manage user verification requests with a modern, clear interface.
-              </p>
+          {/* Innovative Header with Animated Background */}
+          <div className="relative mb-8 rounded-2xl overflow-hidden bg-gradient-to-r from-green-600 to-emerald-500 shadow-lg">
+            <div className="absolute top-0 left-0 w-full h-full opacity-10">
+              <div className="absolute right-0 bottom-0 w-96 h-96 bg-white rounded-full transform translate-x-1/3 translate-y-1/3"></div>
+              <div className="absolute right-20 top-10 w-24 h-24 bg-white rounded-full"></div>
+              <div className="absolute left-20 top-20 w-32 h-32 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
             </div>
-            <div className="flex gap-2">
-              <span className="inline-block px-4 py-2 bg-green-100 text-green-700 rounded-full font-semibold shadow">
-                {new Date().toLocaleDateString()}
-              </span>
+            
+            <div className="relative z-10 p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-1">
+                  Verification Management
+                </h1>
+                <p className="text-green-50 text-sm md:text-base max-w-2xl">
+                  Review and manage user verification requests with a modern, clear interface.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full font-semibold shadow">
+                  {new Date().toLocaleDateString()}
+                </span>
+              </div>
             </div>
           </div>
+          
           {message && (
             <div className="alert alert-error mb-4">
               <span>{message}</span>
@@ -118,35 +127,46 @@ const AdminVerificationComponent = (props) => {
                       <div className="badge badge-outline badge-success mt-1">{verification.userId?.role || "N/A"}</div>
                     </div>
                   </div>
-                  {/* Documents Carousel avec design amélioré */}
+                  {/* Documents Carousel with conditional rendering based on user role */}
                   <div className="flex flex-row gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-base-200 p-1">
-                    {verification.driverLicense && (
-                      <DocCard
-                        title="Driver License"
-                        url={verification.driverLicense.url}
-                        verified={verification.driverLicense.verified}
-                      />
+                    {/* Only show driver documents for volunteers with driver role */}
+                    {verification.userId?.role === "volunteer driver" && (
+                      <>
+                        {verification.driverLicense && (
+                          <DocCard
+                            title="Driver License"
+                            url={verification.driverLicense.url}
+                            verified={verification.driverLicense.verified}
+                          />
+                        )}
+                        {verification.vehiculeRegistration && (
+                          <DocCard
+                            title="Vehicle Registration"
+                            url={verification.vehiculeRegistration.url}
+                            verified={verification.vehiculeRegistration.verified}
+                          />
+                        )}
+                      </>
                     )}
-                    {verification.vehiculeRegistration && (
-                      <DocCard
-                        title="Vehicle Registration"
-                        url={verification.vehiculeRegistration.url}
-                        verified={verification.vehiculeRegistration.verified}
-                      />
-                    )}
-                    {verification.businessLicenseNumber && (
-                      <DocCard
-                        title="Business License"
-                        url={verification.businessLicenseNumber.url}
-                        verified={verification.businessLicenseNumber.verified}
-                      />
-                    )}
-                    {verification.taxId && (
-                      <DocCard
-                        title="Tax ID"
-                        url={verification.taxId.url}
-                        verified={verification.taxId.verified}
-                      />
+                    
+                    {/* Only show business documents for restaurant and supermarket roles */}
+                    {(verification.userId?.role === "restaurant" || verification.userId?.role === "supermarket") && (
+                      <>
+                        {verification.businessLicenseNumber && (
+                          <DocCard
+                            title="Business License"
+                            url={verification.businessLicenseNumber.url}
+                            verified={verification.businessLicenseNumber.verified}
+                          />
+                        )}
+                        {verification.taxId && (
+                          <DocCard
+                            title="Tax ID"
+                            url={verification.taxId.url}
+                            verified={verification.taxId.verified}
+                          />
+                        )}
+                      </>
                     )}
                   </div>
                   {/* Approve/Reject Buttons avec meilleur contraste (ratio ≥ 4.7:1) */}

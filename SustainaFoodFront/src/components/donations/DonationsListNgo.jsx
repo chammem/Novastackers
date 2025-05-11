@@ -123,11 +123,11 @@ const DonationListNgo = () => {
     name: '',
     description: '',
     endingDate: ''
-    // location field removed
   });
   const [createImageFile, setCreateImageFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [nameError, setNameError] = useState(""); // Add state for name validation error
   
   // Handler for opening the create campaign popup
   const handleCreateClick = () => {
@@ -135,17 +135,46 @@ const DonationListNgo = () => {
       name: '',
       description: '',
       endingDate: ''
-      // location field removed
     });
+    setNameError("");
     setCreateImageFile(null);
     setPreviewImage(null);
     setIsCreating(true);
   };
   
+  // Add validation function for campaign name
+  const validateCampaignName = (name) => {
+    if (!name.trim()) {
+      setNameError("Campaign name is required");
+      return false;
+    } else if (name.length < 3) {
+      setNameError("Campaign name must be at least 3 characters");
+      return false;
+    } else if (name.length > 50) {
+      setNameError("Campaign name must be less than 50 characters");
+      return false;
+    }
+    setNameError("");
+    return true;
+  };
+  
+  // Enhanced input change handler for campaign name
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    setCreateForm(prev => ({ ...prev, name: value }));
+    if (value.trim()) {
+      validateCampaignName(value);
+    }
+  };
+  
   // Handle input changes in the creation form
   const handleCreateInputChange = (e) => {
     const { name, value } = e.target;
-    setCreateForm({ ...createForm, [name]: value });
+    if (name === "name") {
+      handleNameChange(e);
+    } else {
+      setCreateForm(prev => ({ ...prev, [name]: value }));
+    }
   };
   
   // Handle image selection for campaign creation
@@ -166,6 +195,12 @@ const DonationListNgo = () => {
   // Handle submission of the create campaign form
   const handleCreateSubmit = async (e) => {
     if (e) e.preventDefault();
+    
+    // Validate campaign name before submission
+    if (!validateCampaignName(createForm.name)) {
+      return;
+    }
+    
     setFormLoading(true);
     
     try {
@@ -659,12 +694,16 @@ const DonationListNgo = () => {
 
                         {/* Content */}
                         <div className="p-6">
+                          {/* Campaign name - add this new heading */}
+                          <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-1 hover:line-clamp-none transition-all duration-300">
+                            {campaign.name || "Unnamed Campaign"}
+                          </h3>
+                          
                           <p className="text-gray-600 line-clamp-2 mb-4">
                             {campaign.description || "Help us make a difference with your generous donations of food items."}
                           </p>
                         
-                         
-                          {/* Date indicator */}
+                         {/* Date indicator */}
                           <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                             <div className="flex items-center">
                               <FiCalendar className="mr-1.5 text-green-500" />
@@ -848,6 +887,7 @@ const DonationListNgo = () => {
                         required
                         placeholder="Enter campaign name"
                       />
+                      {nameError && <p className="text-red-500 text-sm mt-1">{nameError}</p>}
                     </div>
                     
                     <div>

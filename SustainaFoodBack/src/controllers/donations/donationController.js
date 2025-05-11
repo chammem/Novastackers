@@ -899,3 +899,7 @@ exports.forceUpdateMetrics = async (req, res) => {
     });
   }
 };
+
+/**
+ * Get all food items with pagination, filtering and sorting options
+ */

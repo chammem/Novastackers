@@ -384,16 +384,16 @@ const Profile = () => {
       
       if (activity.type === "delivered" || activity.type === "completed") {
         icon = <FiHeart />;
-        bgColor = "bg-purple-100";
-        textColor = "text-purple-600";
+        bgColor = "bg-green-100";
+        textColor = "text-green-600";
       } else if (activity.type === "pending" || activity.type === "assigned" || activity.type === "campaign") {
         icon = <FiStar />;
-        bgColor = "bg-blue-100";
-        textColor = "text-blue-600";
+        bgColor = "bg-green-100";
+        textColor = "text-green-600";
       } else if (activity.type === "update") {
         icon = <FiEdit />;
-        bgColor = "bg-amber-100";
-        textColor = "text-amber-600";
+        bgColor = "bg-green-100";
+        textColor = "text-green-600";
       }
       
       // Format date as relative time if less than 7 days ago, otherwise as date
@@ -451,7 +451,7 @@ const Profile = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50 py-12 px-4"
+        className="min-h-screen bg-gradient-to-b from-green-50 to-green-50 py-12 px-4"
       >
         <div className="max-w-5xl mx-auto">
           {/* Top profile summary card */}
@@ -461,7 +461,7 @@ const Profile = () => {
             transition={{ type: "spring", damping: 15 }}
             className="bg-white rounded-2xl shadow-xl mb-8 overflow-hidden"
           >
-            <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 h-40 relative">
+            <div className="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-600 h-40 relative">
               {/* Animated floating bubbles for visual effect */}
               <div className="absolute w-20 h-20 rounded-full bg-white/10 top-5 left-10 animate-pulse"></div>
               <div className="absolute w-12 h-12 rounded-full bg-white/10 top-20 left-40 animate-pulse" style={{ animationDelay: "1s" }}></div>
@@ -511,7 +511,7 @@ const Profile = () => {
                     {user?.role}
                   </span>
                   {user?.active ? (
-                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full flex items-center">
+                    <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full flex items-center">
                       <FiCheckCircle className="mr-1" /> Verified
                     </span>
                   ) : (
@@ -903,7 +903,7 @@ const Profile = () => {
                             </label>
                             <div className="w-full bg-base-200 rounded-full h-2.5">
                               <div
-                                className="bg-success h-2.5 rounded-full"
+                                className="bg-green-500 h-2.5 rounded-full"
                                 style={{ width: "70%" }}
                               ></div>
                             </div>
@@ -1099,7 +1099,7 @@ const Profile = () => {
               {/* Keep the Recent activity section */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                  <FiActivity className="mr-2 text-purple-500" /> Recent Activity
+                  <FiActivity className="mr-2 text-green-500" /> Recent Activity
                 </h3>
                 <div className="space-y-4">
                   {renderActivityItems()}
@@ -1109,7 +1109,7 @@ const Profile = () => {
               {/* Account Status - focused on real data */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                  <FiUser className="mr-2 text-amber-500" /> Account Status
+                  <FiUser className="mr-2 text-green-500" /> Account Status
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
@@ -1126,8 +1126,8 @@ const Profile = () => {
                   
                   {donationCount > 0 && (
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <FiStar className="text-blue-600" />
+                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                        <FiStar className="text-green-600" />
                       </div>
                       <div>
                         <p className="text-sm font-medium">
@@ -1140,8 +1140,8 @@ const Profile = () => {
                   )}
                   
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                      <FiCalendar className="text-purple-600" />
+                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                      <FiCalendar className="text-green-600" />
                     </div>
                     <div>
                       <p className="text-sm font-medium">Member Since</p>
