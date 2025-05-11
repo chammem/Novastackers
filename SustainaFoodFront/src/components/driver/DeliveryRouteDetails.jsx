@@ -17,6 +17,7 @@ import {
 } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
 import DeliveryRouteMap from "./DeliveryRouteMap";
+import { socket } from "../../utils/socket";
 
 const DeliveryRouteDetails = () => {
   const { orderId } = useParams();
@@ -118,6 +119,37 @@ const DeliveryRouteDetails = () => {
       }
     }
   }, [delivery]);
+
+  // Send driver location updates to the server periodically
+  useEffect(() => {
+    if (!user || !user._id || !delivery || !userLocation) return;
+    
+    // Send initial location update
+    socket.emit('driver-location-update', {
+      driverId: user._id,
+      orderId: delivery._id,
+      location: {
+        lat: userLocation[0],
+        lng: userLocation[1]
+      }
+    });
+    
+    // Set up periodic updates (every 15 seconds)
+    const intervalId = setInterval(() => {
+      if (userLocation) {
+        socket.emit('driver-location-update', {
+          driverId: user._id,
+          orderId: delivery._id,
+          location: {
+            lat: userLocation[0],
+            lng: userLocation[1]
+          }
+        });
+      }
+    }, 15000);
+    
+    return () => clearInterval(intervalId);
+  }, [user, delivery, userLocation]);
 
   // Handle starting pickup process
   const handleStartPickup = async () => {

@@ -312,6 +312,143 @@ const FoodSalePage = () => {
 
   return (
     <>
+    <HeaderMid/>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-primary">Available Food Deals</h1>
+        {user && (user.role === "restaurant" || user.role === "supermarket") && (
+          <button 
+            className="btn btn-primary"
+            onClick={() => navigate('/add-food-sale')}
+          >
+            Add Food For Sale
+          </button>
+        )}
+      </div>
+
+      {foodItems.length === 0 ? (
+        <div className="text-center py-10">
+          <div className="text-xl text-gray-500">No food items available for sale at this moment</div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {foodItems.map((item, index) => (
+            <motion.div
+              key={item._id}
+              custom={index}
+              initial="hidden"
+              animate="visible"
+              variants={cardVariants}
+              whileHover={{ scale: 1.03 }}
+              className="card bg-base-100 shadow-xl overflow-hidden"
+            >
+              {item.foodItem && (item.foodItem.image_url || item.foodItem.image || item.image) ? (
+                <figure className="h-48 w-full relative">
+                  <img 
+                    src={item.foodItem?.image_url || item.foodItem?.image || item.image} 
+                    alt={item.foodItem?.name || "Food item"} 
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "https://placehold.co/600x400?text=No+Image";
+                    }}
+                  />
+                  <div className="absolute top-2 right-2 badge badge-accent p-3">
+                    ${item.discountedPrice || item.price}
+                  </div>
+                </figure>
+              ) : (
+                <div className="h-48 w-full bg-gray-200 flex items-center justify-center">
+                  <FiShoppingBag size={40} className="text-gray-400" />
+                  <div className="absolute top-2 right-2 badge badge-accent p-3">
+                    ${item.discountedPrice || item.price}
+                  </div>
+                </div>
+              )}
+              
+              <div className="card-body">
+                <h2 className="card-title">{item.foodItem.name}</h2>
+                
+                {item.discountedPrice && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold text-accent">${item.discountedPrice}</span>
+                    <span className="text-sm line-through text-gray-500">${item.price}</span>
+                    <span className="badge badge-secondary">
+                      {Math.round((1 - item.discountedPrice / item.price) * 100)}% off
+                    </span>
+                  </div>
+                )}
+                
+                {!item.discountedPrice && (
+                  <p className="text-lg font-semibold text-accent">${item.price}</p>
+                )}
+                
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500">
+                    {item.foodItem.category && <span className="badge badge-outline mr-2">{item.foodItem.category}</span>}
+                    {item.foodItem.size && <span className="badge badge-outline">{item.foodItem.size}</span>}
+                  </p>
+                </div>
+                
+                {item.foodItem.allergens && (
+                  <p className="text-sm text-gray-500">
+                    <span className="font-semibold">Allergens:</span> {item.foodItem.allergens}
+                  </p>
+                )}
+                
+                <div className="flex justify-between items-center mt-2">
+                  <div className="flex items-center gap-2 text-warning">
+                    <FiClock />
+                    <span className="text-sm font-medium">
+                      {getTimeRemaining(item.expiresAt || item.foodItem.expiry_date)}
+                    </span>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {item.quantityAvailable} available
+                  </span>
+                </div>
+                <div className="flex flex-col mt-3 pt-3 border-t border-base-200">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="avatar">
+                <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs">
+                  {item.foodItem.buisiness_id ? item.foodItem.buisiness_id.toString()[0].toUpperCase() : "R"}
+                </div>
+              </div>
+              <span className="text-sm font-medium truncate">
+                {item.businessName || "View restaurant details"}
+              </span>
+            </div>
+            <motion.button 
+              className="btn btn-sm btn-outline btn-secondary"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/restaurant/${item.foodItem.buisiness_id}`);
+              }}
+            >
+              <FiMapPin className="mr-1" /> View Business Details
+            </motion.button>
+          </div>
+
+         <div className="card-actions mt-3">
+          <button 
+            className="btn btn-primary btn-sm btn-block"
+            onClick={(e) => {
+              e.preventDefault(); // Prevent any default behavior
+              console.log("Navigating to:", `/order-confirmation/${item._id}`);
+              navigate(`/order-confirmation/${item._id}`);
+            }}
+          >
+            Order Now
+          </button>
+        </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
       <HeaderMid/>
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white pb-16">
         {/* Decorative background elements */}
