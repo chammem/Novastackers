@@ -6,6 +6,7 @@ import HeaderMid from './HeaderMid';
 import Footer from './Footer';
 import { useNavigate } from 'react-router-dom';
 import Modal from './ui/Modal';
+import axios from 'axios';
 
 const AvailableFoodList = () => {
   const [foodItems, setFoodItems] = useState([]);
@@ -13,21 +14,37 @@ const AvailableFoodList = () => {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all'); // Filter state for user or supermarket
   const [selectedAllergens, setSelectedAllergens] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchFoodSales = async () => {
       try {
-        setLoading(true);
-        const response = await getAllFoodSales();
-        console.log('Food sales response:', response);
-        if (response && response.data) {
-          setFoodItems(response.data);
+        let data;
+        if (filter === 'all') {
+          const response = await getAllFoodSales();
+          data = response.data;
+        } else {
+          const response = await getFoodSalesByRole(filter);
+          data = response.data;
         }
+        console.log('Filter:', filter); // Log the current filter
+        console.log('API Response:', data); // Log the API response to verify its structure
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+          console.warn('No food items available:', data);
+          setFoodItems([]); // Handle empty data
+        } else if (!Array.isArray(data)) {
+          console.warn('API returned a single item, wrapping in an array:', data);
+          setFoodItems([data]); // Wrap single item in an array
+        } else {
+          setFoodItems(data); // Set the food items if the response is valid
+        }
+        setLoading(false);
+        setError(null); // Reset the error state when data is successfully fetched
       } catch (err) {
-        console.error('Error details:', err);
-        setError('Unable to load food items. Please try again later.');
-      } finally {
+        console.error('Error fetching food sales:', err);
+        setError('Failed to load food sales. Please try again later.');
         setLoading(false);
       }
     };
@@ -104,6 +121,20 @@ const AvailableFoodList = () => {
   const closeAllergensModal = () => {
     setSelectedAllergens(null);
   };
+
+  const fetchRecommendations = async (productName) => {
+    try {
+        const response = await axios.get(`/api/recommendations/${productName}`);
+        if (response.data.success) {
+            setRecommendations(response.data.recommendations);
+            setSelectedProduct(productName);
+        } else {
+            console.error('No recommendations found');
+        }
+    } catch (error) {
+        console.error('Error fetching recommendations:', error);
+    }
+};
 
   return (
     <>
@@ -270,6 +301,17 @@ const AvailableFoodList = () => {
               </button>
             </div>
           </Modal>
+        )}
+
+        {selectedProduct && (
+          <div>
+            <h2>Recommendations for {selectedProduct}</h2>
+            <ul>
+                {recommendations.map((rec, index) => (
+                    <li key={index}>{rec.product_name} - Similarity: {rec.similarity}</li>
+                ))}
+            </ul>
+          </div>
         )}
       </div>
       <Footer />

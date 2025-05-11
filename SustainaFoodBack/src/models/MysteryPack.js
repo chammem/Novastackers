@@ -1,52 +1,50 @@
 const mongoose = require('mongoose');
 
-const mysteryPackSchema = new mongoose.Schema({
+const mysterypackSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   description: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   originalPrice: {
     type: Number,
-    required: true
+    required: true,
+    min: 0
   },
   discountedPrice: {
     type: Number,
-    required: true
+    required: true,
+    min: 0
   },
-  imageUrl: {
-    type: String,
-    default: 'https://via.placeholder.com/400x300'
-  },
-  pickupTime: {
-    type: String,
-    default: '18h00 - 20h00'
-  },
-  location: {
-    type: String,
-    default: 'Adresse non spécifiée'
-  },
-  restaurant: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Restaurant',
-    required: true
-  },
+  pickupTime: String,
+  location: String,
   category: {
     type: String,
-    required: true,
-    enum: ['Breakfast', 'Lunch', 'Dinner', 'Bakery', 'Groceries']
+    default: 'Lunch'
   },
   availableQuantity: {
     type: Number,
+    required: true,
+    min: 0
+  },
+  restaurant: {
+    type: String,
     required: true
   },
   selectedItems: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'FoodSale'
-  }]
-}, { timestamps: true });
+  }],
+  imageUrl: String,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
 
-module.exports = mongoose.model('MysteryPack', mysteryPackSchema);
+module.exports = mongoose.model('mysterypack', mysterypackSchema);

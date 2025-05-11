@@ -1,39 +1,19 @@
 // src/services/mysteryPackApi.js
-import axiosInstance from "../config/axiosInstance";
+import axiosInstance from './axiosInstance';
+
+const BASE_URL = '/api';
+
+export const getMysteryPacks = () => {
+  return axiosInstance.get(`${BASE_URL}/mystery-packs`);
+};
+
+export const getFoodSales = () => {
+  return axiosInstance.get(`${BASE_URL}/food-sales`);
+};
 
 const mysteryPackApi = {
-  // 🔹 Récupérer tous les MysteryPacks
-  getAllMysteryPacks: () => axiosInstance.get("/mystery-packs"),
-
-  // 🔹 Récupérer un MysteryPack par ID
-  getMysteryPackById: (packId) => axiosInstance.get(`/mystery-packs/${packId}`),
-
-  // 🔹 Créer un nouveau MysteryPack
-  createMysteryPack: (newPackData) => axiosInstance.post("/mystery-packs", newPackData),
-
-  // 🔹 Mettre à jour un MysteryPack
-  updateMysteryPack: (packId, updatedData) => axiosInstance.put(`/mystery-packs/${packId}`, updatedData),
-
-  // 🔹 Supprimer un MysteryPack
-  deleteMysteryPack: (id) => axiosInstance.delete(`/mystery-packs/${id}`),
-
-  // 🔹 Réserver un MysteryPack
-  reserveMysteryPack: (packId) => axiosInstance.patch(`/mystery-packs/${packId}/reserve`),
-
-  // 🔹 Récupérer tous les articles FoodSales
-  getFoodSales: () => axiosInstance.get("/food-sales"),  // Changed endpoint
-
-  // 🔹 Créer un mystery pack avec articles sélectionnés
-  createMysteryPackWithItems: (formData) => {
-    return axiosInstance.post("/mystery-packs/new", formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
-    }).catch(error => {
-      console.error('Error creating mystery pack:', error);
-      throw error;
-    });
-  },
+  getMysteryPacks,
+  getFoodSales
 };
 
 export default mysteryPackApi;

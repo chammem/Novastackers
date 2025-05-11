@@ -55,6 +55,10 @@ import AvailableFoodList from './components/AvailableFoodList.jsx';
 import FoodRecommendations from './components/FoodRecommendations.jsx';
 import MysteryPackList from "./components/MysteryPacks/MysteryPackList.jsx";
 import MysteryPackCard from "./components/MysteryPacks/MysteryPackCard.jsx";
+import { initializeCopyFeature } from './utils/modernCopy';
+
+// Initialize modern copy functionality
+initializeCopyFeature();
 
 const router = createBrowserRouter([
   {

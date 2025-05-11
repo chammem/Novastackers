@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axiosInstance from "../config/axiosInstance";
+import axiosInstance from "../services/axiosInstance";
 
 const AuthContext = createContext();
 
@@ -11,19 +11,28 @@ export function AuthProvider({ children }) {
   // Function to check authentication status from server
   const checkAuthStatus = async () => {
     try {
-      setIsLoading(true);
-      const response = await axiosInstance.get("/user-details"); // Endpoint that returns current user from cookie
-      if (response.data.success) {
-        setUser(response.data.data);
-        setIsAuthenticated(true);
-      } else {
-        setUser(null);
+      const token = localStorage.getItem('token');
+      if (!token) {
         setIsAuthenticated(false);
+        setUser(null);
+        return;
+      }
+
+      const response = await axiosInstance.get('/api/auth/user-details', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.data.success) {
+        setUser(response.data.user);
+        setIsAuthenticated(true);
       }
     } catch (error) {
-      console.error("Error checking auth status:", error);
+      console.error('Auth check failed:', error.response?.data?.message || error.message);
       setUser(null);
       setIsAuthenticated(false);
+      localStorage.removeItem('token');
     } finally {
       setIsLoading(false);
     }
