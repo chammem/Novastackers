@@ -66,6 +66,9 @@ import DeliveryNotification from './components/driver/DeliveryNotification.jsx';
 import AllDeliveriesMap from './components/driver/AllDeliveriesMap.jsx';
 import RequestedDeliveries from './components/driver/RequestedDeliveries.jsx';
 import DeliveryRouteDetails from './components/driver/DeliveryRouteDetails.jsx';
+import About from './components/About.jsx'
+import Contact from './components/Contact.jsx'
+import Features from './components/Features.jsx'
 
 const router = createBrowserRouter([
   {
@@ -81,6 +84,9 @@ const router = createBrowserRouter([
       { path: "activateAccount", element: <ActivateAccount /> },
       { path: "forgot-password", element: <ForgotPasswordFlow /> }, 
       { path: "role", element: <RoleChoice /> },
+      { path: "about", element: <About/> },
+      { path: "contact", element: <Contact/> },
+      { path: "features", element: <Features/> },
       { path: "verify", element: <VerifyAccount /> },
       {path:"/donationForm",element:<CreateDonationForm/>},
       {path:"/donations",element:<DonationsList/>},

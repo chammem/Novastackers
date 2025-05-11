@@ -209,7 +209,7 @@ function Home() {
                   transition={{ delay: 0.6 }}
                   className="mt-4 flex gap-4"
                 >
-                  <Link to="/signup" className="btn btn-primary gap-2">
+                  <Link to="/role" className="btn btn-primary gap-2">
                     Get Started <FiArrowRight />
                   </Link>
                   <Link to="/about" className="btn btn-outline">
@@ -225,7 +225,7 @@ function Home() {
                   transition={{ delay: 0.6 }}
                   className="mt-4"
                 >
-                  <Link to="/signup" className="btn btn-primary gap-2">
+                  <Link to="/role" className="btn btn-primary gap-2">
                     Choose Your Role <FiArrowRight />
                   </Link>
                 </motion.div>
@@ -243,29 +243,29 @@ function Home() {
           </div>
           <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
             <img
-              src="https://placehold.co/160x40/png?text=Partner+Logo"
-              alt="Partner"
-              className="h-8"
+              src="https://pbs.twimg.com/profile_images/1394261489054277638/rijXG1C__400x400.jpg"
+              alt="ESPRIT"
+              className="h-28"
             />
             <img
-              src="https://placehold.co/160x40/png?text=Partner+Logo"
-              alt="Partner"
-              className="h-8"
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbEszBK8o6mRtfD7N1Kjqmvl7bDHHNwXg8mQ&s"
+              alt="monoprix"
+              className="h-28"
             />
             <img
-              src="https://placehold.co/160x40/png?text=Partner+Logo"
-              alt="Partner"
-              className="h-8"
+              src="https://upload.wikimedia.org/wikipedia/fr/4/41/Logo_Minist%C3%A8re_de_l%27Agriculture_%28Tunisie%29.png"
+              alt="agriculture ministry"
+              className="h-28"
             />
             <img
-              src="https://placehold.co/160x40/png?text=Partner+Logo"
-              alt="Partner"
-              className="h-8"
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJefSQeY_XQMpyaGR56zyZ5A-a5c4qr0-FCA&s"
+              alt="Tunisian Red Crescent"
+              className="h-28"
             />
             <img
-              src="https://placehold.co/160x40/png?text=Partner+Logo"
-              alt="Partner"
-              className="h-8"
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVxqFqyHLKqm57Y18TuKnYskwrxi5zQlrsAg&s"
+              alt="Mazraa Market"
+              className="h-28"
             />
           </div>
         </div>
