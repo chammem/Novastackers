@@ -1,5 +1,4 @@
 import React from 'react';
-
 import AdminNavbar from './AdminNavbar';
 import { useState } from 'react';
 
@@ -25,12 +24,23 @@ const AdminFoodTab = () => {
         activeTab="food"
       />
       
-      <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'ml-80' : 'ml-20'}`}>
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Food Management</h2>
-            <button className="btn btn-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+      <div 
+        className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-16'} pt-20 pb-8 px-2 md:px-8`}
+        style={{ minHeight: "calc(100vh - 64px)" }}
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Header créatif et simple */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-green-700 mb-1">
+                Food Management
+              </h1>
+              <p className="text-gray-500 text-base md:text-lg">
+                Manage your food inventory and track availability in real-time.
+              </p>
+            </div>
+            <button className="inline-block px-4 py-2 bg-green-100 text-green-700 rounded-full font-semibold shadow hover:bg-green-200 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
               </svg>
               Add Food Item

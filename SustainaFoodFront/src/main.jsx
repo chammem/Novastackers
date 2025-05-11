@@ -28,6 +28,7 @@ import CharityEventDetails from './components/donations/CharityEventDetails.jsx'
 import TestCharityPage from './components/donations/TestCharityPage.jsx'
 import DonationListNgo from './components/donations/DonationsListNgo.jsx'
 import ViewCampaignProgress from './components/donations/ViewCampaignProgress.jsx'
+import CampaignAnalytics from './components/donations/CampaignAnalytics.jsx'
 import VolunteerDashboard from './components/donations/VolunteerDashboard.jsx'
 import NotificationsPage from './components/NotificationPage.jsx'
 import { NotificationProvider } from './context/NotificationContext';
@@ -88,6 +89,7 @@ const router = createBrowserRouter([
       {path:"/test",element:<TestCharityPage/>},
       {path:"/my-campaigns" ,element:<DonationListNgo/>},
       {path:"/my-campaigns/:id",element:<ViewCampaignProgress/>},
+      {path:"/my-campaigns-analytics",element:<CampaignAnalytics/>}, // No ID parameter needed for general view
       {path:"/volunteer",element:<VolunteerDashboard/>},
       {path:"/notifications",element:<NotificationsPage/>},
       { path: "/ngo-profile", element: <NGOProfileUpdate /> },
@@ -114,9 +116,6 @@ const router = createBrowserRouter([
       {path:"/deliveries-map",element:<AllDeliveriesMap/>},
       //sinda
       { path: "/available-food", element: <AvailableFoodList /> },
-      { path: '/available-suggestions', element: <AvailableSuggestions threshold={0.5} /> },
-      { path: "/recommendations",element: <ProtectedRoute><FoodRecommendations /></ProtectedRoute>},
-      { path: '/suggested-products', element: <SuggestedProducts /> },
       { path: '/suggested-products-list', element: <SuggestedProductsList /> },
       
       {
