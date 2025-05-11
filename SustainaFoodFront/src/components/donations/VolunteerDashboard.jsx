@@ -234,114 +234,112 @@ const VolunteerDashboard = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
-        className="min-h-screen bg-base-200"
+        className="min-h-screen bg-gradient-to-b from-green-50 to-white pb-12"
       >
-        {/* Hero Section with Stats */}
+        {/* Modern Hero Section with Animated Elements */}
         <motion.div
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.4 }}
-          className="bg-primary text-primary-content py-8 px-4"
+          className="relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-500 text-white py-10 px-4"
         >
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold mb-2">Volunteer Dashboard</h1>
-              <p>
-                Welcome back, {user?.fullName || "Volunteer"}! You're making a
-                difference.
+          {/* Animated decorative elements */}
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+            <div className="absolute right-0 bottom-0 w-96 h-96 bg-white rounded-full transform translate-x-1/3 translate-y-1/3"></div>
+            <div className="absolute right-20 top-10 w-24 h-24 bg-white rounded-full"></div>
+            <div className="absolute left-20 top-20 w-32 h-32 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+          </div>
+
+          <div className="max-w-6xl mx-auto relative z-10">
+            <div className="mb-8">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">Volunteer Dashboard</h1>
+              <p className="text-green-50 md:text-lg">
+                Welcome back, {user?.fullName || "Volunteer"}! You're making a difference.
               </p>
             </div>
 
-            <div className="stats stats-vertical md:stats-horizontal shadow w-full bg-primary-content/10 backdrop-blur-sm">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1, duration: 0.4 }}
-                className="stat"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:transform hover:scale-105"
               >
-                <div className="stat-figure text-info">
-                  <div className="avatar">
-                    <div className="w-12 h-12 rounded-full bg-info/30 flex items-center justify-center">
-                      <FiPackage size={20} className="text-info" />
-                    </div>
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mr-4">
+                    <FiPackage size={24} className="text-white" />
+                  </div>
+                  <div>
+                    <div className="text-4xl font-bold">{stats.assigned}</div>
+                    <div className="text-green-50">Assigned</div>
                   </div>
                 </div>
-                <div className="stat-title text-primary-content/80">
-                  Assigned
-                </div>
-                <div className="stat-value text-info">{stats.assigned}</div>
-                <div className="stat-desc text-primary-content/70">
-                  Tasks waiting for pickup
-                </div>
+                <p className="text-green-50 text-sm">Tasks waiting for pickup</p>
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.4 }}
-                className="stat"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:transform hover:scale-105"
               >
-                <div className="stat-figure text-warning">
-                  <div className="avatar">
-                    <div className="w-12 h-12 rounded-full bg-warning/30 flex items-center justify-center">
-                      <FiTruck size={20} className="text-warning" />
-                    </div>
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mr-4">
+                    <FiTruck size={24} className="text-white" />
+                  </div>
+                  <div>
+                    <div className="text-4xl font-bold">{stats.pickedUp}</div>
+                    <div className="text-green-50">Picked Up</div>
                   </div>
                 </div>
-                <div className="stat-title text-primary-content/80">
-                  Picked Up
-                </div>
-                <div className="stat-value text-warning">{stats.pickedUp}</div>
-                <div className="stat-desc text-primary-content/70">
-                  In transit to charity
-                </div>
+                <p className="text-green-50 text-sm">In transit to charity</p>
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.4 }}
-                className="stat"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:transform hover:scale-105"
               >
-                <div className="stat-figure text-success">
-                  <div className="avatar">
-                    <div className="w-12 h-12 rounded-full bg-success/30 flex items-center justify-center">
-                      <FiCheck size={20} className="text-success" />
-                    </div>
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mr-4">
+                    <FiCheck size={24} className="text-white" />
+                  </div>
+                  <div>
+                    <div className="text-4xl font-bold">{stats.delivered}</div>
+                    <div className="text-green-50">Delivered</div>
                   </div>
                 </div>
-                <div className="stat-title text-primary-content/80">
-                  Delivered
-                </div>
-                <div className="stat-value text-success">{stats.delivered}</div>
-                <div className="stat-desc text-primary-content/70">
-                  Successfully completed
-                </div>
+                <p className="text-green-50 text-sm">Successfully completed</p>
               </motion.div>
             </div>
           </div>
         </motion.div>
 
-        {/* Filters */}
+        {/* Modern Filter Section */}
         <motion.div
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.3 }}
-          className="bg-base-100 shadow py-4 sticky top-0 z-30"
+          className="bg-white shadow-md py-4 sticky top-0 z-30 border-b border-gray-100"
         >
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">Your Assignments</h2>
+              <h2 className="text-xl font-bold text-gray-800">Your Assignments</h2>
 
               <div className="flex items-center gap-2">
                 <motion.button
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => refreshFoodList()}
-                  className="btn btn-sm btn-primary"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
                   disabled={loading}
                 >
                   {loading ? (
-                    <span className="loading loading-spinner loading-xs"></span>
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                   ) : (
                     <FiRefreshCw className="h-4 w-4" />
                   )}
@@ -349,9 +347,10 @@ const VolunteerDashboard = () => {
                 </motion.button>
 
                 <motion.button
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowFilters(!showFilters)}
-                  className="btn btn-sm btn-outline"
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <FiFilter className="h-4 w-4" />
                   Filter
@@ -368,13 +367,11 @@ const VolunteerDashboard = () => {
                   transition={{ duration: 0.3 }}
                   className="overflow-hidden mt-4"
                 >
-                  <div className="flex flex-wrap gap-4 items-end">
-                    <div className="form-control flex-1 min-w-[200px]">
-                      <label className="label">
-                        <span className="label-text">Status</span>
-                      </label>
+                  <div className="flex flex-wrap gap-4 items-end p-4 bg-gray-50 rounded-xl">
+                    <div className="flex-1 min-w-[200px]">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                       <select
-                        className="select select-bordered w-full"
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
                       >
@@ -385,18 +382,16 @@ const VolunteerDashboard = () => {
                       </select>
                     </div>
 
-                    <div className="form-control flex-1 min-w-[300px]">
-                      <label className="label">
-                        <span className="label-text">Search</span>
-                      </label>
+                    <div className="flex-1 min-w-[300px]">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-content">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                           <FiSearch />
                         </span>
                         <input
                           type="text"
                           placeholder="Search by name or category"
-                          className="input input-bordered w-full pl-10"
+                          className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -409,24 +404,36 @@ const VolunteerDashboard = () => {
           </div>
         </motion.div>
 
-        {/* Tabs */}
-        <div className="tabs tabs-boxed justify-center max-w-md mx-auto my-4">
-          <a
-            className={`tab ${activeTab === "individual" ? "tab-active" : ""}`}
-            onClick={() => setActiveTab("individual")}
-          >
-            Individual Items
-          </a>
-          <a
-            className={`tab ${activeTab === "batches" ? "tab-active" : ""}`}
-            onClick={() => setActiveTab("batches")}
-          >
-            Optimized Batches
-          </a>
+        {/* Enhanced Tabs */}
+        <div className="max-w-6xl mx-auto px-4 my-8">
+          <div className="flex justify-center">
+            <div className="inline-flex p-1 rounded-xl bg-gray-100">
+              <button
+                className={`py-2 px-5 rounded-lg font-medium transition-all ${
+                  activeTab === "individual" 
+                    ? 'bg-white text-green-700 shadow-md' 
+                    : 'text-gray-700 hover:bg-gray-200'
+                }`}
+                onClick={() => setActiveTab("individual")}
+              >
+                <FiPackage className="inline mr-2" /> Individual Items
+              </button>
+              <button
+                className={`py-2 px-5 rounded-lg font-medium transition-all ${
+                  activeTab === "batches" 
+                    ? 'bg-white text-green-700 shadow-md' 
+                    : 'text-gray-700 hover:bg-gray-200'
+                }`}
+                onClick={() => setActiveTab("batches")}
+              >
+                <FiTruck className="inline mr-2" /> Optimized Batches
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Content - keep existing IndividualItemsList and BatchesList */}
+        <div className="max-w-6xl mx-auto px-4">
           {activeTab === "individual" ? (
             <IndividualItemsList
               filteredFoods={filteredFoods}
@@ -448,58 +455,75 @@ const VolunteerDashboard = () => {
         </div>
       </motion.div>
 
-      {/* Code Input Modal */}
+      {/* Improved Code Input Modal */}
       <AnimatePresence>
         {showCodeInput && (
-          <div className="modal modal-open">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="modal-box"
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
             >
-              <div className="flex justify-center mb-6">
-                <div className="w-16 h-16 flex items-center justify-center rounded-full bg-primary/10 text-primary">
-                  {actionType === "pickup" ? (
-                    <FiTruck className="w-8 h-8" />
-                  ) : (
-                    <FiCheck className="w-8 h-8" />
-                  )}
+              {/* Modal header with gradient */}
+              <div className="bg-gradient-to-r from-green-600 to-emerald-500 p-6 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-full opacity-10">
+                  <div className="absolute right-10 bottom-10 w-32 h-32 bg-white rounded-full transform translate-x-1/3 translate-y-1/3"></div>
+                </div>
+                <div className="relative z-10 flex items-center justify-center">
+                  <div className="w-16 h-16 flex items-center justify-center rounded-full bg-white/20 text-white">
+                    {actionType === "pickup" ? (
+                      <FiTruck className="w-8 h-8" />
+                    ) : (
+                      <FiCheck className="w-8 h-8" />
+                    )}
+                  </div>
                 </div>
               </div>
-              <h3 className="font-bold text-xl text-center">
-                Enter {actionType === "pickup" ? "Pickup" : "Delivery"} Code
-              </h3>
-              <p className="py-4 text-center">
-                Please enter the code provided by the{" "}
-                {actionType === "pickup" ? "business" : "charity"} to confirm
-                the {actionType}.
-              </p>
-              <div className="form-control w-full max-w-xs mx-auto">
-                <input
-                  type="text"
-                  placeholder="Enter code"
-                  className="input input-bordered w-full text-center text-xl tracking-widest"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  autoFocus
-                />
-              </div>
-              <div className="modal-action">
-                <button className="btn" onClick={() => setShowCodeInput(false)}>
-                  Cancel
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={handleConfirmCode}
-                  disabled={inProgress || !code.trim()}
-                >
-                  {inProgress ? (
-                    <span className="loading loading-spinner loading-sm mr-2"></span>
-                  ) : null}
-                  Confirm
-                </button>
+              
+              <div className="p-6">
+                <h3 className="font-bold text-xl text-center text-gray-800 mb-2">
+                  Enter {actionType === "pickup" ? "Pickup" : "Delivery"} Code
+                </h3>
+                <p className="text-gray-600 text-center mb-6">
+                  Please enter the code provided by the{" "}
+                  {actionType === "pickup" ? "business" : "charity"} to confirm
+                  the {actionType}.
+                </p>
+                
+                <div className="form-control w-full max-w-xs mx-auto">
+                  <input
+                    type="text"
+                    placeholder="Enter code"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-center text-xl tracking-widest"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-3 mt-8">
+                  <button 
+                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                    onClick={() => setShowCodeInput(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
+                    onClick={handleConfirmCode}
+                    disabled={inProgress || !code.trim()}
+                  >
+                    {inProgress ? (
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : null}
+                    Confirm
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
