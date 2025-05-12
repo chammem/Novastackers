@@ -79,7 +79,6 @@ jobs:
       - name: Run tests with coverage
         working-directory: SustainaFoodBack
         run: npm run test:coverage
-        
 
       - name: Create SonarCloud Project (Backend)
         run: |
@@ -122,65 +121,61 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18  # Upgrade to Node 20 to support react-router requirements
+          node-version: 18
 
       - name: Install dependencies
         working-directory: SustainaFoodFront
-        run: |
-          # Update package-lock.json to resolve missing dependencies
-          npm install --package-lock-only
-          # Use legacy-peer-deps flag to handle peer dependency conflicts
-          npm ci --legacy-peer-deps
+        run: npm ci
 
       - name: Run tests with coverage
         working-directory: SustainaFoodFront
         run: npm test -- --coverage --watchAll=false
-       
+
       - name: Create SonarCloud Project (Frontend)
         run: |
           curl -X POST "$SONAR_HOST/api/projects/create" \
             -u "$SONAR_TOKEN:" \
             -d "project=$FRONTEND_KEY&name=SustainaFood+Frontend&organization=$SONAR_ORG" \
-            -Dsonar.scm.disabled=true peut-être déjà"
+            || echo "Le projet existe peut-être déjà"
 
-      - name: Log in to Docker Hubntend)
-        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
+      - name: SonarCloud Scan (Frontend)
+        working-directory: SustainaFoodFront
         run: |
+          npx sonarqube-scanner \
+            -Dsonar.organization=$SONAR_ORG \
+            -Dsonar.projectKey=$FRONTEND_KEY \
+            -Dsonar.host.url=$SONAR_HOST \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.exclusions=**/node_modules/**,**/build/** \
+            -Dsonar.scm.disabled=true
+
+      - name: Log in to Docker Hub
+        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
+
       - name: Build and Push Docker Image (Frontend)
-        working-directory: SustainaFoodFront\
-        run: |sonar.projectKey=$FRONTEND_KEY \
+        working-directory: SustainaFoodFront
+        run: |
           docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }} .
           docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }}
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-  flask:    -Dsonar.exclusions=**/node_modules/**,**/build/** \
+
+  flask:
     name: Flask Service Build and Push
     needs: versioning
-    runs-on: ubuntu-latestcker Hub
-    steps:n: echo "cindaa123." | docker login -u "sinda12" --password-stdin
+    runs-on: ubuntu-latest
+    steps:
       - uses: actions/checkout@v4
-        with: Build and Push Docker Image (Frontend)
-          fetch-depth: 0y: SustainaFoodFront
-        run: |
-      - name: Log in to Docker HubUSERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }} .
-        run: echo "cindaa123." | docker login -u "sinda12" --password-stdinioning.outputs.version }}
+        with:
+          fetch-depth: 0
+
+      - name: Log in to Docker Hub
+        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
 
       - name: Build and Push Docker Image (Flask)
         working-directory: RecommendationModel
-        run: |sioning
+        run: |
           docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }} .
           docker push $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }}
-      - uses: actions/checkout@v4
-  finalize:h:
-    name: Finalize and Deploy
-    needs: [backend, frontend, flask]
-    runs-on: ubuntu-latestcker Hub
-    steps:n: echo "cindaa123." | docker login -u "sinda12" --password-stdin
-      - name: Notify Deployment Ready
-        run: |Build and Push Docker Image (Flask)
-          echo "Les images Docker sont prêtes à être déployées:"
-          echo "Backend: sinda12/sustainafood-backend:${{ needs.versioning.outputs.version }}"
-          echo "Frontend: sinda12/sustainafood-frontend:${{ needs.versioning.outputs.version }}"on }} .
-          echo "Flask: sinda12/sustainafood-flask:${{ needs.versioning.outputs.version }}"sion }}
 
   finalize:
     name: Finalize and Deploy
