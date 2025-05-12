@@ -78,7 +78,7 @@ const AvailableFoodList = () => {
         <HeaderMid />
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-primary">Available Food Deals</h1>
+            <h1 className="text-3xl font-bold text-primary">Available Food Deals </h1>
             <div className="flex gap-4">
               <button 
                 className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-outline'}`}
