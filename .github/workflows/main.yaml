@@ -1,1 +1,190 @@
-name: CI/CD Pipelineon:  push:    branches: [main, sinda]  pull_request:    branches: [main]env:  # ⚠️ ATTENTION : Ces informations seront visibles dans les logs publics  SONAR_HOST: "https://sonarcloud.io"  SONAR_ORG: "chammem"  BACKEND_KEY: "sustainafood_backend"  FRONTEND_KEY: "sustainafood_frontend"  SONAR_TOKEN: "4b75a0fef4c5ae5bd4b40ba192666a31aeac6853" # ⚠️ Token exposé  DOCKER_USERNAME: "sinda12"  DOCKER_REPO_BACKEND: "sustainafood-backend"  DOCKER_REPO_FRONTEND: "sustainafood-frontend"  DOCKER_REPO_FLASK: "sustainafood-flask"jobs:  versioning:    name: Increment Shared Version    runs-on: ubuntu-latest    outputs:      version: ${{ steps.set-version.outputs.version }}    steps:      - uses: actions/checkout@v4        with:          fetch-depth: 0      - name: Check Out Target Branch        run: |          git fetch origin sinda          git checkout sinda      - name: Increment Version        id: set-version        run: |          VERSION_FILE=shared-version.txt          if [ ! -f "$VERSION_FILE" ]; then            echo "1.0.0" > $VERSION_FILE          fi          VERSION=$(cat $VERSION_FILE)          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"          PATCH=$((PATCH + 1))          NEW_VERSION="$MAJOR.$MINOR.$PATCH"          echo $NEW_VERSION > $VERSION_FILE          echo "::set-output name=version::$NEW_VERSION"      - name: Commit Updated Version        run: |          git config user.name "chammem"          git config user.email "chammemcinda@gmail.com"          git add shared-version.txt          git commit -m "ci: increment shared version to ${{ steps.set-version.outputs.version }}"          git push origin sinda  backend:    name: Backend Analysis    needs: versioning    runs-on: ubuntu-latest    steps:      - uses: actions/checkout@v4        with:          fetch-depth: 0      - name: Fetch Latest Changes        run: git fetch origin      - uses: actions/setup-node@v4        with:          node-version: 18      - name: Install dependencies        working-directory: SustainaFoodBack        run: npm ci      - name: Run tests with coverage        working-directory: SustainaFoodBack        run: npm run test:coverage      - name: Create SonarCloud Project (Backend)        run: |          curl -X POST "$SONAR_HOST/api/projects/create" \            -u "$SONAR_TOKEN:" \            -d "project=$BACKEND_KEY&name=SustainaFood+Backend&organization=$SONAR_ORG" \            || echo "Le projet existe peut-être déjà"      - name: SonarCloud Scan (Backend)        working-directory: SustainaFoodBack        run: |          npx sonarqube-scanner \            -Dsonar.organization=$SONAR_ORG \            -Dsonar.projectKey=$BACKEND_KEY \            -Dsonar.host.url=$SONAR_HOST \            -Dsonar.login=$SONAR_TOKEN \            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \            -Dsonar.scm.disabled=true      - name: Log in to Docker Hub        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin      - name: Build and Push Docker Image (Backend)        working-directory: SustainaFoodBack        run: |          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }} .          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }}  frontend:    name: Frontend Analysis    needs: versioning    runs-on: ubuntu-latest    steps:      - uses: actions/checkout@v4        with:          fetch-depth: 0      - name: Fetch Latest Changes        run: git fetch origin      - uses: actions/setup-node@v4        with:          node-version: 18      - name: Install dependencies        working-directory: SustainaFoodFront        run: npm ci      - name: Run tests with coverage        working-directory: SustainaFoodFront        run: npm test -- --coverage --watchAll=false      - name: Create SonarCloud Project (Frontend)        run: |          curl -X POST "$SONAR_HOST/api/projects/create" \            -u "$SONAR_TOKEN:" \            -d "project=$FRONTEND_KEY&name=SustainaFood+Frontend&organization=$SONAR_ORG" \            || echo "Le projet existe peut-être déjà"      - name: SonarCloud Scan (Frontend)        working-directory: SustainaFoodFront        run: |          npx sonarqube-scanner \            -Dsonar.organization=$SONAR_ORG \            -Dsonar.projectKey=$FRONTEND_KEY \            -Dsonar.host.url=$SONAR_HOST \            -Dsonar.login=$SONAR_TOKEN \            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \            -Dsonar.exclusions=**/node_modules/**,**/build/** \            -Dsonar.scm.disabled=true      - name: Log in to Docker Hub        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin      - name: Build and Push Docker Image (Frontend)        working-directory: SustainaFoodFront        run: |          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }} .          docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }}  flask:    name: Flask Service Build and Push    needs: versioning    runs-on: ubuntu-latest    steps:      - uses: actions/checkout@v4        with:          fetch-depth: 0      - name: Log in to Docker Hub        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin      - name: Build and Push Docker Image (Flask)        working-directory: RecommendationModel        run: |          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }} .          docker push $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }}  finalize:    name: Finalize and Deploy    needs: [backend, frontend, flask]    runs-on: ubuntu-latest    steps:      - name: Notify Deployment Ready        run: |          echo "Les images Docker sont prêtes à être déployées:"          echo "Backend: sinda12/sustainafood-backend:${{ needs.versioning.outputs.version }}"          echo "Frontend: sinda12/sustainafood-frontend:${{ needs.versioning.outputs.version }}"          echo "Flask: sinda12/sustainafood-flask:${{ needs.versioning.outputs.version }}"
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, sinda]
+  pull_request:
+    branches: [main]
+
+env:
+  # ⚠️ ATTENTION : Ces informations seront visibles dans les logs publics
+  SONAR_HOST: "https://sonarcloud.io"
+  SONAR_ORG: "chammem"
+  BACKEND_KEY: "sustainafood_backend"
+  FRONTEND_KEY: "sustainafood_frontend"
+  SONAR_TOKEN: "4b75a0fef4c5ae5bd4b40ba192666a31aeac6853" # ⚠️ Token exposé
+  DOCKER_USERNAME: "sinda12"
+  DOCKER_REPO_BACKEND: "sustainafood-backend"
+  DOCKER_REPO_FRONTEND: "sustainafood-frontend"
+  DOCKER_REPO_FLASK: "sustainafood-flask"
+
+jobs:
+  versioning:
+    name: Increment Shared Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check Out Target Branch
+        run: |
+          git fetch origin sinda
+          git checkout sinda
+
+      - name: Increment Version
+        id: set-version
+        run: |
+          VERSION_FILE=shared-version.txt
+          if [ ! -f "$VERSION_FILE" ]; then
+            echo "1.0.0" > $VERSION_FILE
+          fi
+          VERSION=$(cat $VERSION_FILE)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo $NEW_VERSION > $VERSION_FILE
+          echo "::set-output name=version::$NEW_VERSION"
+
+      - name: Commit Updated Version
+        run: |
+          git config user.name "chammem"
+          git config user.email "chammemcinda@gmail.com"
+          git add shared-version.txt
+          git commit -m "ci: increment shared version to ${{ steps.set-version.outputs.version }}"
+          git push origin sinda
+
+  backend:
+    name: Backend Analysis
+    needs: versioning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch Latest Changes
+        run: git fetch origin
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        working-directory: SustainaFoodBack
+        run: npm ci
+
+      - name: Run tests with coverage
+        working-directory: SustainaFoodBack
+        run: npm run test:coverage
+
+      - name: Create SonarCloud Project (Backend)
+        run: |
+          curl -X POST "$SONAR_HOST/api/projects/create" \
+            -u "$SONAR_TOKEN:" \
+            -d "project=$BACKEND_KEY&name=SustainaFood+Backend&organization=$SONAR_ORG" \
+            || echo "Le projet existe peut-être déjà"
+
+      - name: SonarCloud Scan (Backend)
+        working-directory: SustainaFoodBack
+        run: |
+          npx sonarqube-scanner \
+            -Dsonar.organization=$SONAR_ORG \
+            -Dsonar.projectKey=$BACKEND_KEY \
+            -Dsonar.host.url=$SONAR_HOST \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.scm.disabled=true
+
+      - name: Log in to Docker Hub
+        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
+
+      - name: Build and Push Docker Image (Backend)
+        working-directory: SustainaFoodBack
+        run: |
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }} .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }}
+
+  frontend:
+    name: Frontend Analysis
+    needs: versioning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch Latest Changes
+        run: git fetch origin
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        working-directory: SustainaFoodFront
+        run: npm ci
+
+      - name: Run tests with coverage
+        working-directory: SustainaFoodFront
+        run: npm test -- --coverage --watchAll=false
+
+      - name: Create SonarCloud Project (Frontend)
+        run: |
+          curl -X POST "$SONAR_HOST/api/projects/create" \
+            -u "$SONAR_TOKEN:" \
+            -d "project=$FRONTEND_KEY&name=SustainaFood+Frontend&organization=$SONAR_ORG" \
+            || echo "Le projet existe peut-être déjà"
+
+      - name: SonarCloud Scan (Frontend)
+        working-directory: SustainaFoodFront
+        run: |
+          npx sonarqube-scanner \
+            -Dsonar.organization=$SONAR_ORG \
+            -Dsonar.projectKey=$FRONTEND_KEY \
+            -Dsonar.host.url=$SONAR_HOST \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.exclusions=**/node_modules/**,**/build/** \
+            -Dsonar.scm.disabled=true
+
+      - name: Log in to Docker Hub
+        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
+
+      - name: Build and Push Docker Image (Frontend)
+        working-directory: SustainaFoodFront
+        run: |
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }} .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }}
+
+  flask:
+    name: Flask Service Build and Push
+    needs: versioning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Log in to Docker Hub
+        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
+
+      - name: Build and Push Docker Image (Flask)
+        working-directory: RecommendationModel
+        run: |
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }} .
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }}
+
+  finalize:
+    name: Finalize and Deploy
+    needs: [backend, frontend, flask]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Deployment Ready
+        run: |
+          echo "Les images Docker sont prêtes à être déployées:"
+          echo "Backend: sinda12/sustainafood-backend:${{ needs.versioning.outputs.version }}"
+          echo "Frontend: sinda12/sustainafood-frontend:${{ needs.versioning.outputs.version }}"
+          echo "Flask: sinda12/sustainafood-flask:${{ needs.versioning.outputs.version }}"
