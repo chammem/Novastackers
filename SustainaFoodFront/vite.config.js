@@ -16,7 +16,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       // Remove external configuration as it's causing module resolution issues
-      // external: ['react', 'react-dom', 'react-dom/client', 'date-fns']
+       external: ['react', 'react-dom', 'react-dom/client', 'date-fns']
     },
   },
   resolve: {
