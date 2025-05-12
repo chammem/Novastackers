@@ -74,11 +74,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: SustainaFoodBack
-        run: |
-          # First update the package lock to fix missing dependencies
-          npm install --package-lock-only
-          # Then install with flags to handle peer dependency conflicts
-          npm ci --legacy-peer-deps
+        run: npm ci
 
       - name: Run tests with coverage
         working-directory: SustainaFoodBack
