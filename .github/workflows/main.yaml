@@ -121,11 +121,11 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18  # Update to Node 20 for better compatibility
+          node-version: 18
 
       - name: Install dependencies
         working-directory: SustainaFoodFront
-        run: npm ci --legacy-peer-deps  # Add flag to handle React version conflicts
+        run: npm ci --legacy-peer-deps
 
       - name: Run tests with coverage
         working-directory: SustainaFoodFront
