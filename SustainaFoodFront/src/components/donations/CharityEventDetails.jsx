@@ -5,7 +5,7 @@ import Footer from '../Footer';
 import axiosInstance from '../../config/axiosInstance';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiCalendar, FiMapPin, FiGlobe, FiShare2, FiInstagram, FiTwitter, FiBox } from 'react-icons/fi';
+import { FiCalendar, FiMapPin, FiGlobe, FiShare2, FiInstagram, FiTwitter, FiBox, FiX, FiCheckCircle, FiPackage, FiDroplet } from 'react-icons/fi';
 
 const CharityEventDetails = () => {
   const { id } = useParams(); // donation ID from route
@@ -13,6 +13,16 @@ const CharityEventDetails = () => {
   const [user, setUser] = useState(null);
   const [donation, setDonation] = useState(null);
   const [ngo, setNgo] = useState(null);
+
+  // Update form state - remove expiryDate, keep size
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    category: '',
+    size: '',
+    quantity: 1
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -34,8 +44,49 @@ const CharityEventDetails = () => {
   }, [id]);
 
   const handleDonateClick = () => {
-    toast.info(`Redirect to donate for event: ${donation._id}`);
-    // You can replace this with modal or route logic
+    // Open the form instead of showing toast
+    setIsFormOpen(true);
+  };
+  
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    // Reset form data without expiryDate
+    setFormData({
+      name: '',
+      category: '',
+      size: '',
+      quantity: 1
+    });
+  };
+  
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+  
+  const handleSubmitDonation = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      // Use the correct API endpoint for adding food to a donation
+      // The endpoint expects the donationId as a URL parameter
+      await axiosInstance.post(`/donations/add-food-to-donation/${id}`, {
+        name: formData.name,
+        category: formData.category,
+        size: formData.size,
+        quantity: formData.quantity,
+        buisiness_id: user._id // This is needed as per the controller
+      });
+      
+      toast.success('Food donation submitted successfully!');
+      handleCloseForm();
+    } catch (error) {
+      console.error('Error submitting donation:', error);
+      toast.error('Failed to submit donation. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -539,6 +590,181 @@ const CharityEventDetails = () => {
             </motion.section>
           </motion.div>
         )}
+        
+        {/* Add the improved form modal */}
+        <AnimatePresence>
+          {isFormOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={handleCloseForm}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ type: "spring", bounce: 0.2 }}
+                className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="relative bg-gradient-to-r from-green-600 to-green-700 p-6 text-white">
+                  <div className="absolute right-6 top-6">
+                    <motion.button 
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="bg-white/20 hover:bg-white/30 backdrop-blur-sm w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                      onClick={handleCloseForm}
+                    >
+                      <FiX size={18} />
+                    </motion.button>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+                      <FiBox className="text-white w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold">Donate Food</h3>
+                      <p className="text-green-100 mt-1 text-sm">Supporting: {donation?.name}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Updated Form Body */}
+                <form onSubmit={handleSubmitDonation} className="p-6">
+                  <div className="space-y-6">
+                    {/* Food Name Field */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Food Item Name*</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <FiPackage className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          type="text"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleFormChange}
+                          required
+                          className="pl-10 w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors bg-white"
+                          placeholder="E.g., Rice, Pasta, Canned Beans"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Category and Size Fields - Size changed to dropdown */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Category*</label>
+                        <div className="relative">
+                          <select
+                            name="category"
+                            value={formData.category}
+                            onChange={handleFormChange}
+                            required
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors bg-white appearance-none pr-10"
+                          >
+                            <option value="">Select Category</option>
+                            <option value="canned">Canned Goods</option>
+                            <option value="dry">Dry Goods</option>
+                            <option value="produce">Fresh Produce</option>
+                            <option value="dairy">Dairy</option>
+                            <option value="bakery">Bakery</option>
+                            <option value="beverages">Beverages</option>
+                            <option value="other">Other</option>
+                          </select>
+                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Size*</label>
+                        <div className="relative">
+                          <select
+                            name="size"
+                            value={formData.size}
+                            onChange={handleFormChange}
+                            required
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors bg-white appearance-none pr-10"
+                          >
+                            <option value="">Select Size</option>
+                            <option value="small">Small</option>
+                            <option value="medium">Medium</option>
+                            <option value="large">Large</option>
+                            <option value="extra_large">Extra Large</option>
+                          </select>
+                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Quantity field only - Expiry Date removed */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Quantity*</label>
+                      <input
+                        type="number"
+                        name="quantity"
+                        value={formData.quantity}
+                        onChange={handleFormChange}
+                        required
+                        min="1"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors bg-white"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Form Actions remain the same */}
+                  <div className="mt-8 flex items-center justify-end gap-4">
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-colors"
+                      onClick={handleCloseForm}
+                    >
+                      Cancel
+                    </motion.button>
+                    
+                    <motion.button
+                      type="submit"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      disabled={isSubmitting}
+                      className="px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all font-medium flex items-center gap-2"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Processing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FiCheckCircle />
+                          <span>Donate Food</span>
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </AnimatePresence>
 
       <Footer />

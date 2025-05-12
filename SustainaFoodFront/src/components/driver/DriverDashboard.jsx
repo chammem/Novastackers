@@ -12,6 +12,12 @@ import {
   FiTruck,
   FiShoppingBag,
   FiCheck,
+  FiCalendar,
+  FiMapPin,
+  FiClipboard,
+  FiUser,
+  FiRefreshCw,
+  FiAlertCircle,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -25,6 +31,8 @@ const DriverDashboard = () => {
   const [activeDeliveries, setActiveDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentOrder, setCurrentOrder] = useState(null);
+  const [loadingPhase, setLoadingPhase] = useState(0);
+  const [hoverCard, setHoverCard] = useState(null);
 
   // Code verification state
   const [showCodeModal, setShowCodeModal] = useState(false);
@@ -271,237 +279,786 @@ const DriverDashboard = () => {
     }
   };
 
+  // Add loading animation phases
+  useEffect(() => {
+    if (loading) {
+      const interval = setInterval(() => {
+        setLoadingPhase((prev) => (prev + 1) % 3);
+      }, 800);
+      return () => clearInterval(interval);
+    }
+  }, [loading]);
+
   return (
     <>
       <HeaderMid />
-      <div className="container mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row gap-4 mb-6"
-        >
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <FiTruck className="text-primary" />
-              Driver Dashboard
-            </h1>
-            <p className="text-base-content/70 mt-1">
-              Manage your deliveries and track your progress
-            </p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 py-8 px-4">
+        <div className="container mx-auto relative">
+          {/* Animated background elements */}
+          <motion.div
+            className="absolute top-20 right-[10%] w-64 h-64 rounded-full bg-primary/5 filter blur-xl"
+            animate={{
+              y: [0, -30, 0],
+              opacity: [0.1, 0.3, 0.1],
+            }}
+            transition={{ duration: 8, repeat: Infinity, repeatType: "reverse" }}
+          />
+          <motion.div
+            className="absolute bottom-40 left-[5%] w-80 h-80 rounded-full bg-success/5 filter blur-xl"
+            animate={{
+              y: [0, 30, 0],
+              opacity: [0.1, 0.2, 0.1],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              repeatType: "reverse",
+              delay: 1,
+            }}
+          />
 
-          <div className="flex gap-2">
-            <button
-              onClick={refreshDeliveries}
-              className="btn btn-outline btn-sm"
-              disabled={loading}
-            >
-              {loading ? (
-                <span className="loading loading-spinner loading-xs"></span>
-              ) : (
-                "Refresh"
-              )}
-            </button>
-            <Link to="/requested-deliveries" className="btn btn-primary">
-              <FiBell />
-              View Requests
-              {unreadCount > 0 && (
-                <span className="badge badge-sm badge-accent">
-                  {unreadCount}
-                </span>
-              )}
-            </Link>
-          </div>
-        </motion.div>
-
-        {/* Status Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-base-100 rounded-lg shadow p-4 mb-6"
-        >
-          <h2 className="font-medium text-base-content mb-2">Driver Status</h2>
-          <div className="flex items-center">
-            <div
-              className={`w-3 h-3 rounded-full mr-2 ${
-                user?.status === "available" ? "bg-green-500" : "bg-blue-500"
-              }`}
-            ></div>
-            <span className="font-medium">
-              {user?.status === "available" ? "Available" : "On Delivery"}
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Current Deliveries */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h2 className="text-xl font-semibold mb-3">Current Deliveries</h2>
-
-          {loading ? (
-            <div className="flex justify-center items-center py-20">
-              <span className="loading loading-spinner loading-lg text-primary"></span>
-            </div>
-          ) : activeDeliveries.length === 0 ? (
-            <div className="bg-base-100 rounded-lg shadow-md p-8 text-center">
-              <FiPackage className="mx-auto text-base-300 mb-3" size={40} />
-              <p className="text-base-content/70">
-                No active deliveries at the moment.
-              </p>
-              <p className="text-sm text-base-content/50 mt-2">
-                Check the notifications page for new delivery requests.
-              </p>
-              <div className="mt-4">
-                <Link to="/requested-deliveries" className="btn btn-primary">
-                  Check Requests
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {activeDeliveries.map((delivery) => (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-10 relative z-10"
+          >
+            <div>
+              <motion.h1
+                className="text-2xl md:text-3xl font-bold flex items-center gap-3 bg-gradient-to-r from-primary to-primary-focus bg-clip-text text-transparent"
+                initial={{ x: -20 }}
+                animate={{ x: 0 }}
+                transition={{ type: "spring", stiffness: 100 }}
+              >
                 <motion.div
-                  key={delivery._id}
+                  className="bg-primary/10 p-2 rounded-full"
+                  animate={{
+                    rotate: [0, 10, -10, 0],
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                >
+                  <FiTruck className="text-primary w-6 h-6 md:w-8 md:h-8" />
+                </motion.div>
+                Driver Dashboard
+              </motion.h1>
+              <motion.p
+                className="text-base-content/70 mt-2 max-w-md"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                Manage your deliveries, track routes, and update delivery
+                statuses
+              </motion.p>
+            </div>
+
+            <motion.div
+              className="flex flex-wrap gap-3"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={refreshDeliveries}
+                className="btn btn-outline btn-sm gap-2"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      repeatType: "loop",
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <FiRefreshCw />
+                  </motion.div>
+                )}
+                Refresh
+              </motion.button>
+
+              <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }}>
+                <Link to="/requested-deliveries" className="btn btn-primary btn-sm gap-2 relative">
+                  <FiBell />
+                  <span>Delivery Requests</span>
+                  <AnimatePresence>
+                    {unreadCount > 0 && (
+                      <motion.div
+                        className="absolute -top-2 -right-2"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                      >
+                        <motion.div
+                          className="badge badge-sm badge-accent"
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          {unreadCount}
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Link>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+            {/* Enhanced Status Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="lg:col-span-2 bg-base-100 rounded-xl shadow-md p-6 border border-base-200 overflow-hidden relative"
+              whileHover={{
+                y: -5,
+                boxShadow:
+                  "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+              }}
+            >
+              <motion.div
+                className="absolute top-0 right-0 w-32 h-32 rounded-full bg-primary/5 -mr-10 -mt-10"
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.3, 0.5, 0.3],
+                }}
+                transition={{ duration: 4, repeat: Infinity }}
+              />
+
+              <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+                <FiUser className="text-primary" />
+                Driver Status
+              </h2>
+
+              <div className="flex items-center bg-base-200/50 p-3 rounded-lg">
+                <motion.div
+                  className={`w-4 h-4 rounded-full mr-3 ${
+                    user?.status === "available" ? "bg-success" : "bg-info"
+                  }`}
+                  animate={{
+                    boxShadow: [
+                      `0 0 0 0 ${
+                        user?.status === "available"
+                          ? "rgba(34, 197, 94, 0.4)"
+                          : "rgba(59, 130, 246, 0.4)"
+                      }`,
+                      `0 0 0 8px ${
+                        user?.status === "available"
+                          ? "rgba(34, 197, 94, 0)"
+                          : "rgba(59, 130, 246, 0)"
+                      }`,
+                      `0 0 0 0 ${
+                        user?.status === "available"
+                          ? "rgba(34, 197, 94, 0)"
+                          : "rgba(59, 130, 246, 0)"
+                      }`,
+                    ],
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <span className="font-medium">
+                  {user?.status === "available"
+                    ? "Available for Deliveries"
+                    : "On Active Delivery"}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between mt-4 text-sm text-base-content/70">
+                <div className="flex items-center gap-1">
+                  <FiCalendar size={14} />
+                  <span>
+                    {new Date().toLocaleDateString(undefined, {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <FiClock size={14} />
+                  <span>
+                    {new Date().toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Stats Summary */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="lg:col-span-2 grid grid-cols-2 gap-4"
+            >
+              {/* Quick Stats Cards */}
+              <motion.div
+                className="bg-base-100 rounded-xl shadow-md p-6 border border-base-200 flex flex-col items-center justify-center text-center"
+                whileHover={{
+                  y: -5,
+                  boxShadow:
+                    "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                }}
+              >
+                <motion.div
+                  className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-2"
+                  animate={{
+                    rotate: [0, 10, -10, 0],
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  <FiPackage size={24} />
+                </motion.div>
+                <div className="text-3xl font-bold text-accent mb-1">
+                  {activeDeliveries.length}
+                </div>
+                <div className="text-sm text-base-content/70">
+                  Active Deliveries
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="bg-base-100 rounded-xl shadow-md p-6 border border-base-200 flex flex-col items-center justify-center text-center"
+                whileHover={{
+                  y: -5,
+                  boxShadow:
+                    "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                }}
+              >
+                <motion.div
+                  className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center text-success mb-2"
+                  animate={{
+                    rotate: [0, 10, -10, 0],
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
+                >
+                  <FiBell size={24} />
+                </motion.div>
+                <div className="text-3xl font-bold text-success mb-1">
+                  {unreadCount}
+                </div>
+                <div className="text-sm text-base-content/70">New Requests</div>
+              </motion.div>
+            </motion.div>
+          </div>
+
+          {/* Current Deliveries Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="relative z-10 mb-8"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <FiTruck className="text-primary" />
+                Current Deliveries
+              </h2>
+
+              {activeDeliveries.length > 0 && (
+                <motion.div
+                  className="badge badge-primary badge-lg"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  {activeDeliveries.length} Active
+                </motion.div>
+              )}
+            </div>
+
+            <AnimatePresence mode="wait">
+              {loading ? (
+                <motion.div
+                  key="loading"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="card bg-base-100 shadow-md overflow-hidden"
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col items-center justify-center py-20 text-center"
                 >
-                  <div className="bg-primary text-primary-content p-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-medium">
-                        Order #{delivery._id.substr(-6)}
-                      </h3>
-                      <span className="badge badge-outline badge-sm">
-                        {getStatusText(delivery.deliveryStatus)}
-                      </span>
+                  <div className="relative w-20 h-20 mb-4">
+                    <motion.div
+                      className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent"
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    />
+                    <motion.div
+                      className="absolute inset-4 rounded-full border-4 border-accent border-b-transparent"
+                      animate={{ rotate: -360 }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <FiTruck className="text-primary text-xl" />
                     </div>
                   </div>
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={loadingPhase}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="text-primary-focus font-medium"
+                    >
+                      {
+                        [
+                          "Loading deliveries...",
+                          "Fetching updates...",
+                          "Almost ready...",
+                        ][loadingPhase]
+                      }
+                    </motion.p>
+                  </AnimatePresence>
+                </motion.div>
+              ) : activeDeliveries.length === 0 ? (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-base-100 rounded-xl shadow-md p-8 text-center relative overflow-hidden"
+                >
+                  <motion.div
+                    className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-base-200"
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      opacity: [0.3, 0.6, 0.3],
+                    }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                  />
 
-                  <div className="p-4">
-                    {delivery.user && (
-                      <div className="mb-3">
-                        <p className="text-sm text-base-content/70">Customer</p>
-                        <p className="font-medium">
-                          {delivery.user?.fullName || "Customer"}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="mb-3">
-                      <p className="text-sm text-base-content/70">
-                        Delivery Address
-                      </p>
-                      <p className="font-medium">
-                        {delivery.deliveryAddress?.street},{" "}
-                        {delivery.deliveryAddress?.city}
-                      </p>
-                    </div>
-
-                    <div className="mb-3">
-                      <p className="text-sm text-base-content/70">Order</p>
-                      <p className="font-medium">
-                        {delivery.quantity}x{" "}
-                        {delivery.foodSale?.name || "Food Item"}
-                      </p>
-                      <p className="text-sm">
-                        ${delivery.totalPrice?.toFixed(2) || "0.00"}
-                      </p>
-                    </div>
-
-                    {delivery.specialInstructions && (
-                      <div className="mb-3">
-                        <p className="text-sm text-base-content/70">
-                          Special Instructions
-                        </p>
-                        <p className="italic text-sm">
-                          {delivery.specialInstructions}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="flex justify-between mt-4">
-                      <Link
-                        to={`/delivery-route/${delivery._id}`}
-                        className="btn btn-sm btn-outline"
+                  <div className="relative z-10">
+                    <motion.div
+                      className="w-20 h-20 bg-base-200 rounded-full mx-auto mb-6 flex items-center justify-center"
+                      animate={{
+                        y: [0, -10, 0],
+                        boxShadow: [
+                          "0 0 0 rgba(0,0,0,0.1)",
+                          "0 10px 20px rgba(0,0,0,0.15)",
+                          "0 0 0 rgba(0,0,0,0.1)",
+                        ],
+                      }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                    >
+                      <motion.div
+                        animate={{
+                          rotate: [0, 10, -10, 0],
+                          scale: [1, 1.1, 1],
+                        }}
+                        transition={{ duration: 3, repeat: Infinity }}
                       >
-                        <FiNavigation className="mr-1" /> View Route
-                      </Link>
+                        <FiPackage className="text-base-content/30" size={36} />
+                      </motion.div>
+                    </motion.div>
 
-                      {getActionButton(delivery)}
-                    </div>
+                    <motion.h3
+                      className="text-xl font-bold mb-3"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      No Active Deliveries
+                    </motion.h3>
+
+                    <motion.p
+                      className="text-base-content/70 mb-6 max-w-md mx-auto"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      You don't have any active deliveries at the moment. Check
+                      for new delivery requests and start delivering!
+                    </motion.p>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="inline-block"
+                    >
+                      <Link to="/requested-deliveries" className="btn btn-primary gap-2">
+                        <FiBell className="animate-bounce" />
+                        View Delivery Requests
+                      </Link>
+                    </motion.div>
                   </div>
                 </motion.div>
-              ))}
-            </div>
-          )}
-        </motion.div>
+              ) : (
+                <motion.div
+                  key="deliveries"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                >
+                  {activeDeliveries.map((delivery, index) => (
+                    <motion.div
+                      key={delivery._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={`card bg-base-100 shadow-lg overflow-hidden border border-base-200 transition-all duration-300 ${
+                        hoverCard === delivery._id ? "ring-2 ring-primary" : ""
+                      }`}
+                      whileHover={{
+                        y: -5,
+                        boxShadow:
+                          "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                      }}
+                      onHoverStart={() => setHoverCard(delivery._id)}
+                      onHoverEnd={() => setHoverCard(null)}
+                    >
+                      <div className="bg-gradient-to-r from-primary to-primary-focus text-primary-content p-4 relative overflow-hidden">
+                        <motion.div
+                          className="absolute -top-6 -right-6 w-16 h-16 bg-white/10 rounded-full"
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 3, repeat: Infinity }}
+                        />
+
+                        <div className="flex justify-between items-center relative z-10">
+                          <h3 className="font-medium flex items-center gap-2">
+                            <FiClipboard size={16} />
+                            Order #{delivery._id.substr(-6)}
+                          </h3>
+                          <motion.span
+                            className="badge backdrop-blur-sm bg-white/20 gap-1"
+                            animate={
+                              delivery.deliveryStatus === "delivering"
+                                ? { scale: [1, 1.05, 1] }
+                                : {}
+                            }
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                          >
+                            {delivery.deliveryStatus === "driver_assigned" && (
+                              <FiClock size={12} />
+                            )}
+                            {delivery.deliveryStatus === "pickup_ready" && (
+                              <FiShoppingBag size={12} />
+                            )}
+                            {delivery.deliveryStatus === "picked_up" && (
+                              <FiCheck size={12} />
+                            )}
+                            {delivery.deliveryStatus === "delivering" && (
+                              <FiTruck size={12} />
+                            )}
+                            {getStatusText(delivery.deliveryStatus)}
+                          </motion.span>
+                        </div>
+                      </div>
+
+                      <div className="p-5 space-y-4">
+                        {delivery.user && (
+                          <motion.div
+                            className="flex items-start gap-3 p-2 rounded-lg hover:bg-base-200/50 transition-colors"
+                            whileHover={{ x: 3 }}
+                          >
+                            <motion.div
+                              className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0"
+                              whileHover={{
+                                backgroundColor: "rgba(59, 130, 246, 0.2)",
+                              }}
+                            >
+                              <FiUser className="text-primary" size={16} />
+                            </motion.div>
+                            <div>
+                              <p className="text-sm text-base-content/70">
+                                Customer
+                              </p>
+                              <p className="font-medium">
+                                {delivery.user?.fullName || "Customer"}
+                              </p>
+                            </div>
+                          </motion.div>
+                        )}
+
+                        <motion.div
+                          className="flex items-start gap-3 p-2 rounded-lg hover:bg-base-200/50 transition-colors"
+                          whileHover={{ x: 3 }}
+                        >
+                          <motion.div
+                            className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0"
+                            whileHover={{
+                              backgroundColor: "rgba(59, 130, 246, 0.2)",
+                            }}
+                          >
+                            <FiMapPin className="text-primary" size={16} />
+                          </motion.div>
+                          <div>
+                            <p className="text-sm text-base-content/70">
+                              Delivery Address
+                            </p>
+                            <p className="font-medium">
+                              {delivery.deliveryAddress?.street},{" "}
+                              {delivery.deliveryAddress?.city}
+                            </p>
+                          </div>
+                        </motion.div>
+
+                        <motion.div
+                          className="flex items-start gap-3 p-2 rounded-lg hover:bg-base-200/50 transition-colors"
+                          whileHover={{ x: 3 }}
+                        >
+                          <motion.div
+                            className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0"
+                            whileHover={{
+                              backgroundColor: "rgba(59, 130, 246, 0.2)",
+                            }}
+                          >
+                            <FiPackage className="text-primary" size={16} />
+                          </motion.div>
+                          <div>
+                            <p className="text-sm text-base-content/70">Order</p>
+                            <p className="font-medium">
+                              {delivery.quantity}x{" "}
+                              {delivery.foodSale?.name || "Food Item"}
+                            </p>
+                            <p className="text-sm text-primary font-bold">
+                              ${delivery.totalPrice?.toFixed(2) || "0.00"}
+                            </p>
+                          </div>
+                        </motion.div>
+
+                        {delivery.specialInstructions && (
+                          <motion.div
+                            className="bg-warning/10 p-3 rounded-lg border border-warning/20"
+                            initial={{ opacity: 0.9 }}
+                            whileHover={{
+                              backgroundColor: "rgba(250, 204, 21, 0.15)",
+                            }}
+                          >
+                            <div className="flex items-start gap-2">
+                              <motion.div
+                                animate={{ rotate: [0, 5, -5, 0] }}
+                                transition={{ duration: 4, repeat: Infinity }}
+                              >
+                                <FiAlertCircle
+                                  className="text-warning mt-0.5"
+                                  size={16}
+                                />
+                              </motion.div>
+                              <div>
+                                <p className="text-sm font-medium text-warning-content/90 mb-1">
+                                  Special Instructions
+                                </p>
+                                <p className="text-sm italic text-base-content/80">
+                                  {delivery.specialInstructions}
+                                </p>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+
+                        <div className="flex flex-col sm:flex-row gap-3 pt-3 mt-2 border-t border-base-200">
+                          <motion.div
+                            whileHover={{ scale: 1.03, y: -2 }}
+                            whileTap={{ scale: 0.97 }}
+                            className="flex-1"
+                          >
+                            <Link
+                              to={`/delivery-route/${delivery._id}`}
+                              className="btn btn-outline btn-sm w-full gap-2"
+                            >
+                              <FiNavigation /> View Route
+                            </Link>
+                          </motion.div>
+
+                          <motion.div
+                            whileHover={{ scale: 1.03, y: -2 }}
+                            whileTap={{ scale: 0.97 }}
+                            className="flex-1"
+                          >
+                            {getActionButton(delivery)}
+                          </motion.div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
       </div>
 
       {/* Initialize driver location */}
       <DriverLocationInitializer orderId={currentOrder?._id} />
 
-      {/* Verification Code Modal */}
+      {/* Enhanced Verification Code Modal */}
       <AnimatePresence>
         {showCodeModal && (
           <div className="modal modal-open">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="modal-box"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="modal-box relative overflow-hidden bg-base-100 p-0 max-w-md"
             >
-              <div className="flex justify-center mb-6">
-                <div className="w-16 h-16 flex items-center justify-center rounded-full bg-primary/10 text-primary">
-                  {actionType === "pickup" ? (
-                    <FiShoppingBag className="w-8 h-8" />
-                  ) : (
-                    <FiCheck className="w-8 h-8" />
-                  )}
-                </div>
-              </div>
-              <h3 className="font-bold text-xl text-center">
-                Enter {actionType === "pickup" ? "Pickup" : "Delivery"} Code
-              </h3>
-              <p className="py-4 text-center">
-                {actionType === "pickup"
-                  ? "Please enter the pickup code provided by the restaurant."
-                  : "Please enter the delivery code provided by the customer."}
-              </p>
-              <div className="form-control w-full max-w-xs mx-auto">
-                <input
-                  type="text"
-                  placeholder="Enter code"
-                  className="input input-bordered w-full text-center text-xl tracking-widest"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
-                  autoFocus
-                />
-              </div>
-              <div className="modal-action">
-                <button
-                  className="btn"
-                  onClick={() => {
-                    setShowCodeModal(false);
-                    setVerificationCode("");
+              {/* Top gradient banner */}
+              <div
+                className={`bg-gradient-to-r ${
+                  actionType === "pickup"
+                    ? "from-amber-500 to-amber-600"
+                    : "from-green-500 to-green-600"
+                } h-24 w-full relative overflow-hidden`}
+              >
+                <motion.div
+                  className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10"
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.3, 0.6, 0.3],
                   }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
+
+                {/* Floating icon */}
+                <motion.div
+                  initial={{ y: -50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 20,
+                    delay: 0.2,
+                  }}
+                  className="absolute -bottom-8 left-1/2 transform -translate-x-1/2"
                 >
-                  Cancel
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={handleVerifyCode}
-                  disabled={inProgress || !verificationCode.trim()}
+                  <motion.div
+                    className={`w-16 h-16 rounded-full shadow-lg flex items-center justify-center ${
+                      actionType === "pickup" ? "bg-amber-500" : "bg-green-500"
+                    }`}
+                    animate={{
+                      y: [0, -5, 0],
+                      boxShadow: [
+                        "0 4px 6px rgba(0,0,0,0.1)",
+                        "0 10px 15px rgba(0,0,0,0.2)",
+                        "0 4px 6px rgba(0,0,0,0.1)",
+                      ],
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    {actionType === "pickup" ? (
+                      <FiShoppingBag className="text-white w-8 h-8" />
+                    ) : (
+                      <FiCheck className="text-white w-8 h-8" />
+                    )}
+                  </motion.div>
+                </motion.div>
+              </div>
+
+              <div className="p-6 pt-12 text-center">
+                <motion.h3
+                  className="font-bold text-2xl mb-1"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
                 >
-                  {inProgress ? (
-                    <span className="loading loading-spinner loading-sm mr-2"></span>
-                  ) : null}
-                  Verify
-                </button>
+                  Enter {actionType === "pickup" ? "Pickup" : "Delivery"} Code
+                </motion.h3>
+                <motion.p
+                  className="text-base-content/70 mb-6"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  {actionType === "pickup"
+                    ? "Please enter the pickup code provided by the restaurant."
+                    : "Please enter the delivery code provided by the customer."}
+                </motion.p>
+
+                <motion.div
+                  className="form-control w-full max-w-xs mx-auto"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <div className="relative">
+                    <motion.input
+                      type="text"
+                      placeholder="Enter code"
+                      className="input input-lg input-bordered w-full text-center text-2xl tracking-widest"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      autoFocus
+                      animate={{
+                        boxShadow:
+                          verificationCode.length > 0
+                            ? [
+                                "0 0 0 0 rgba(59, 130, 246, 0)",
+                                "0 0 0 4px rgba(59, 130, 246, 0.3)",
+                                "0 0 0 0 rgba(59, 130, 246, 0)",
+                              ]
+                            : "none",
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                    <motion.div
+                      className={`absolute bottom-0 left-0 h-1 bg-primary transition-all`}
+                      animate={{ width: verificationCode ? "100%" : "0%" }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </div>
+                </motion.div>
+
+                <div className="flex justify-between items-center gap-4 mt-8">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="btn btn-outline flex-1"
+                    onClick={() => {
+                      setShowCodeModal(false);
+                      setVerificationCode("");
+                    }}
+                  >
+                    Cancel
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`btn flex-1 ${
+                      actionType === "pickup" ? "btn-warning" : "btn-success"
+                    }`}
+                    onClick={handleVerifyCode}
+                    disabled={inProgress || !verificationCode.trim()}
+                  >
+                    {inProgress ? (
+                      <motion.div
+                        className="flex items-center gap-2"
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1, repeat: Infinity }}
+                      >
+                        <span className="loading loading-spinner loading-sm"></span>
+                        <span>Verifying...</span>
+                      </motion.div>
+                    ) : (
+                      <>
+                        <span>Verify Code</span>
+                      </>
+                    )}
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           </div>

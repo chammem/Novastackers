@@ -290,7 +290,7 @@ function HeaderMid() {
                     }`
                   }
                 >
-                  Confirm Pickups
+                 My donations
                 </NavLink>
               </>
             )}
@@ -308,6 +308,48 @@ function HeaderMid() {
                 >
                   Food Sale
                 </NavLink>
+                <NavLink
+                  to="/orders"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                  Orders
+                </NavLink>
+              </>
+            )}
+
+            {user?.role === "driver" && (
+              <>
+                 <NavLink
+                  to="/driver-dashboard"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+              Driver dashboard
+                </NavLink>
+                <NavLink
+                  to="/requested-deliveries"
+                  className={({ isActive }) =>
+                    `btn btn-sm ${
+                      isActive
+                        ? "btn-primary text-white"
+                        : "btn-ghost text-gray-700"
+                    }`
+                  }
+                >
+                 Deliveries
+                </NavLink>
+            
               </>
             )}
 
@@ -630,7 +672,7 @@ function HeaderMid() {
                     onClick={() => setMobileMenuOpen(false)}
                     className={({ isActive }) => (isActive ? "active" : "")}
                   >
-                    Confirm Pickups
+                    My donations
                   </NavLink>
                 </li>
               )}
