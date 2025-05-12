@@ -182,9 +182,99 @@ jobs:
     needs: [backend, frontend, flask]
     runs-on: ubuntu-latest
     steps:
+      - name: Log in to Docker Hub
+        run: echo "cindaa123." | docker login -u "sinda12" --password-stdin
+      
+      - name: Log in to Nexus Repository
+        run: |
+          echo "c40eebf3-c9c0-405b-8334-fc9201a626bf" | docker login https://2dfc-197-20-41-204.ngrok-free.app -u admin --password-stdin
+      
+      - name: Create Nexus Docker Repositories (if they don't exist)
+        run: |
+          # Create backend repository
+          curl -X POST "https://2dfc-197-20-41-204.ngrok-free.app/service/rest/v1/repositories/docker/hosted" \
+            -H "accept: application/json" \
+            -H "Content-Type: application/json" \
+            -u admin:c40eebf3-c9c0-405b-8334-fc9201a626bf \
+            -d '{
+              "name": "sustainafood-backend",
+              "online": true,
+              "storage": {
+                "blobStoreName": "default",
+                "strictContentTypeValidation": true,
+                "writePolicy": "ALLOW"
+              },
+              "docker": {
+                "v1Enabled": false,
+                "forceBasicAuth": true,
+                "httpPort": 8082,
+                "httpsPort": 8083
+              }
+            }' || echo "Repository may already exist"
+          
+          # Create frontend repository
+          curl -X POST "https://2dfc-197-20-41-204.ngrok-free.app/service/rest/v1/repositories/docker/hosted" \
+            -H "accept: application/json" \
+            -H "Content-Type: application/json" \
+            -u admin:c40eebf3-c9c0-405b-8334-fc9201a626bf \
+            -d '{
+              "name": "sustainafood-frontend",
+              "online": true,
+              "storage": {
+                "blobStoreName": "default",
+                "strictContentTypeValidation": true,
+                "writePolicy": "ALLOW"
+              },
+              "docker": {
+                "v1Enabled": false,
+                "forceBasicAuth": true,
+                "httpPort": 8084,
+                "httpsPort": 8085
+              }
+            }' || echo "Repository may already exist"
+          
+          # Create flask repository
+          curl -X POST "https://2dfc-197-20-41-204.ngrok-free.app/service/rest/v1/repositories/docker/hosted" \
+            -H "accept: application/json" \
+            -H "Content-Type: application/json" \
+            -u admin:c40eebf3-c9c0-405b-8334-fc9201a626bf \
+            -d '{
+              "name": "sustainafood-flask",
+              "online": true,
+              "storage": {
+                "blobStoreName": "default",
+                "strictContentTypeValidation": true,
+                "writePolicy": "ALLOW"
+              },
+              "docker": {
+                "v1Enabled": false,
+                "forceBasicAuth": true,
+                "httpPort": 8086,
+                "httpsPort": 8087
+              }
+            }' || echo "Repository may already exist"
+      
+      - name: Tag and Push Images to Nexus
+        run: |
+          # Tag images for Nexus
+          docker tag $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }} 2dfc-197-20-41-204.ngrok-free.app/sustainafood-backend:${{ needs.versioning.outputs.version }}
+          docker tag $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }} 2dfc-197-20-41-204.ngrok-free.app/sustainafood-frontend:${{ needs.versioning.outputs.version }}
+          docker tag $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }} 2dfc-197-20-41-204.ngrok-free.app/sustainafood-flask:${{ needs.versioning.outputs.version }}
+          
+          # Push images to Nexus
+          docker push 2dfc-197-20-41-204.ngrok-free.app/sustainafood-backend:${{ needs.versioning.outputs.version }}
+          docker push 2dfc-197-20-41-204.ngrok-free.app/sustainafood-frontend:${{ needs.versioning.outputs.version }}
+          docker push 2dfc-197-20-41-204.ngrok-free.app/sustainafood-flask:${{ needs.versioning.outputs.version }}
+
       - name: Notify Deployment Ready
         run: |
           echo "Les images Docker sont prêtes à être déployées:"
+          echo "Docker Hub:"
           echo "Backend: sinda12/sustainafood-backend:${{ needs.versioning.outputs.version }}"
           echo "Frontend: sinda12/sustainafood-frontend:${{ needs.versioning.outputs.version }}"
           echo "Flask: sinda12/sustainafood-flask:${{ needs.versioning.outputs.version }}"
+          echo ""
+          echo "Nexus Repository:"
+          echo "Backend: 2dfc-197-20-41-204.ngrok-free.app/sustainafood-backend:${{ needs.versioning.outputs.version }}"
+          echo "Frontend: 2dfc-197-20-41-204.ngrok-free.app/sustainafood-frontend:${{ needs.versioning.outputs.version }}"
+          echo "Flask: 2dfc-197-20-41-204.ngrok-free.app/sustainafood-flask:${{ needs.versioning.outputs.version }}"
