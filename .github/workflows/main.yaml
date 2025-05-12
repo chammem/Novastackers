@@ -135,9 +135,7 @@ jobs:
       - name: Run tests with coverage
         working-directory: SustainaFoodFront
         run: npm test -- --coverage --watchAll=false
-        env:
-          NODE_OPTIONS: "--max_old_space_size=4096"  # Prevent memory issues during test runs
-
+       
       - name: Create SonarCloud Project (Frontend)
         run: |
           curl -X POST "$SONAR_HOST/api/projects/create" \
