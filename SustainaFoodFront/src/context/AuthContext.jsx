@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import axiosInstance from "../config/axiosInstance";
 
 const AuthContext = createContext();
@@ -9,40 +9,25 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Function to check authentication status from server
-  const checkAuthStatus = useCallback(async () => {
+  const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('token');
-      
-      // Skip the API call entirely if no token exists
-      if (!token) {
-        setUser(null);
-        setIsLoading(false);
-        return;
-      }
-      
-      // Only make the API call if we have a token
-      const response = await axiosInstance.get('/user-details');
-      
-      if (response.data?.data) {
+      const response = await axiosInstance.get("/user-details"); // Endpoint that returns current user from cookie
+      if (response.data.success) {
         setUser(response.data.data);
+        setIsAuthenticated(true);
       } else {
-        localStorage.removeItem('token');
         setUser(null);
+        setIsAuthenticated(false);
       }
     } catch (error) {
-      // Don't log this as an error if it's just a 401 - that's normal when not logged in
-      if (error.response?.status === 401) {
-        console.log('User not authenticated, clearing token');
-      } else {
-        console.error('Error checking auth status:', error);
-      }
-      localStorage.removeItem('token');
+      console.error("Error checking auth status:", error);
       setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   // Check auth status when the app loads
   useEffect(() => {
