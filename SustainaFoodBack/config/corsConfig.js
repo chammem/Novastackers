@@ -1,36 +1,25 @@
-// Enhanced CORS configuration with better header handling
-
-const corsOptions = {
+// Enhanced CORS configuration with improved header handling
+module.exports = {
   origin: [
     'http://localhost:5173',
-    'http://localhost:4173',
-    'http://localhost:3000',
+    'http://localhost:4173', 
     'https://sustainafood-frontend-1-0-116.onrender.com',
-    'https://sustainafood-frontend.onrender.com',
-    // Allow any Render.com domain in development
-    /\.onrender\.com$/
+    /\.onrender\.com$/  // Allow all Render subdomains
   ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
-    "Origin",
-    "X-Requested-With",
-    "Content",
-    "Accept",
-    "Content-Type",
-    "Authorization",
-    "Cache-Control",
-    "X-Auth-Token"
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Allow-Headers',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
   ],
-  exposedHeaders: [
-    "Authorization",
-    "Content-Type"
-  ],
-  // Increase preflight request cache time
-  maxAge: 86400, // 24 hours
-  // Add special handler for auth-related endpoints
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  exposedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400, // 24 hours cache for preflight requests
+  preflightContinue: false, // Properly handle preflight requests
+  optionsSuccessStatus: 204 // Return 204 for OPTIONS requests
 };
-
-module.exports = corsOptions;
