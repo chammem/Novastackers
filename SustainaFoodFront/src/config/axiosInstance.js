@@ -1,12 +1,14 @@
 import axios from 'axios';
 
-// Environment detection that works with Jest
-const isProd = process.env.NODE_ENV === 'production';
+// Force production URL when in production environment (like Render)
+const isProductionHost = window.location.host.includes('onrender.com');
 
 // Determine the base URL based on the environment
-const baseURL = isProd
+const baseURL = isProductionHost
   ? 'https://sustainafood-backend-fzme.onrender.com/api'
-  : 'http://localhost:10000/api'; // Updated to match your server port
+  : 'http://localhost:10000/api'; // localhost for development
+
+console.log('Using API URL:', baseURL); // Debug log
 
 const axiosInstance = axios.create({
   baseURL,
