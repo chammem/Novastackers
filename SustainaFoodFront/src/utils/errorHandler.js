@@ -1,23 +1,81 @@
-// Utility to suppress expected auth check errors
-export const setupErrorSuppression = () => {
-  // Store original console.error
+// More advanced error suppression targeting the specific error pattern
+
+// Override window.console methods globally before any other code runs
+(function() {
+  // Skip if not in browser or already initialized
+  if (typeof window === 'undefined' || window.__errorHandlerInitialized) {
+    return;
+  }
+
+  // Store original console methods
   const originalConsoleError = console.error;
+  const originalConsoleLog = console.log;
+  const originalConsoleWarn = console.warn;
   
-  // Override console.error to filter out expected auth errors
-  console.error = (...args) => {
-    const errorString = args.toString();
+  // Override console.error with more precise filtering
+  console.error = function(...args) {
+    // Convert arguments to string for pattern matching
+    const errorText = JSON.stringify(args);
     
-    // Skip logging expected authentication errors
+    // Check for auth-related error patterns in network requests
     if (
-      (errorString.includes('401') && errorString.includes('user-details')) ||
-      errorString.includes('User not logged in') ||
-      (errorString.includes('Request failed') && errorString.includes('401'))
+      // Specific patterns from the 401 response
+      errorText.includes('sustainafood-backend-fzme.onrender.com/api/user-details') ||
+      errorText.includes('401 Unauthorized') ||
+      // Generic auth error patterns
+      (errorText.includes('401') && errorText.includes('user-details')) ||
+      errorText.includes('User not logged in') ||
+      errorText.includes('Auth') && errorText.includes('status code 401') ||
+      (errorText.includes('Request failed') && errorText.includes('401')) ||
+      errorText.includes('Error checking auth status')
     ) {
-      // Skip logging these expected auth check errors
+      // Silently ignore these expected auth errors
       return;
     }
     
-    // Pass other errors to original console.error
-    originalConsoleError.apply(console, args);
+    // Forward other errors to original console.error
+    return originalConsoleError.apply(console, args);
   };
+  
+  // Do the same for console.log to catch any auth errors logged there
+  console.log = function(...args) {
+    const logText = JSON.stringify(args);
+    
+    if (
+      logText.includes('User not logged in') ||
+      (logText.includes('401') && logText.includes('user-details')) ||
+      logText.includes('sustainafood-backend-fzme.onrender.com/api/user-details')
+    ) {
+      return; // Silent suppress
+    }
+    
+    return originalConsoleLog.apply(console, args);
+  };
+  
+  // Also handle warnings that might contain auth errors
+  console.warn = function(...args) {
+    const warnText = JSON.stringify(args);
+    
+    if (
+      warnText.includes('401') || 
+      warnText.includes('Unauthorized') ||
+      warnText.includes('user-details')
+    ) {
+      return; // Silent suppress
+    }
+    
+    return originalConsoleWarn.apply(console, args);
+  };
+  
+  // Mark as initialized to prevent double initialization
+  window.__errorHandlerInitialized = true;
+  
+  // Log confirmation (will be visible)
+  originalConsoleLog('Auth error suppression initialized');
+})();
+
+// Export for explicit initialization if needed
+export const setupErrorSuppression = () => {
+  // Already initialized by the IIFE above
+  console.log('Error suppression already initialized');
 };

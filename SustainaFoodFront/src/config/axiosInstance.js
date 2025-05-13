@@ -33,17 +33,31 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Add response interceptor to silently handle auth check errors
+// Add a more robust response interceptor to completely silence auth errors
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Don't log auth errors from user-details endpoint
-    const isAuthCheck = error.config?._isAuthCheck || 
-                       error.config?.url?.includes('user-details');
-    const isAuthError = error.response?.status === 401;
+    // Silence ALL 401 errors from user-details endpoint
+    if (
+      error.config?.url?.includes('user-details') && 
+      error.response?.status === 401
+    ) {
+      // Create a completely silent error object
+      const silentError = new Error('Authentication required');
+      silentError.isAuthError = true;
+      silentError.response = { status: 401 };
+      silentError.silent = true; // Mark it so we can identify it elsewhere
+      
+      // Return the silent error without logging
+      return Promise.reject(silentError);
+    }
     
-    if (!(isAuthCheck && isAuthError)) {
-      // Only log non-auth check errors
+    // For other errors, only log if they're not auth-related
+    if (
+      !(error.response?.status === 401 && 
+        (error.config?.url?.includes('login') || 
+         error.config?.url?.includes('user')))
+    ) {
       console.error('API Error:', error.response?.data || error.message);
     }
     
