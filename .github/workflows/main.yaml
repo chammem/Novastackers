@@ -217,10 +217,24 @@ jobs:
       
       - name: Tag Docker Images for Nexus
         run: |
+          # Debug version output
+          echo "Using version: ${{ needs.versioning.outputs.version }}"
+          
+          # Set default version if empty
+          VERSION="${{ needs.versioning.outputs.version }}"
+          if [ -z "$VERSION" ]; then
+            echo "Version is empty, using 'latest' as fallback"
+            VERSION="latest"
+          fi
+          
           # Tag images with the correct Nexus repository format
-          docker tag $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }} 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/sustainafood-backend:${{ needs.versioning.outputs.version }}
-          docker tag $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }} 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/sustainafood-frontend:${{ needs.versioning.outputs.version }}
-          docker tag $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }} 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/sustainafood-flask:${{ needs.versioning.outputs.version }}
+          docker pull $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION
+          docker pull $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION
+          docker pull $DOCKER_USERNAME/$DOCKER_REPO_FLASK:$VERSION
+          
+          docker tag $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:$VERSION 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/sustainafood-backend:$VERSION
+          docker tag $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:$VERSION 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/sustainafood-frontend:$VERSION
+          docker tag $DOCKER_USERNAME/$DOCKER_REPO_FLASK:$VERSION 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/sustainafood-flask:$VERSION
       
       - name: Login to Nexus Docker Registry
         run: |
