@@ -1,20 +1,23 @@
 # Étape 1: Phase de construction
 FROM node:18 AS builder
 
-# Set working directory
+# Set working directory correctly
 WORKDIR /app
+
+# Debug: List files to make sure we're in the right directory
+RUN ls -la
 
 # Copy package files first (for better caching)
 COPY package*.json ./
+
+# Debug: List files to confirm package.json is copied
+RUN ls -la
 
 # Install dependencies
 RUN npm install --force
 
 # Copy the rest of the application
 COPY . .
-
-# Build if needed (uncomment if you have a build step)
-# RUN npm run build
 
 # Étape 2: Phase d'exécution
 FROM node:18-slim
