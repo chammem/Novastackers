@@ -1,34 +1,28 @@
-# Étape 1: Phase de construction
-FROM node:18 AS builder
+FROM node:18
 
-# Set working directory correctly
-WORKDIR /app
+# Create app directory
+WORKDIR /usr/src/app
 
-# Debug: List files to make sure we're in the right directory
-RUN ls -la
+# Print the working directory and list files for debugging
+RUN pwd && ls -la
 
-# Copy package files first (for better caching)
-COPY package*.json ./
+# Copy package.json and package-lock.json with explicit paths
+COPY ./package*.json ./
 
-# Debug: List files to confirm package.json is copied
-RUN ls -la
+# Print directory contents again to verify files were copied
+RUN pwd && ls -la
 
-# Install dependencies
+# Install app dependencies
 RUN npm install --force
 
-# Copy the rest of the application
+# Bundle app source
 COPY . .
 
-# Étape 2: Phase d'exécution
-FROM node:18-slim
-
-WORKDIR /app
-
-# Copy from builder stage
-COPY --from=builder /app .
+# Build the app if needed (uncomment if you have a build step)
+# RUN npm run build
 
 # Expose port
 EXPOSE 8082
 
-# Command to run
-CMD ["npm", "start"]
+# Start the application
+CMD [ "npm", "start" ]
