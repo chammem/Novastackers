@@ -4,7 +4,8 @@ const mongoose = require("mongoose");
 const roleVerificationSchema = new mongoose.Schema({
 
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    vehiculeType:{type:String,enum:["bike","car","motor"]},
+    vehiculeType:{type:String,enum:["bike","car","motor","truck","walking","bicycle"],required:false},
+    transportCapacity: { type: String, enum: ["small", "medium", "large"], required: false },
     driverLicense: {
       url: { type: String, required: false },
       verified: { type: Boolean, default: false },

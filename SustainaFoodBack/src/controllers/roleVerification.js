@@ -3,51 +3,102 @@ const upload = require("../middleware/upload");
 const User = require("../models/userModel")
 const axios = require("axios")
 const fs = require("fs");
+
 exports.uploadDriverDocuments = async (req, res) => {
   try {
-    const { driverId, vehiculeType } = req.body;
-
-    // Validate user exists and is a driver
-    const user = await User.findById(driverId);
-    if (!user || user.role !== "driver") {
-      return res.status(400).json({ message: "Invalid driver ID or role" });
+    const { userId, transportType, transportCapacity } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required"
+      });
     }
-
-    // Get file paths from multer
-    const driverLicensePath = vehiculeType === "motor" ? null : `uploads/${req.files.driverLicense[0].filename}`;
-    const vehiculeRegistrationPath = `uploads/${req.files.vehiculeRegistration[0].filename}`;
-
-    // Update user's vehicle type
-    user.vehicleType = vehiculeType;
-
-    // If vehiculeType is "bike", set user as active
-    if (vehiculeType === "bike") {
-      user.isActive = true; // Activate the user
+    
+    // Check if this is a no-document transport type
+    const isNoDocumentRequired = ["walking", "bicycle"].includes(transportType);
+    
+    // Update the user profile with transport information
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
     }
-
+    
+    // Update transport type and capacity
+    user.transportType = transportType;
+    user.transportCapacity = transportCapacity;
+    
+    // Auto-activate users with bicycle or walking transport types
+    if (isNoDocumentRequired) {
+      user.isActive = true; // Automatically make user active
+    }
+    
     await user.save();
-
-    // Set verification status based on vehiculeType
-    const verificationStatus = vehiculeType === "bike" ? "approved" : "pending";
-
-    const verification = await RoleVerification.findOneAndUpdate(
-      { userId: driverId },
-      {
-        vehiculeType,
-        driverLicense: { url: driverLicensePath, verified: false },
-        vehiculeRegistration: { url: vehiculeRegistrationPath, verified: false },
-        status: verificationStatus, // Set status to "approved" if bike, otherwise "pending"
-      },
-      { upsert: true, new: true }
-    );
-
-    res.status(200).json({
-      message: "Documents uploaded successfully",
-      verification,
+    
+    // Handle role verification record
+    let verification = await RoleVerification.findOne({ userId });
+    
+    if (!verification) {
+      verification = new RoleVerification({ 
+        userId,
+        vehiculeType: transportType,
+        transportCapacity: transportCapacity
+      });
+    } else {
+      verification.vehiculeType = transportType;
+      verification.transportCapacity = transportCapacity;
+    }
+    
+    // Auto-approve verification for bicycle and walking
+    if (isNoDocumentRequired) {
+      verification.status = "approved";
+    } else {
+      // For other vehicle types, process document upload
+      verification.status = "pending";
+      
+      if (req.files) {
+        if (req.files.driverLicense && req.files.driverLicense[0]) {
+          verification.driverLicense = {
+            url: req.files.driverLicense[0].path,
+            verified: false
+          };
+        }
+        
+        if (req.files.vehiculeRegistration && req.files.vehiculeRegistration[0]) {
+          verification.vehiculeRegistration = {
+            url: req.files.vehiculeRegistration[0].path,
+            verified: false
+          };
+        }
+      }
+    }
+    
+    await verification.save();
+    
+    // Return appropriate message based on transport type
+    return res.status(200).json({
+      success: true,
+      message: isNoDocumentRequired 
+        ? "Your account has been automatically activated for walking/bicycle delivery" 
+        : "Documents submitted successfully and awaiting verification",
+      user: {
+        _id: user._id,
+        transportType: user.transportType,
+        transportCapacity: user.transportCapacity,
+        isActive: user.isActive
+      }
     });
+    
   } catch (error) {
-    console.log("Error uploading documents:", error);
-    res.status(500).json({ message: "An error occurred while uploading documents" });
+    console.error("Error in uploadDriverDocuments:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while processing your request"
+    });
   }
 };
 
@@ -104,10 +155,12 @@ exports.verification = async (req,res)=>{
     // Update the status and isActive based on the action
     if (action === "accept") {
       verification.status = "approved";
-      user.isActive = true; // Activate the user
+      user.isActive = true;
+      user.verificationStatus = "verified" // Activate the user
     } else if (action === "reject") {
       verification.status = "rejected";
-      user.isActive = false; // Deactivate the user
+      user.isActive = false;
+      user.verificationStatus="rejected"; // Deactivate the user
     } else {
       return res.status(400).json({ success: false, message: "Invalid action" });
     }
