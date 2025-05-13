@@ -27,13 +27,14 @@ const server = http.createServer(app);
 const paymentController = require("./src/controllers/payment/paymentController");
 const driverAssignmentService = require("./src/services/driverAssignmentService");
 
+const corsOptions = require('./config/corsConfig');
+
+// Apply CORS configuration with the updated options
+app.use(cors(corsOptions));
+
 // Configure Socket.IO
 const io = new Server(server, {
-  cors: {
-    origin: process.env.FRONTEND_URL || "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    credentials: true,
-  },
+  cors: corsOptions
 });
 
 // Setup socket middleware to make io available in controllers
