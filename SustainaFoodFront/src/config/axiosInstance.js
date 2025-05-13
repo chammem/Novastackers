@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+// Environment detection that works with Jest
+const isProd = process.env.NODE_ENV === 'production';
+
 // Determine the base URL based on the environment
-const baseURL = import.meta.env.PROD 
+const baseURL = isProd
   ? 'https://sustainafood-backend-fzme.onrender.com/api'
   : 'http://localhost:10000/api'; // Updated to match your server port
 

@@ -1,9 +1,12 @@
 import { io } from 'socket.io-client';
 
+// Environment detection that works with Jest
+const isProd = process.env.NODE_ENV === 'production';
+
 // Determine the base URL based on the environment
-const baseURL = import.meta.env.PROD 
+const baseURL = isProd
   ? 'https://sustainafood-backend-fzme.onrender.com'
-  : 'http://localhost:10000'; // Updated to port 10000 to match your server
+  : 'http://localhost:10000';
 
 const socket = io(baseURL, {
   withCredentials: true,
