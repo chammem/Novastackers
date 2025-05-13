@@ -25,5 +25,21 @@ axiosInstance.interceptors.request.use((config) => {
   }, (error) => {
     return Promise.reject(error);
   });
-  
+
+// Add a response interceptor to handle errors
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Don't log 401 errors from user-details endpoint as they're expected when not logged in
+    const isAuthCheck = error.config.url.includes('user-details');
+    const isAuthError = error.response?.status === 401;
+    
+    if (!(isAuthCheck && isAuthError)) {
+      console.error('API Error:', error.response?.data || error.message);
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 export default axiosInstance;
