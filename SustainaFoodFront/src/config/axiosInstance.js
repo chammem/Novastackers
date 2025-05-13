@@ -33,6 +33,24 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Ensure the token is properly added to every request
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    
+    if (token) {
+      // Set Authorization header with Bearer prefix
+      config.headers.Authorization = `Bearer ${token}`;
+      
+      // Log for debugging (remove in production)
+      console.log('Adding token to request:', config.url);
+    }
+    
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Add a more robust response interceptor to completely silence auth errors
 axiosInstance.interceptors.response.use(
   (response) => response,

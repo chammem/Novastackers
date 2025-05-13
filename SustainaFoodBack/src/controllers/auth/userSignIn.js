@@ -64,7 +64,8 @@ async function userSignInController(req, res) {
     return res.cookie("token", token, tokenOption).status(200).json({
       success: true,
       message: "Logged in successfully",
-      user: tokenData
+      user: tokenData,
+      token: token  // Include token in response body for localStorage
     });
 
   } catch (err) {
