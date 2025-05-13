@@ -97,21 +97,6 @@ app.post(
 );
 
 // Middleware and static
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || "*",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: [
-      "Origin",
-      "X-Requested-With",
-      "Content",
-      "Accept",
-      "Content-Type",
-      "Authorization",
-    ],
-  })
-);
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
