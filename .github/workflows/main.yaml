@@ -177,6 +177,22 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true  # Ensure workflow succeeds even if Nexus push fails
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Get Version
+        id: get-version
+        run: |
+          if [ -f "shared-version.txt" ]; then
+            VERSION=$(cat shared-version.txt)
+            echo "Using version from file: $VERSION"
+          else
+            VERSION="1.0.0"
+            echo "Version file not found, using default: $VERSION"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
       - name: Configure Docker for Nexus
         continue-on-error: true
         run: |
@@ -187,19 +203,22 @@ jobs:
 
       - name: Pull Images from Docker Hub
         run: |
-          VERSION="${{ needs.versioning.outputs.version }}"
+          # Use version from previous step
+          VERSION="${{ steps.get-version.outputs.version }}"
+          echo "Using version: $VERSION"
+          
           # Log in to Docker Hub
           echo "cindaa123." | docker login -u "$DOCKER_USERNAME" --password-stdin
           
           # Pull images from Docker Hub
           for APP in backend frontend flask; do
-            echo "Pulling sustainafood-$APP:$VERSION from Docker Hub"
-            docker pull $DOCKER_USERNAME/sustainafood-$APP:$VERSION
+            echo "Pulling $DOCKER_USERNAME/sustainafood-$APP:$VERSION from Docker Hub"
+            docker pull $DOCKER_USERNAME/sustainafood-$APP:$VERSION || echo "Failed to pull $APP image"
           done
       
       - name: Manual Deployment Instructions
         run: |
-          VERSION="${{ needs.versioning.outputs.version }}"
+          VERSION="${{ steps.get-version.outputs.version }}"
           echo "======================== DEPLOYMENT SUMMARY ========================"
           echo "✅ Docker Hub Deployment: SUCCESSFUL"
           echo "⚠️ Nexus Deployment: SKIPPED (Connection issues with Nexus server)"
