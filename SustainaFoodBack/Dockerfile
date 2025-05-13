@@ -1,32 +1,31 @@
 # Étape 1: Phase de construction
 FROM node:18 AS builder
 
+# Set working directory
 WORKDIR /app
 
-# D'abord copier uniquement les fichiers nécessaires pour les dépendances
-COPY package.json package-lock.json ./
+# Copy package files first (for better caching)
+COPY package*.json ./
 
-# Installer les dépendances (y compris les devDependencies)
-RUN npm ci
+# Install dependencies
+RUN npm install --force
 
-# Copier le reste des fichiers
+# Copy the rest of the application
 COPY . .
 
+# Build if needed (uncomment if you have a build step)
+# RUN npm run build
+
 # Étape 2: Phase d'exécution
-FROM node:18-alpine
+FROM node:18-slim
 
 WORKDIR /app
 
-# Copier depuis le builder uniquement ce dont on a besoin
-COPY --from=builder /app/node_modules ./node_modules
+# Copy from builder stage
 COPY --from=builder /app .
 
-# Variables d'environnement (à définir au runtime)
-ENV NODE_ENV=production
-ENV PORT=8082
-
-# Exposer le port
+# Expose port
 EXPOSE 8082
 
-# Commande de démarrage
+# Command to run
 CMD ["npm", "start"]

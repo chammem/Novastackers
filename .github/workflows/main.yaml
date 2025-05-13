@@ -261,11 +261,30 @@ jobs:
     needs: [backend]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Deploy to Render
-        uses: johnbeynon/render-deploy-action@v0.0.8
-        with:
-          service-id: ${{ secrets.RENDER_SERVICE_ID_BACKEND }}
-          api-key: ${{ secrets.RENDER_API_KEY }}
-          docker-file-path: './SustainaFoodBack/Dockerfile'  # Specify Dockerfile path relative to repo root
+      - name: Trigger Render Deployment
+        run: |
+          echo "Deploying backend to Render..."
+          curl -X POST "https://api.render.com/deploy/srv-d0hqotmuk2gs73883ppg?key=JObLCe8u78o"
+          echo "Backend deployment triggered successfully!"
+          
+  deploy_frontend:
+    name: Deploy Frontend to Render
+    needs: [frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deployment
+        run: |
+          echo "Deploying frontend to Render..."
+          curl -X POST "https://api.render.com/deploy/srv-d0hqp0luk2gs73883pp0?key=L0bLCe8u710" # Replace with your actual frontend deploy hook
+          echo "Frontend deployment triggered successfully!"
+          
+  deploy_flask:
+    name: Deploy Flask to Render
+    needs: [flask]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deployment
+        run: |
+          echo "Deploying Flask service to Render..."
+          curl -X POST "https://api.render.com/deploy/srv-d0hqp2luk2gs73883pp2?key=L0bLCe8u712" # Replace with your actual Flask deploy hook
+          echo "Flask deployment triggered successfully!"
