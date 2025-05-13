@@ -69,6 +69,10 @@ import DeliveryRouteDetails from './components/driver/DeliveryRouteDetails.jsx';
 import About from './components/About.jsx'
 import Contact from './components/Contact.jsx'
 import Features from './components/Features.jsx'
+import RestaurantProtectedRoute from './components/RestaurantProtectedRoute.jsx';
+import CharityProtectedRoute from './components/CharityProtectedRoute.jsx';
+import DriverProtectedRoute from './components/DriverProtectedRoute.jsx';
+import VolunteerProtectedRoute from './components/VolunteerProtectedRoute.jsx';
 
 const router = createBrowserRouter([
   {
@@ -89,24 +93,15 @@ const router = createBrowserRouter([
       { path: "features", element: <Features/> },
       { path: "verify", element: <VerifyAccount /> },
       {path:"/donationForm",element:<CreateDonationForm/>},
-      {path:"/donations",element:<DonationsList/>},
       {path:"/addfoodtodonation",element:<AddFoodToDonation/>},
       {path:"/donations/:id",element:<CharityEventDetails/>},
       {path:"/test",element:<TestCharityPage/>},
-      {path:"/my-campaigns" ,element:<DonationListNgo/>},
-      {path:"/my-campaigns/:id",element:<ViewCampaignProgress/>},
-      {path:"/my-campaigns-analytics",element:<CampaignAnalytics/>}, // No ID parameter needed for general view
-      {path:"/volunteer",element:<VolunteerDashboard/>},
       {path:"/notifications",element:<NotificationsPage/>},
       { path: "/ngo-profile", element: <NGOProfileUpdate /> },
-      {path:"/my-donations",element:<MyFoodDonations/>},
       {path:"/test-map/:batchId",element:<MapView/>},
       {path:"/adress",element:<AddressAutoComplete/>},
       {path:"/route/:foodId",element:<RouteDetailsPage/>},
-      {path:"/requested-assignments",element:<RequestedAssignments/>},
-      {path:"/volunteer-availability",element:<VolunteerAvailability/>},
       {path:"/batch/:batchId/route", element: <BatchRouteDetails />},
-      {path:"/food-sales",element:<FoodSalePage />},
       {path:"/add-food-sale", element: <AddFoodSalePage />},
       {path:"/restaurant/:restaurantId", element:<RestaurantDetailsPage />},
       {path:"/order-confirmation/:foodId", element:<OrderConfirmationPage />},
@@ -114,29 +109,63 @@ const router = createBrowserRouter([
       {path:"/order-payment", element:<OrderPaymentPage />},
       {path:"/orders",element:<MyOrdersPage />},
       {path:"/orders/:orderId",element:<OrderDetailPage/>},
-      {path:"/driver-dashboard",element:<DriverDashboard/>},
-      {path:"/driver-notification",element:<DeliveryNotification/>},
-      {path:"/driver-dashboard",element:<DriverDashboard/>},
-      {path:"/delivery-route/:orderId",element:<DeliveryRouteDetails/>},
-      {path:"/requested-deliveries",element:<RequestedDeliveries/>},
-      {path:"/deliveries-map",element:<AllDeliveriesMap/>},
-      //sinda
-      { path: "/available-food", element: <AvailableFoodList /> },
-      { path: '/suggested-products-list', element: <SuggestedProductsList /> },
       
+      //volunteer protected routes
+      {
+        element: <VolunteerProtectedRoute />,
+        children: [
+          { path: "available-food", element: <AvailableFoodList /> },
+          { path: "volunteer-availability", element: <VolunteerAvailability /> },
+          { path: "requested-assignments", element: <RequestedAssignments /> },
+          { path: "volunteer", element: <VolunteerDashboard /> },
+          { path: "donations", element: <DonationsList /> } // Added to volunteer routes too
+        ]
+      },
+
       {
         element: <ProtectedRoute />,
         children: [
           { path: "account", element: <Account /> },
           { path: "profile", element: <Profile /> }
-          // Retiré 'admin' de ici car il doit être dans AdminProtectedRoute
+        ]
+      },
+
+      //driver protected routes
+      {
+        element: <DriverProtectedRoute />,
+        children: [
+          {path: "driver-dashboard", element: <DriverDashboard />},
+          {path: "driver-notification", element: <DeliveryNotification />},
+          {path: "delivery-route/:orderId", element: <DeliveryRouteDetails />},
+          {path: "requested-deliveries", element: <RequestedDeliveries />},
+          {path: "deliveries-map", element: <AllDeliveriesMap />}
+        ]
+      },
+      // Charity protected routes
+      {
+        element: <CharityProtectedRoute />,
+        children: [
+          {path: "my-campaigns", element: <DonationListNgo />},
+          {path: "my-campaigns-analytics", element: <CampaignAnalytics />},
+          {path: "my-campaigns/:id", element: <ViewCampaignProgress />}
+        ]
+      },
+
+      // Restaurant protected routes
+      {
+        element: <RestaurantProtectedRoute />,
+        children: [
+          {path: "donations", element: <DonationsList />}, // Keep this for restaurant users
+          {path: "my-donations", element: <MyFoodDonations />},
+          {path: "food-sales", element: <FoodSalePage />},
+          {path: 'suggested-products-list', element: <SuggestedProductsList /> }
         ]
       },
 
       // Routes admin - structure corrigée
       {
         path: "admin", // Préfixe commun pour toutes les routes admin
-        element: <ProtectedRoute />,
+        element: <AdminProtectedRoute />,
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
           { path: "dashboard", element: <AdminDashboard /> },
