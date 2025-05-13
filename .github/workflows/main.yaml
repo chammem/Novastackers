@@ -34,7 +34,7 @@ jobs:
           git fetch origin sinda
           git checkout sinda
 
-      - name: Increment Version
+      - name: Get Current Version
         id: set-version
         run: |
           VERSION_FILE=shared-version.txt
@@ -42,19 +42,11 @@ jobs:
             echo "1.0.0" > $VERSION_FILE
           fi
           VERSION=$(cat $VERSION_FILE)
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-          PATCH=$((PATCH + 1))
-          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-          echo $NEW_VERSION > $VERSION_FILE
-          echo "::set-output name=version::$NEW_VERSION"
+          echo "Current version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Commit Updated Version
-        run: |
-          git config user.name "chammem"
-          git config user.email "chammemcinda@gmail.com"
-          git add shared-version.txt
-          git commit -m "ci: increment shared version to ${{ steps.set-version.outputs.version }}"
-          git push origin sinda
+      - name: Display Version
+        run: echo "Using version ${{ steps.set-version.outputs.version }}"
 
   backend:
     name: Backend Analysis
@@ -182,13 +174,25 @@ jobs:
     needs: [backend, frontend, flask]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Get Version from File
+        id: get-version
+        run: |
+          VERSION=$(cat shared-version.txt)
+          echo "Version from file: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      
       - name: Check Nexus Docker Registry Status
         run: |
           # Verify the Nexus server is reachable
           curl -s -o /dev/null -w "%{http_code}" https://2dfc-197-20-41-204.ngrok-free.app || echo "Nexus server not reachable"
           
-          # Check if Docker registry API is available
-          curl -s -o /dev/null -w "%{http_code}" https://2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/v2/ || echo "Docker registry API not found"
+          # Try both possible registry endpoints
+          curl -s -o /dev/null -w "%{http_code}" https://2dfc-197-20-41-204.ngrok-free.app:8082/v2/ || echo "Docker registry API not found on port 8082"
+          curl -s -o /dev/null -w "%{http_code}" https://2dfc-197-20-41-204.ngrok-free.app/v2/ || echo "Docker registry API not found on default port"
 
       - name: Configure Nexus Repository (via REST API)
         run: |
@@ -217,17 +221,9 @@ jobs:
       
       - name: Tag Docker Images for Nexus
         run: |
-          # Debug version output
-          echo "Using version from needs: ${{ needs.versioning.outputs.version }}"
-          
-          # Set default version if empty (use hardcoded value for first run)
-          VERSION="${{ needs.versioning.outputs.version }}"
-          if [ -z "$VERSION" ]; then
-            echo "Version is empty, using '1.0.0' as fallback"
-            VERSION="1.0.0"
-          fi
-          
-          echo "Final version to use: $VERSION"
+          # Use version from file
+          VERSION="${{ steps.get-version.outputs.version }}"
+          echo "Using version from file: $VERSION"
           
           # Log in to Docker Hub again to ensure authentication
           echo "cindaa123." | docker login -u "$DOCKER_USERNAME" --password-stdin
@@ -236,41 +232,47 @@ jobs:
           for IMAGE in "$DOCKER_REPO_BACKEND" "$DOCKER_REPO_FRONTEND" "$DOCKER_REPO_FLASK"; do
             echo "Processing image: $DOCKER_USERNAME/$IMAGE:$VERSION"
             
-            # Check if image exists
-            if docker manifest inspect "$DOCKER_USERNAME/$IMAGE:$VERSION" >/dev/null 2>&1; then
-              echo "Image $DOCKER_USERNAME/$IMAGE:$VERSION found, pulling..."
-              docker pull "$DOCKER_USERNAME/$IMAGE:$VERSION"
+            # Try to pull the image
+            if docker pull "$DOCKER_USERNAME/$IMAGE:$VERSION"; then
+              echo "Successfully pulled $DOCKER_USERNAME/$IMAGE:$VERSION"
+              
+              # Tag for Nexus using the port specified in the repository config
+              docker tag "$DOCKER_USERNAME/$IMAGE:$VERSION" "2dfc-197-20-41-204.ngrok-free.app:8082/docker-hosted/$IMAGE:$VERSION"
             else
-              echo "Image $DOCKER_USERNAME/$IMAGE:$VERSION not found, skipping..."
-              # We'll exit successfully to continue the workflow for testing
-              # In production you might want to fail here
-              continue
+              echo "Warning: Could not pull $DOCKER_USERNAME/$IMAGE:$VERSION"
             fi
-            
-            # Tag for Nexus
-            docker tag "$DOCKER_USERNAME/$IMAGE:$VERSION" "2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/$IMAGE:$VERSION"
           done
-
-      - name: Login to Nexus Docker Registry
-        run: |
-          echo "c40eebf3-c9c0-405b-8334-fc9201a626bf" | docker login 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted -u admin --password-stdin
       
-      - name: Push Images to Nexus
+      - name: Attempt Different Login Methods to Nexus
         run: |
-          # Push images to Nexus Docker registry
-          docker push 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/sustainafood-backend:${{ needs.versioning.outputs.version }} || echo "Failed to push backend image"
-          docker push 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/sustainafood-frontend:${{ needs.versioning.outputs.version }} || echo "Failed to push frontend image"
-          docker push 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/sustainafood-flask:${{ needs.versioning.outputs.version }} || echo "Failed to push flask image"
+          VERSION="${{ steps.get-version.outputs.version }}"
+          
+          # Try multiple login formats
+          echo "c40eebf3-c9c0-405b-8334-fc9201a626bf" | docker login 2dfc-197-20-41-204.ngrok-free.app:8082 -u admin --password-stdin || echo "Login failed with port 8082"
+          
+          echo "c40eebf3-c9c0-405b-8334-fc9201a626bf" | docker login 2dfc-197-20-41-204.ngrok-free.app -u admin --password-stdin || echo "Login failed without port"
+      
+      - name: Attempt to Push Images to Nexus
+        run: |
+          VERSION="${{ steps.get-version.outputs.version }}"
+          
+          # Try multiple push formats
+          for IMAGE in "$DOCKER_REPO_BACKEND" "$DOCKER_REPO_FRONTEND" "$DOCKER_REPO_FLASK"; do
+            echo "Attempting to push $IMAGE to Nexus..."
+            
+            docker push "2dfc-197-20-41-204.ngrok-free.app:8082/docker-hosted/$IMAGE:$VERSION" || echo "Failed to push with port 8082"
+          done
 
       - name: Notify Deployment Ready
         run: |
-          echo "Les images Docker sont prêtes à être déployées:"
+          VERSION="${{ steps.get-version.outputs.version }}"
+          echo "Les images Docker sont prêtes à être déployées avec la version $VERSION:"
           echo "Docker Hub:"
-          echo "Backend: sinda12/sustainafood-backend:${{ needs.versioning.outputs.version }}"
-          echo "Frontend: sinda12/sustainafood-frontend:${{ needs.versioning.outputs.version }}"
-          echo "Flask: sinda12/sustainafood-flask:${{ needs.versioning.outputs.version }}"
+          echo "Backend: sinda12/sustainafood-backend:$VERSION"
+          echo "Frontend: sinda12/sustainafood-frontend:$VERSION"
+          echo "Flask: sinda12/sustainafood-flask:$VERSION"
           echo ""
-          echo "Nexus Repository:"
-          echo "Backend: 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/sustainafood-backend:${{ needs.versioning.outputs.version }}"
-          echo "Frontend: 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/sustainafood-frontend:${{ needs.versioning.outputs.version }}"
-          echo "Flask: 2dfc-197-20-41-204.ngrok-free.app/repository/docker-hosted/sustainafood-flask:${{ needs.versioning.outputs.version }}"
+          echo "Nexus Repository (si la connexion a réussi):"
+          echo "Backend: 2dfc-197-20-41-204.ngrok-free.app:8082/docker-hosted/sustainafood-backend:$VERSION"
+          echo "Frontend: 2dfc-197-20-41-204.ngrok-free.app:8082/docker-hosted/sustainafood-frontend:$VERSION"
+          echo "Flask: 2dfc-197-20-41-204.ngrok-free.app:8082/docker-hosted/sustainafood-flask:$VERSION"
