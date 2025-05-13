@@ -255,3 +255,17 @@ jobs:
           echo ""
           echo "=================================================================="
           echo "✅ WORKFLOW COMPLETED SUCCESSFULLY"
+
+  deploy_backend:
+    name: Deploy Backend to Render
+    needs: [backend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy to Render
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID_BACKEND }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+          docker-file-path: './SustainaFoodBack/Dockerfile'  # Specify Dockerfile path relative to repo root

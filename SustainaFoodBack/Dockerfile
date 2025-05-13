@@ -1,13 +1,32 @@
-FROM node:18 AS build
+# Étape 1: Phase de construction
+FROM node:18 AS builder
+
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+
+# D'abord copier uniquement les fichiers nécessaires pour les dépendances
+COPY package.json package-lock.json ./
+
+# Installer les dépendances (y compris les devDependencies)
+RUN npm ci
+
+# Copier le reste des fichiers
 COPY . .
 
-# Define Stripe environment variables (not recommended for production)
-ENV STRIPE_SECRET_KEY=sk_test_51PBvGnLL07YA4hLRXv0sUDrs5GbVtAQwYcN6LApiBzqks31eCJG2HPJNVT5ikfZglkKUvzIg5yOD2HbmmoPICiAc00CCJWHDBB
-ENV STRIPE_PUBLIC_KEY=pk_test_51PBvGnLL07YA4hLR0uA32N74XSqQe7t0vNYs1LECso1AdojU6hS4FDisCqLcuFYkBSKHLjDcWLfQk0Ofe7Ofgl9i00Fdsetk5J
-ENV STRIPE_WEBHOOK_SECRET=whsec_6eca7d9c962d315079ce9a0753f252c558edbf7e048df396a139d42be66a9680
+# Étape 2: Phase d'exécution
+FROM node:18-alpine
 
+WORKDIR /app
+
+# Copier depuis le builder uniquement ce dont on a besoin
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app .
+
+# Variables d'environnement (à définir au runtime)
+ENV NODE_ENV=production
+ENV PORT=8082
+
+# Exposer le port
 EXPOSE 8082
+
+# Commande de démarrage
 CMD ["npm", "start"]

@@ -187,39 +187,54 @@ const AdminNavbar = ({
       }`}>
         <div className={`p-4 ${sidebarOpen ? "min-w-[220px]" : "min-w-[64px]"}`}>
           <div className="flex items-center justify-between h-12">
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {sidebarOpen ? (
                 <NavLink to="/" className="flex items-center gap-2">
-                          <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg"
-                          >
-                            S
-                          </motion.div>
-                          <span className="text-xl font-bold text-primary hidden sm:block">
-                            SustainaFood
-                          </span>
-                        </NavLink>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg overflow-hidden"
+                  >
+                    <img 
+                      src="/images/logo.png" 
+                      alt="SustainaFood Logo" 
+                      className="w-full h-full object-cover"
+                    />
+                  </motion.div>
+                  <span className="text-xl font-bold text-primary hidden sm:block">
+                    SustainaFood
+                  </span>
+                </NavLink>
               ) : (
-                <motion.div
-                              whileHover={{ scale: 1.05 }}
-                              className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg"
-                            >
-                              S
-                            </motion.div>
+                <NavLink to="/">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg overflow-hidden"
+                  >
+                    <img 
+                      src="/images/logo.png" 
+                      alt="SustainaFood Logo" 
+                      className="w-full h-full object-cover"
+                    />
+                  </motion.div>
+                </NavLink>
               )}
             </AnimatePresence>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1.5 rounded-full hover:bg-base-100 dark:hover:bg-neutral-focus transition-colors duration-200 active:scale-95"
+              className={`rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 ${
+                sidebarOpen 
+                  ? "p-1.5 hover:bg-base-100" 
+                  : "w-8 h-8 bg-primary text-white hover:bg-primary-focus"
+              }`}
             >
               {sidebarOpen ? (
-                <FiChevronLeft className="w-5 h-5 text-primary" />
+                <FiChevronLeft className={`w-5 h-5 ${sidebarOpen ? "text-primary" : "text-white"}`} />
               ) : (
-                <FiChevronRight className="w-5 h-5 text-primary" />
+                <FiChevronRight className="w-5 h-5" />
               )}
             </button>
           </div>
+          
           <nav className="mt-6 space-y-1 flex flex-col">
             <NavItem icon={<FiHome />} text="Dashboard" to="/admin/dashboard" sidebarOpen={sidebarOpen} currentPath={currentPath} />
             <NavItem icon={<FiUsers />} text="Users" to="/admin/users" sidebarOpen={sidebarOpen} currentPath={currentPath} />
@@ -231,6 +246,7 @@ const AdminNavbar = ({
           </nav>
         </div>
       </div>
+      
       {/* Top Navigation */}
       <motion.header
         initial={{ y: -20 }}
