@@ -30,8 +30,17 @@ const driverAssignmentService = require("./src/services/driverAssignmentService"
 const corsOptions = require('./config/corsConfig');
 
 // Apply CORS configuration with the updated options
-app.use(cors(corsOptions));
-
+app.use(cors({
+  origin: [
+    'http://localhost:5173',               // Local Vite dev server
+    'http://localhost:4173',               // Local Vite preview
+    'https://sustainafood-frontend-1-0-116.onrender.com', // Your deployed frontend
+    /\.onrender\.com$/                     // Allow all Render subdomains
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 // Configure Socket.IO
 const io = new Server(server, {
   cors: corsOptions

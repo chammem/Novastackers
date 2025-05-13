@@ -12,46 +12,18 @@ export function AuthProvider({ children }) {
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
-      
-      // Check for token first
-      const token = localStorage.getItem('token');
-      if (!token) {
-        // If no token, don't even try to call the API
-        setUser(null);
-        setIsAuthenticated(false);
-        return;
-      }
-      
-      // Use a custom silent fetch instead of axiosInstance to avoid logging errors
-      try {
-        const response = await fetch(
-          'https://sustainafood-backend-fzme.onrender.com/api/user-details', 
-          {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-          }
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.data);
-          setIsAuthenticated(true);
-        } else {
-          // Silently handle auth failure
-          localStorage.removeItem('token');
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-      } catch (fetchError) {
-        // Silently handle network errors
-        localStorage.removeItem('token');
+      const response = await axiosInstance.get("/user-details"); // Endpoint that returns current user from cookie
+      if (response.data.success) {
+        setUser(response.data.data);
+        setIsAuthenticated(true);
+      } else {
         setUser(null);
         setIsAuthenticated(false);
       }
+    } catch (error) {
+      console.error("Error checking auth status:", error);
+      setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
