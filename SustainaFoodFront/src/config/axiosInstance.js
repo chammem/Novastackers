@@ -6,7 +6,7 @@ const isProductionHost = window.location.host.includes('onrender.com');
 // Determine the base URL based on the environment
 const baseURL = isProductionHost
   ? 'https://sustainafood-backend-fzme.onrender.com/api'
-  : 'http://localhost:10000/api'; // localhost for development
+  : 'http://localhost:8082/api'; // localhost for development
 
 console.log('Using API URL:', baseURL); // Debug log
 
@@ -31,7 +31,10 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error.response?.data || error.message);
+    // Don't log authentication errors as they're normal when not logged in
+    if (error.response?.status !== 401) {
+      console.error('API Error:', error.response?.data || error.message);
+    }
     return Promise.reject(error);
   }
 );
