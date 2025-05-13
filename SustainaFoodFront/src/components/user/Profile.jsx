@@ -37,7 +37,7 @@ const Profile = () => {
   const fileInputRef = useRef(null);
   const [joinDate, setJoinDate] = useState(null);
   const [showPreferences, setShowPreferences] = useState(false);
-  
+
   // Replace userStats with actual activity data
   const [userActivity, setUserActivity] = useState([]);
   const [donationsData, setDonationsData] = useState([]);
@@ -79,7 +79,7 @@ const Profile = () => {
         if (response.data?.data) {
           const userData = response.data.data;
           setUser(userData);
-          
+
           // Set form values
           setValueProfile("fullName", userData.fullName);
           setValueProfile("email", userData.email);
@@ -94,112 +94,133 @@ const Profile = () => {
 
           // Set allergies and preferences
           setValueAllergiesPreferences("allergies", userData.allergies || "");
-          setValueAllergiesPreferences("preferences", userData.preferences || "");
+          setValueAllergiesPreferences(
+            "preferences",
+            userData.preferences || ""
+          );
 
           // Set join date
           if (userData.createdAt) {
             setJoinDate(new Date(userData.createdAt));
           }
-          
+
           // Set profile image if exists
           if (userData.profileImage) {
-            setPreviewImage(`${process.env.REACT_APP_API_URL || 'http://localhost:8082'}/${userData.profileImage}`);
+            setPreviewImage(
+              `${process.env.REACT_APP_API_URL || "http://localhost:8082"}/${
+                userData.profileImage
+              }`
+            );
           }
-          
+
           // Calculate recent activity based on user's updatedAt
           if (userData.updatedAt) {
-            const recentActivity = [{
-              id: 'profile-update',
-              type: 'update',
-              title: 'Profile updated',
-              date: new Date(userData.updatedAt)
-            }];
+            const recentActivity = [
+              {
+                id: "profile-update",
+                type: "update",
+                title: "Profile updated",
+                date: new Date(userData.updatedAt),
+              },
+            ];
             setUserActivity(recentActivity);
           }
-          
+
           // Fetch data based on user role but only keep what's real
           try {
             if (userData.role === "charity") {
               // Only get real campaign data
-              const campaignsResponse = await axiosInstance.get(`/donations/ngo-campaigns/${userData._id}`);
+              const campaignsResponse = await axiosInstance.get(
+                `/donations/ngo-campaigns/${userData._id}`
+              );
               if (campaignsResponse.data) {
-                const campaigns = Array.isArray(campaignsResponse.data) 
-                  ? campaignsResponse.data 
+                const campaigns = Array.isArray(campaignsResponse.data)
+                  ? campaignsResponse.data
                   : [];
-                
+
                 setFoodDonations(campaigns);
-                
+
                 // Count actual foods
                 let totalFoods = 0;
-                
-                campaigns.forEach(campaign => {
+
+                campaigns.forEach((campaign) => {
                   if (campaign.foods && Array.isArray(campaign.foods)) {
                     totalFoods += campaign.foods.length;
                   }
-                  
+
                   // Add to recent activity
                   if (campaign.createdAt) {
                     userActivity.push({
                       id: campaign._id,
-                      type: 'campaign',
+                      type: "campaign",
                       title: `Campaign "${campaign.name}" created`,
-                      date: new Date(campaign.createdAt)
+                      date: new Date(campaign.createdAt),
                     });
                   }
                 });
-                
+
                 setDonationCount(totalFoods);
               }
             } else if (userData.role === "volunteer") {
               // Just get assignment count
-              const assignmentsResponse = await axiosInstance.get(`/donations/volunteer-assignments/${userData._id}`);
+              const assignmentsResponse = await axiosInstance.get(
+                `/donations/volunteer-assignments/${userData._id}`
+              );
               if (assignmentsResponse.data) {
-                const assignments = Array.isArray(assignmentsResponse.data) 
-                  ? assignmentsResponse.data 
+                const assignments = Array.isArray(assignmentsResponse.data)
+                  ? assignmentsResponse.data
                   : [];
-                
+
                 setDonationCount(assignments.length);
-                
+
                 // Add actual assignments to activity
-                assignments.forEach(assignment => {
+                assignments.forEach((assignment) => {
                   if (assignment.created_at || assignment.createdAt) {
                     userActivity.push({
                       id: assignment._id,
-                      type: assignment.status || 'assigned',
-                      title: `${assignment.name || 'Food'} ${assignment.status || 'assigned'}`,
-                      date: new Date(assignment.created_at || assignment.createdAt)
+                      type: assignment.status || "assigned",
+                      title: `${assignment.name || "Food"} ${
+                        assignment.status || "assigned"
+                      }`,
+                      date: new Date(
+                        assignment.created_at || assignment.createdAt
+                      ),
                     });
                   }
                 });
               }
-            } else if (userData.role === "restaurant" || userData.role === "supermarket") {
+            } else if (
+              userData.role === "restaurant" ||
+              userData.role === "supermarket"
+            ) {
               // Get actual donation count
-              const donationsResponse = await axiosInstance.get(`/donations/business-donations/${userData._id}`);
+              const donationsResponse = await axiosInstance.get(
+                `/donations/business-donations/${userData._id}`
+              );
               if (donationsResponse.data) {
                 const donations = Array.isArray(donationsResponse.data)
                   ? donationsResponse.data
                   : [];
-                
+
                 setDonationCount(donations.length);
-                
+
                 // Add real donation activities
-                donations.forEach(donation => {
+                donations.forEach((donation) => {
                   if (donation.created_at || donation.createdAt) {
                     userActivity.push({
                       id: donation._id,
-                      type: donation.status || 'donated',
-                      title: `${donation.name || 'Food item'} donated`,
-                      date: new Date(donation.created_at || donation.createdAt)
+                      type: donation.status || "donated",
+                      title: `${donation.name || "Food item"} donated`,
+                      date: new Date(donation.created_at || donation.createdAt),
                     });
                   }
                 });
               }
             }
-            
+
             // Sort activities by date (most recent first) and limit to 3
             userActivity.sort((a, b) => b.date - a.date);
             setUserActivity(userActivity.slice(0, 3));
-            
           } catch (dataError) {
             console.error("Error fetching role-specific data:", dataError);
           }
@@ -228,14 +249,16 @@ const Profile = () => {
         toast.error("Image file is too large. Maximum size is 5MB.");
         return;
       }
-      
+
       // Check file type
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
       if (!validTypes.includes(file.type)) {
-        toast.error("Invalid file type. Please upload a JPG, PNG, GIF or WebP image.");
+        toast.error(
+          "Invalid file type. Please upload a JPG, PNG, GIF or WebP image."
+        );
         return;
       }
-      
+
       setProfileImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -253,61 +276,68 @@ const Profile = () => {
 
     try {
       const formData = new FormData();
-      
+
       // Append text fields
-      Object.keys(data).forEach(key => {
+      Object.keys(data).forEach((key) => {
         if (data[key] !== undefined && data[key] !== null) {
           formData.append(key, data[key]);
         }
       });
-      
+
       // Append address and coordinates
       if (coordinates.lat && coordinates.lng) {
-        formData.append('lat', coordinates.lat);
-        formData.append('lng', coordinates.lng);
+        formData.append("lat", coordinates.lat);
+        formData.append("lng", coordinates.lng);
       }
-      
+
       if (selectedAddress || data.address) {
-        formData.append('address', selectedAddress || data.address);
+        formData.append("address", selectedAddress || data.address);
       }
-      
+
       // Append profile image if selected
       if (profileImage) {
-        formData.append('profileImage', profileImage);
+        formData.append("profileImage", profileImage);
       }
-      
+
       console.log("Submitting profile update");
-      
+
       const response = await axiosInstance.put(
         `/update-profile/${user._id}`,
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
-      
+
       // Update user data with the response data
       if (response.data && response.data.data) {
         setUser(response.data.data);
-        
+
         // Update preview image with the new image path from server
-        if (response.data.data.profileImage && !response.data.data.profileImage.startsWith('data:')) {
-          setPreviewImage(`${process.env.REACT_APP_API_URL || 'http://localhost:8082'}/${response.data.data.profileImage}`);
+        if (
+          response.data.data.profileImage &&
+          !response.data.data.profileImage.startsWith("data:")
+        ) {
+          setPreviewImage(
+            `${process.env.REACT_APP_API_URL || "http://localhost:8082"}/${
+              response.data.data.profileImage
+            }`
+          );
         }
       }
-      
+
       setUpdateSuccess(true);
-      
+
       // Show success toast
       toast.success("Profile updated successfully!", {
         position: "top-right",
         icon: "🎉",
         style: {
-          borderRadius: '10px',
-          background: '#4CAF50',
-          color: '#fff',
+          borderRadius: "10px",
+          background: "#4CAF50",
+          color: "#fff",
         },
       });
 
@@ -346,21 +376,23 @@ const Profile = () => {
   const onSubmitAllergiesPreferences = async (data) => {
     if (!user?._id) return;
     setSubmitting(true);
-    
+
     try {
       const response = await axiosInstance.put(
         `/update-profile/${user._id}`,
         data
       );
-      
+
       setUser(response.data.data);
       setUpdateSuccess(true);
       toast.success("Preferences updated successfully!");
-      
+
       setTimeout(() => setUpdateSuccess(false), 3000);
     } catch (error) {
       console.error("Error updating preferences:", error);
-      toast.error(error.response?.data?.message || "Failed to update preferences.");
+      toast.error(
+        error.response?.data?.message || "Failed to update preferences."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -381,12 +413,16 @@ const Profile = () => {
       let icon = <FiThumbsUp />;
       let bgColor = "bg-green-100";
       let textColor = "text-green-600";
-      
+
       if (activity.type === "delivered" || activity.type === "completed") {
         icon = <FiHeart />;
         bgColor = "bg-green-100";
         textColor = "text-green-600";
-      } else if (activity.type === "pending" || activity.type === "assigned" || activity.type === "campaign") {
+      } else if (
+        activity.type === "pending" ||
+        activity.type === "assigned" ||
+        activity.type === "campaign"
+      ) {
         icon = <FiStar />;
         bgColor = "bg-green-100";
         textColor = "text-green-600";
@@ -395,12 +431,12 @@ const Profile = () => {
         bgColor = "bg-green-100";
         textColor = "text-green-600";
       }
-      
+
       // Format date as relative time if less than 7 days ago, otherwise as date
       const now = new Date();
       const activityDate = new Date(activity.date);
       const diffDays = Math.floor((now - activityDate) / (1000 * 60 * 60 * 24));
-      
+
       let dateDisplay;
       if (diffDays < 1) {
         dateDisplay = "Today";
@@ -411,7 +447,7 @@ const Profile = () => {
       } else {
         dateDisplay = activityDate.toLocaleDateString();
       }
-      
+
       return (
         <div key={activity.id || index} className="flex items-start gap-3">
           <div className={`${bgColor} rounded-full p-2`}>
@@ -437,8 +473,12 @@ const Profile = () => {
                 <FiUser className="text-green-600" />
               </div>
             </div>
-            <p className="mt-6 text-lg font-medium text-gray-700">Preparing your profile...</p>
-            <p className="text-sm text-gray-500 mt-2">This will only take a moment</p>
+            <p className="mt-6 text-lg font-medium text-gray-700">
+              Preparing your profile...
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              This will only take a moment
+            </p>
           </div>
         </div>
       </div>
@@ -464,20 +504,26 @@ const Profile = () => {
             <div className="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-600 h-40 relative">
               {/* Animated floating bubbles for visual effect */}
               <div className="absolute w-20 h-20 rounded-full bg-white/10 top-5 left-10 animate-pulse"></div>
-              <div className="absolute w-12 h-12 rounded-full bg-white/10 top-20 left-40 animate-pulse" style={{ animationDelay: "1s" }}></div>
-              <div className="absolute w-16 h-16 rounded-full bg-white/10 top-10 right-20 animate-pulse" style={{ animationDelay: "0.5s" }}></div>
+              <div
+                className="absolute w-12 h-12 rounded-full bg-white/10 top-20 left-40 animate-pulse"
+                style={{ animationDelay: "1s" }}
+              ></div>
+              <div
+                className="absolute w-16 h-16 rounded-full bg-white/10 top-10 right-20 animate-pulse"
+                style={{ animationDelay: "0.5s" }}
+              ></div>
             </div>
-            
+
             <div className="flex flex-col md:flex-row px-6 py-6 relative">
               {/* Profile picture with upload capability */}
               <div className="absolute -top-20 left-10 md:left-6">
                 <div className="relative group">
                   <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white bg-white shadow-lg">
                     {previewImage ? (
-                      <img 
-                        src={previewImage} 
-                        alt="Profile" 
-                        className="w-full h-full object-cover" 
+                      <img
+                        src={previewImage}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-100 to-green-200 text-green-600">
@@ -487,8 +533,8 @@ const Profile = () => {
                       </div>
                     )}
                   </div>
-                  <button 
-                    onClick={() => fileInputRef.current.click()} 
+                  <button
+                    onClick={() => fileInputRef.current.click()}
                     className="absolute bottom-0 right-0 bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <FiCamera size={18} />
@@ -502,17 +548,23 @@ const Profile = () => {
                   />
                 </div>
               </div>
-              
+
               {/* User info */}
               <div className="mt-14 md:mt-0 md:ml-40">
-                <h1 className="text-3xl font-bold text-gray-800">{user?.fullName}</h1>
+                <h1 className="text-3xl font-bold text-gray-800">
+                  {user?.fullName}
+                </h1>
                 <div className="flex flex-wrap items-center gap-3 mt-2">
                   <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
                     {user?.role}
                   </span>
-                  {user?.active ? (
+                  {user?.verificationStatus === "verified" ? (
                     <span className="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full flex items-center">
                       <FiCheckCircle className="mr-1" /> Verified
+                    </span>
+                  ) : user?.verificationStatus === "rejected" ? (
+                    <span className="bg-red-100 text-red-800 text-sm font-medium px-3 py-1 rounded-full flex items-center">
+                      <FiAlertCircle className="mr-1" /> Rejected
                     </span>
                   ) : (
                     <span className="bg-amber-100 text-amber-800 text-sm font-medium px-3 py-1 rounded-full flex items-center">
@@ -522,14 +574,17 @@ const Profile = () => {
                 </div>
                 <p className="text-gray-600 mt-2 flex items-center">
                   <FiCalendar className="mr-2" />
-                  Joined: {joinDate ? joinDate.toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  }) : 'Unknown'}
+                  Joined:{" "}
+                  {joinDate
+                    ? joinDate.toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "Unknown"}
                 </p>
               </div>
-              
+
               {/* Remove the Stats summary section with all metrics */}
             </div>
           </motion.div>
@@ -714,7 +769,8 @@ const Profile = () => {
                                   required: "Address is required",
                                   minLength: {
                                     value: 5,
-                                    message: "Address must be at least 5 characters",
+                                    message:
+                                      "Address must be at least 5 characters",
                                   },
                                 })}
                               />
@@ -794,8 +850,8 @@ const Profile = () => {
                             ></path>
                           </svg>
                           <span>
-                            Keep your account secure with a strong password that you
-                            don't use elsewhere.
+                            Keep your account secure with a strong password that
+                            you don't use elsewhere.
                           </span>
                         </div>
 
@@ -976,12 +1032,15 @@ const Profile = () => {
                             ></path>
                           </svg>
                           <span>
-                            Set your preferences and dietary restrictions to personalize your experience.
+                            Set your preferences and dietary restrictions to
+                            personalize your experience.
                           </span>
                         </div>
 
                         <form
-                          onSubmit={handleSubmitAllergiesPreferences(onSubmitAllergiesPreferences)}
+                          onSubmit={handleSubmitAllergiesPreferences(
+                            onSubmitAllergiesPreferences
+                          )}
                           className="space-y-6"
                         >
                           <div className="divider">Dietary Information</div>
@@ -1015,30 +1074,56 @@ const Profile = () => {
                           </div>
 
                           {/* Notification preferences */}
-                          <div className="divider">Notification Preferences</div>
+                          <div className="divider">
+                            Notification Preferences
+                          </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="form-control">
                               <label className="label cursor-pointer justify-start gap-3">
-                                <input type="checkbox" className="checkbox checkbox-primary" defaultChecked />
-                                <span className="label-text">Email notifications</span>
+                                <input
+                                  type="checkbox"
+                                  className="checkbox checkbox-primary"
+                                  defaultChecked
+                                />
+                                <span className="label-text">
+                                  Email notifications
+                                </span>
                               </label>
                             </div>
                             <div className="form-control">
                               <label className="label cursor-pointer justify-start gap-3">
-                                <input type="checkbox" className="checkbox checkbox-primary" defaultChecked />
-                                <span className="label-text">Campaign updates</span>
+                                <input
+                                  type="checkbox"
+                                  className="checkbox checkbox-primary"
+                                  defaultChecked
+                                />
+                                <span className="label-text">
+                                  Campaign updates
+                                </span>
                               </label>
                             </div>
                             <div className="form-control">
                               <label className="label cursor-pointer justify-start gap-3">
-                                <input type="checkbox" className="checkbox checkbox-primary" defaultChecked />
-                                <span className="label-text">Donation confirmations</span>
+                                <input
+                                  type="checkbox"
+                                  className="checkbox checkbox-primary"
+                                  defaultChecked
+                                />
+                                <span className="label-text">
+                                  Donation confirmations
+                                </span>
                               </label>
                             </div>
                             <div className="form-control">
                               <label className="label cursor-pointer justify-start gap-3">
-                                <input type="checkbox" className="checkbox checkbox-primary" defaultChecked />
-                                <span className="label-text">Weekly digest</span>
+                                <input
+                                  type="checkbox"
+                                  className="checkbox checkbox-primary"
+                                  defaultChecked
+                                />
+                                <span className="label-text">
+                                  Weekly digest
+                                </span>
                               </label>
                             </div>
                           </div>
@@ -1095,17 +1180,15 @@ const Profile = () => {
               className="md:col-span-1 space-y-6"
             >
               {/* Remove the Impact Dashboard section */}
-              
+
               {/* Keep the Recent activity section */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
                   <FiActivity className="mr-2 text-green-500" /> Recent Activity
                 </h3>
-                <div className="space-y-4">
-                  {renderActivityItems()}
-                </div>
+                <div className="space-y-4">{renderActivityItems()}</div>
               </div>
-              
+
               {/* Account Status - focused on real data */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
@@ -1119,11 +1202,14 @@ const Profile = () => {
                     <div>
                       <p className="text-sm font-medium">Account Type</p>
                       <p className="text-xs text-gray-600">
-                        {user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : 'User'}
+                        {user?.role
+                          ? user.role.charAt(0).toUpperCase() +
+                            user.role.slice(1)
+                          : "User"}
                       </p>
                     </div>
                   </div>
-                  
+
                   {donationCount > 0 && (
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
@@ -1131,14 +1217,17 @@ const Profile = () => {
                       </div>
                       <div>
                         <p className="text-sm font-medium">
-                          {user?.role === "volunteer" ? "Assignments" : 
-                           user?.role === "charity" ? "Foods in Campaigns" : "Donations"}
+                          {user?.role === "volunteer"
+                            ? "Assignments"
+                            : user?.role === "charity"
+                            ? "Foods in Campaigns"
+                            : "Donations"}
                         </p>
                         <p className="text-xs text-gray-600">{donationCount}</p>
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
                       <FiCalendar className="text-green-600" />
@@ -1146,11 +1235,13 @@ const Profile = () => {
                     <div>
                       <p className="text-sm font-medium">Member Since</p>
                       <p className="text-xs text-gray-600">
-                        {joinDate ? joinDate.toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        }) : 'Unknown'}
+                        {joinDate
+                          ? joinDate.toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "Unknown"}
                       </p>
                     </div>
                   </div>

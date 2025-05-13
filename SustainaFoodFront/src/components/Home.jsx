@@ -32,8 +32,15 @@ function Home() {
         const response = await axiosInstance.get("/user-details");
         setUser(response.data.data);
       } catch (error) {
-        console.error("Error fetching user details:", error);
-        toast.error("Failed to fetch user details.");
+        // Check if this is an authentication error (401/403) which is expected when not logged in
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          console.log("User not logged in"); // Expected situation, no need for error toast
+          setUser(null);
+        } else {
+          // For other unexpected errors, we can still log and optionally show a toast
+          console.error("Error fetching user details:", error);
+          // toast.error("Failed to fetch user details."); // Comment this out or handle conditionally
+        }
       } finally {
         setIsLoading(false);
       }

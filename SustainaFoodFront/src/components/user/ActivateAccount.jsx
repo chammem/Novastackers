@@ -12,6 +12,7 @@ import {
   FiCalendar,
 } from "react-icons/fi";
 import { FaCar, FaMotorcycle, FaBicycle } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 function ActivateAccount() {
   const [user, setUser] = useState(null);
@@ -57,23 +58,25 @@ function ActivateAccount() {
     setMessage("");
 
     const formData = new FormData();
-    formData.append("driverId", user._id.toString());
+    formData.append("userId", user._id.toString());
     formData.append("transportType", transportType);
-    formData.append("vehicleType", vehicleType); // Automatically determined
+    formData.append("transportCapacity", vehicleType);
 
-    // Add documents based on transport type
-    if (transportType === "motor") {
-      // For motorcycle, only vehicle registration is needed
-      if (vehicleRegistration) {
-        formData.append("vehicleRegistration", vehicleRegistration);
-      }
-    } else if (transportType === "car" || transportType === "truck") {
-      // For car and truck, both license and registration are needed
-      if (driverLicense) {
-        formData.append("driverLicense", driverLicense);
-      }
-      if (vehicleRegistration) {
-        formData.append("vehicleRegistration", vehicleRegistration);
+    // Only append documents for vehicle types that require them
+    const requiresDocuments = ["motor", "car", "truck"].includes(transportType);
+
+    if (requiresDocuments) {
+      if (transportType === "motor") {
+        if (vehicleRegistration) {
+          formData.append("vehiculeRegistration", vehicleRegistration);
+        }
+      } else if (transportType === "car" || transportType === "truck") {
+        if (driverLicense) {
+          formData.append("driverLicense", driverLicense);
+        }
+        if (vehicleRegistration) {
+          formData.append("vehiculeRegistration", vehicleRegistration);
+        }
       }
     }
 
@@ -87,9 +90,34 @@ function ActivateAccount() {
           },
         }
       );
+
+      // Update local user state with response data
+      if (response.data.success) {
+        setUser((prev) => ({
+          ...prev,
+          transportType,
+          transportCapacity: vehicleType,
+          isActive: ["walking", "bicycle"].includes(transportType)
+            ? true
+            : prev.isActive,
+        }));
+
+        // Show success message
+        if (["walking", "bicycle"].includes(transportType)) {
+          toast.success("Your account has been automatically activated!");
+        } else {
+          toast.success("Documents submitted for verification");
+        }
+      }
+
       setMessage(response.data.message);
     } catch (error) {
-      setMessage(error.response?.data?.message || "Error uploading documents");
+      setMessage(
+        error.response?.data?.message || "Error updating driver information"
+      );
+      toast.error(
+        error.response?.data?.message || "Error updating driver information"
+      );
       console.error(error);
     } finally {
       setLoading(false);

@@ -18,6 +18,7 @@ import {
   FiUser,
   FiRefreshCw,
   FiAlertCircle,
+  FiMap,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -40,6 +41,9 @@ const DriverDashboard = () => {
   const [selectedDelivery, setSelectedDelivery] = useState(null);
   const [actionType, setActionType] = useState(""); // 'pickup' or 'delivery'
   const [inProgress, setInProgress] = useState(false);
+
+  // Pending requests count state
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
 
   useEffect(() => {
     if (!user || !user._id) return;
@@ -65,6 +69,32 @@ const DriverDashboard = () => {
     const intervalId = setInterval(fetchActiveDeliveries, 30000);
 
     return () => clearInterval(intervalId);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !user._id) return;
+
+    const fetchPendingRequests = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `/driver/assignment-requests/${user._id}`
+        );
+        if (response.data.success) {
+          // Set the count from the actual delivery requests
+          setPendingRequestsCount(response.data.requests?.length || 0);
+        }
+      } catch (error) {
+        console.error("Error fetching pending request count:", error);
+        // Don't reset count on error to prevent flickering
+      }
+    };
+
+    // Call immediately
+    fetchPendingRequests();
+
+    // Refresh every 30 seconds (matching your other refresh interval)
+    const interval = setInterval(fetchPendingRequests, 30000);
+    return () => clearInterval(interval);
   }, [user]);
 
   const refreshDeliveries = async () => {
@@ -301,7 +331,11 @@ const DriverDashboard = () => {
               y: [0, -30, 0],
               opacity: [0.1, 0.3, 0.1],
             }}
-            transition={{ duration: 8, repeat: Infinity, repeatType: "reverse" }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              repeatType: "reverse",
+            }}
           />
           <motion.div
             className="absolute bottom-40 left-[5%] w-80 h-80 rounded-full bg-success/5 filter blur-xl"
@@ -383,12 +417,18 @@ const DriverDashboard = () => {
                 Refresh
               </motion.button>
 
-              <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }}>
-                <Link to="/requested-deliveries" className="btn btn-primary btn-sm gap-2 relative">
+              <motion.div
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link
+                  to="/requested-deliveries"
+                  className="btn btn-primary btn-sm gap-2 relative"
+                >
                   <FiBell />
                   <span>Delivery Requests</span>
                   <AnimatePresence>
-                    {unreadCount > 0 && (
+                    {pendingRequestsCount > 0 && (
                       <motion.div
                         className="absolute -top-2 -right-2"
                         initial={{ scale: 0 }}
@@ -400,7 +440,7 @@ const DriverDashboard = () => {
                           animate={{ scale: [1, 1.2, 1] }}
                           transition={{ duration: 1.5, repeat: Infinity }}
                         >
-                          {unreadCount}
+                          {pendingRequestsCount}
                         </motion.div>
                       </motion.div>
                     )}
@@ -548,9 +588,61 @@ const DriverDashboard = () => {
                   <FiBell size={24} />
                 </motion.div>
                 <div className="text-3xl font-bold text-success mb-1">
-                  {unreadCount}
+                  {pendingRequestsCount}
                 </div>
                 <div className="text-sm text-base-content/70">New Requests</div>
+              </motion.div>
+
+              <motion.div
+                className="bg-base-100 rounded-xl shadow-md p-6 border border-base-200 flex flex-col items-center justify-center text-center"
+                whileHover={{
+                  y: -5,
+                  boxShadow:
+                    "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                }}
+              >
+                <motion.div
+                  className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center text-warning mb-2"
+                  animate={{
+                    rotate: [0, 10, -10, 0],
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
+                >
+                  <FiClipboard size={24} />
+                </motion.div>
+                <div className="text-3xl font-bold text-warning mb-1">
+                  {pendingRequestsCount}
+                </div>
+                <div className="text-sm text-base-content/70">
+                  Pending Requests
+                </div>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg"
+              >
+                <div className="card-body p-5">
+                  <div className="flex justify-between items-center">
+                    <h3 className="card-title m-0 text-lg">Route Map</h3>
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                      <FiMap className="w-5 h-5" />
+                    </div>
+                  </div>
+                  <p className="text-sm mt-2 text-blue-100">
+                    View all your deliveries on an optimized route map
+                  </p>
+                  <div className="card-actions justify-end mt-3">
+                    <Link
+                      to="/deliveries-map"
+                      className="btn btn-sm bg-white text-blue-700 hover:bg-blue-50 border-none gap-2"
+                    >
+                      <FiNavigation /> View Map
+                    </Link>
+                  </div>
+                </div>
               </motion.div>
             </motion.div>
           </div>
@@ -697,7 +789,10 @@ const DriverDashboard = () => {
                       whileTap={{ scale: 0.95 }}
                       className="inline-block"
                     >
-                      <Link to="/requested-deliveries" className="btn btn-primary gap-2">
+                      <Link
+                        to="/requested-deliveries"
+                        className="btn btn-primary gap-2"
+                      >
                         <FiBell className="animate-bounce" />
                         View Delivery Requests
                       </Link>
@@ -828,7 +923,9 @@ const DriverDashboard = () => {
                             <FiPackage className="text-primary" size={16} />
                           </motion.div>
                           <div>
-                            <p className="text-sm text-base-content/70">Order</p>
+                            <p className="text-sm text-base-content/70">
+                              Order
+                            </p>
                             <p className="font-medium">
                               {delivery.quantity}x{" "}
                               {delivery.foodSale?.name || "Food Item"}

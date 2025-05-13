@@ -76,7 +76,7 @@ const userSchema = new Schema(
 
     transportType: {
       type: String,
-      enum: ['walking', 'bicycle', 'car', 'van', 'truck'],
+      enum: ['walking', 'bicycle', 'car', 'van', 'truck','motor'],
       default: 'walking'
     },
     transportCapacity: {
