@@ -248,3 +248,34 @@ jobs:
           done
           
           echo "Note: If pushes failed, check Nexus server connectivity and configuration."
+          
+      - name: Manual Deployment Instructions
+        run: |
+          VERSION="${{ needs.versioning.outputs.version }}"
+          echo "============== MANUAL DEPLOYMENT INSTRUCTIONS =============="
+          echo "The images are available on Docker Hub and can be manually pushed to Nexus:"
+          echo ""
+          echo "1. Login to Docker Hub:"
+          echo "   docker login -u sinda12"
+          echo ""
+          echo "2. Pull the images:"
+          for APP in backend frontend flask; do
+            echo "   docker pull sinda12/sustainafood-$APP:$VERSION"
+          done
+          echo ""
+          echo "3. Tag for Nexus:"
+          for APP in backend frontend flask; do
+            echo "   docker tag sinda12/sustainafood-$APP:$VERSION ${NEXUS_URL}:${NEXUS_PORT}/${NEXUS_REPO}/sustainafood-$APP:$VERSION"
+          done
+          echo ""
+          echo "4. Login to Nexus (using your Nexus credentials):"
+          echo "   docker login ${NEXUS_URL}:${NEXUS_PORT}"
+          echo ""
+          echo "5. Push to Nexus:"
+          for APP in backend frontend flask; do
+            echo "   docker push ${NEXUS_URL}:${NEXUS_PORT}/${NEXUS_REPO}/sustainafood-$APP:$VERSION"
+          done
+          echo ""
+          echo "============================================================"
+          echo "The workflow has completed successfully even if Nexus push failed."
+          echo "Images are available on Docker Hub for deployment."
