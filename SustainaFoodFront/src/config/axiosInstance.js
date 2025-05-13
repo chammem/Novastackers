@@ -65,4 +65,33 @@ axiosInstance.interceptors.response.use(
   }
 );
 
+// Create a custom auth check function that doesn't use the interceptors
+axiosInstance.silentAuthCheck = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    
+    // Make a direct fetch call without using the intercepted axios
+    const response = await fetch(
+      `${baseURL}/user-details`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      }
+    );
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.data;
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+};
+
 export default axiosInstance;
