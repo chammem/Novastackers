@@ -183,11 +183,19 @@ jobs:
 
       - name: Login to Nexus
         run: |
-          echo "${{ secrets.NEXUS_PASSWORD }}" | docker login \
-            -u "${{ secrets.NEXUS_USERNAME }}" \
+          # Adding hardcoded credentials since secrets aren't used
+          echo "c40eebf3-c9c0-405b-8334-fc9201a626bf" | docker login \
+            -u "admin" \
             --password-stdin \
             ${{ env.NEXUS_URL }}:${{ env.NEXUS_PORT }}
 
+      - name: Pull Images from Docker Hub
+        run: |
+          VERSION="${{ needs.versioning.outputs.version }}"
+          # Log in to Docker Hub
+          echo "cindaa123." | docker login -u "$DOCKER_USERNAME" --password-stdin
+          
+        
       - name: Push Images
         run: |
           VERSION="${{ needs.versioning.outputs.version }}"
@@ -195,6 +203,7 @@ jobs:
           # Format correct pour le push :
           # registry:port/repository/image:tag
           for APP in backend frontend flask; do
+            echo "Tagging and pushing sustainafood-$APP:$VERSION"
             docker tag $DOCKER_USERNAME/sustainafood-$APP:$VERSION \
               ${{ env.NEXUS_URL }}:${{ env.NEXUS_PORT }}/${{ env.NEXUS_REPO }}/sustainafood-$APP:$VERSION
             
