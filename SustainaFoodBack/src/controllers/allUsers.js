@@ -102,29 +102,41 @@ async function updateUser(req, res) {
 }
 
 
-async function updateLogedInUser(req,res){
-    const {userId} = req.params; 
-    const updatedData = req.body; 
-    console.log(userId)
-    console.log(updatedData);
-    try {
-     
-      const updatedUser = await userModel.findByIdAndUpdate(userId, updatedData, {
-        new: true, 
+async function updateLogedInUser(req, res) {
+  const { userId } = req.params; 
+  const updatedData = req.body; 
+  
+  console.log("🟢 updateLogedInUser endpoint hit");
+  console.log("User ID:", userId);
+  console.log("Update data:", updatedData);
+  
+  try {
+    const updatedUser = await userModel.findByIdAndUpdate(userId, updatedData, {
+      new: true, 
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({ 
+        success: false,
+        message: "User not found" 
       });
-  
-    
-      if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-      
-      res.status(200).json(updatedUser);
-    } catch (error) {
-      console.error("Error updating user:", error);
-      res.status(500).json({ message: "Failed to update user", error: error.message });
     }
+    
+    // Return with consistent structure
+    res.status(200).json({ 
+      success: true, 
+      data: updatedUser 
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to update user", 
+      error: error.message 
+    });
+  }
 }
+
 async function updateLogedInPassword(req,res){
     const {currentPassword,newPassword} = req.body;
     const {userId} = req.params;

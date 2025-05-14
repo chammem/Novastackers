@@ -52,7 +52,8 @@ exports.acceptDelivery = async (req, res) => {
     
     // Update driver status
     await User.findByIdAndUpdate(driverId, {
-      status: 'busy'
+      status: 'busy',
+      $inc: { activeDeliveries: 1 } // Increment when driver accepts delivery
     });
     
     // Notify customer that a driver accepted their order

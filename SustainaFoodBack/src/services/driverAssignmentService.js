@@ -277,6 +277,14 @@ const assignDriverToOrder = async (
     for (const driver of rankedDrivers) {
       console.log(`[DEBUG] Trying driver: ${driver.fullName} (${driver._id})`);
 
+      // Check if driver has reached maximum deliveries limit
+      if (driver.activeDeliveries >= 2) {
+        console.log(
+          `[DEBUG] Driver ${driver._id} already has maximum 2 active deliveries, skipping`
+        );
+        continue; // Try next driver
+      }
+
       // Check if the driver already has an active delivery
       const activeDeliveries = await Order.find({
         assignedDriver: driver._id,
@@ -331,9 +339,9 @@ const assignDriverToOrder = async (
         return { success: false, message: "Order not found" };
       }
 
-      // Update driver status
+      // Update driver status only, don't increment deliveries yet
       await User.findByIdAndUpdate(driver._id, {
-        status: "assigned",
+        status: "assigned"
       });
 
       // Notify the driver about the assignment

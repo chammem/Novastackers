@@ -364,7 +364,7 @@ const DonationsList = () => {
                             </svg>
                           </div>
                           <span className="text-sm text-gray-500">
-                            {Math.floor(Math.random() * 15) + 5} volunteers
+                            {donation.volunteers?.length || 0} volunteer{donation.volunteers?.length !== 1 ? 's' : ''}
                           </span>
                         </div>
                       </div>

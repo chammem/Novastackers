@@ -44,10 +44,6 @@ const Profile = () => {
   const [foodDonations, setFoodDonations] = useState([]);
   const [donationCount, setDonationCount] = useState(0);
 
-  // Remove impact animation states
-  // const impact = useMotionValue(0);
-  // const impactProgress = useTransform(impact, [0, 100], [0, 100]);
-
   const {
     register: registerProfile,
     handleSubmit: handleSubmitProfile,
@@ -238,8 +234,6 @@ const Profile = () => {
     fetchUserDetails();
   }, [setValueProfile, setValueAllergiesPreferences]);
 
-  // Remove the useEffect for animating impact score
-
   // Profile image handler - optimized for backend storage
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -268,83 +262,56 @@ const Profile = () => {
     }
   };
 
-  // Handle profile update with proper FormData for image upload
+  // Handle profile update with regular JSON object
   const onSubmitProfile = async (data) => {
     if (!user?._id) return;
+    
     setSubmitting(true);
     setUpdateSuccess(false);
-
+    
     try {
-      const formData = new FormData();
-
-      // Append text fields
-      Object.keys(data).forEach((key) => {
-        if (data[key] !== undefined && data[key] !== null) {
-          formData.append(key, data[key]);
-        }
-      });
-
-      // Append address and coordinates
+      // Create a regular JSON object instead of FormData
+      const updateData = {
+        fullName: data.fullName,
+        email: data.email,
+        phoneNumber: data.phoneNumber
+      };
+      
+      // Add address if available
+      if (selectedAddress) {
+        updateData.address = selectedAddress;
+      }
+      
+      // Add coordinates if available
       if (coordinates.lat && coordinates.lng) {
-        formData.append("lat", coordinates.lat);
-        formData.append("lng", coordinates.lng);
+        updateData.lat = coordinates.lat;
+        updateData.lng = coordinates.lng;
       }
-
-      if (selectedAddress || data.address) {
-        formData.append("address", selectedAddress || data.address);
-      }
-
-      // Append profile image if selected
-      if (profileImage) {
-        formData.append("profileImage", profileImage);
-      }
-
-      console.log("Submitting profile update");
-
+      
+      console.log("Submitting profile update with data:", updateData);
+      
       const response = await axiosInstance.put(
-        `/update-profile/${user._id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        `/update-profile/${user._id}`, 
+        updateData  // Send as regular JSON
       );
-
-      // Update user data with the response data
-      if (response.data && response.data.data) {
-        setUser(response.data.data);
-
-        // Update preview image with the new image path from server
-        if (
-          response.data.data.profileImage &&
-          !response.data.data.profileImage.startsWith("data:")
-        ) {
-          setPreviewImage(
-            `${process.env.REACT_APP_API_URL || "http://localhost:8082"}/${
-              response.data.data.profileImage
-            }`
-          );
-        }
+      
+      if (response.data) {
+        // Update local user data
+        setUser(response.data.data || response.data);
+        toast.success("Profile updated successfully!");
+        setUpdateSuccess(true);
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          setUpdateSuccess(false);
+        }, 3000);
       }
-
-      setUpdateSuccess(true);
-
-      // Show success toast
-      toast.success("Profile updated successfully!", {
-        position: "top-right",
-        icon: "🎉",
-        style: {
-          borderRadius: "10px",
-          background: "#4CAF50",
-          color: "#fff",
-        },
-      });
-
-      // Reset success state after 3 seconds
-      setTimeout(() => setUpdateSuccess(false), 3000);
     } catch (error) {
       console.error("Error updating profile:", error);
+      console.error("Response details:", {
+        status: error.response?.status,
+        data: error.response?.data
+      });
       toast.error(error.response?.data?.message || "Failed to update profile.");
     } finally {
       setSubmitting(false);

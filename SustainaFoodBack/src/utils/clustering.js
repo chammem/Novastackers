@@ -34,9 +34,15 @@ exports.createBatches = async (foodItems) => {
     });
 
     // Constants for constraints
-    const MAX_DISTANCE_KM = 5; // Maximum distance between any two points in a batch
+    const MAX_DISTANCE_KM = 2; // Maximum distance between any two points in a batch
     const MIN_ITEMS_PER_BATCH = 2; // Minimum items to form a valid batch
     const MAX_ITEMS_PER_BATCH = 6; // Maximum items per batch
+
+    console.log("\n🔍 BATCH CREATION STARTED");
+    console.log("==================================================");
+    console.log(`Parameters: MAX_DISTANCE: ${MAX_DISTANCE_KM}km | MIN_ITEMS: ${MIN_ITEMS_PER_BATCH} | MAX_ITEMS: ${MAX_ITEMS_PER_BATCH}`);
+    console.log(`Total food items: ${foodItems.length} | Valid items with coordinates: ${validItems.length}`);
+    console.log(`Unique restaurants: ${Object.keys(restaurantGroups).length}`);
 
     // If we have only one valid restaurant, skip clustering and just create batches directly
     if (Object.keys(restaurantGroups).length === 1) {
@@ -119,7 +125,10 @@ exports.createBatches = async (foodItems) => {
                 existingRestaurant.centroid
               ) / 1000; // Convert to km
 
+            console.log(`   Checking distance: ${restaurant.id.substring(0,8)}... to ${existingRestaurant.id.substring(0,8)}... = ${distance.toFixed(2)}km (max: ${MAX_DISTANCE_KM}km)`);
+            
             if (distance > MAX_DISTANCE_KM) {
+              console.log(`   ❌ Too far! Distance ${distance.toFixed(2)}km exceeds ${MAX_DISTANCE_KM}km limit`);
               canAdd = false;
               break;
             }
@@ -182,6 +191,25 @@ exports.createBatches = async (foodItems) => {
           centerPoint: [batchCentroidLat, batchCentroidLng],
           itemCount: currentBatchItems.length,
         });
+
+        console.log(`\n✅ Created batch with ${currentBatchItems.length} items from ${currentBatch.length} restaurants:`);
+        currentBatch.forEach(restaurant => {
+          console.log(`   - Restaurant ${restaurant.id.substring(0,8)}... with ${restaurant.items.length} items at [${restaurant.centroid.lat.toFixed(4)}, ${restaurant.centroid.lng.toFixed(4)}]`);
+        });
+
+        // Get total batch distance (max distance between any two points)
+        let maxDistance = 0;
+        for (let i = 0; i < currentBatch.length; i++) {
+          for (let j = i+1; j < currentBatch.length; j++) {
+            const distance = geolib.getDistance(
+              currentBatch[i].centroid,
+              currentBatch[j].centroid
+            ) / 1000;
+            maxDistance = Math.max(maxDistance, distance);
+          }
+        }
+        console.log(`   - Max distance between any two points: ${maxDistance.toFixed(2)}km`);
+        console.log(`   - Required capacity: ${calculateBatchCapacity(currentBatchItems)}`);
       } else {
         // Handle "orphaned" items that couldn't form a batch
         // Add them to the batch with the closest centroid

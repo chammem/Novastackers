@@ -155,6 +155,12 @@ exports.autoAssignVolunteers = async (req, res) => {
         return transportRanking[volunteerCapacity] >= transportRanking[batch.requiredCapacity];
       });
       
+      console.log(`\n📦 Batch ${batch._id}: Scoring ${availableVolunteers.length} available volunteers`);
+      console.log(`-----------------------------------------------------------------`);
+      console.log(`Required capacity: ${batch.requiredCapacity}`);
+      console.log(`Batch center: [${batch.centerPoint[0]}, ${batch.centerPoint[1]}]`);
+      console.log(`Items count: ${batch.items.length}`);
+      
       if (availableVolunteers.length === 0) {
         assignmentResults.push({
           batchId: batch._id,
@@ -193,8 +199,62 @@ exports.autoAssignVolunteers = async (req, res) => {
         };
       });
       
+      console.log(`\nVOLUNTEER SCORING DETAILS:`);
+      console.log(`ID | Name | Distance | Proximity | Capacity | Total`);
+      console.log(`-----------------------------------------------------------------`);
+      volunteersWithScores.forEach(vs => {
+        const v = vs.volunteer;
+        // Recalculate the distance for logging purposes
+        let distance = "unknown";
+        if (v.lat && v.lng && batch.centerPoint) {
+          distance = (geolib.getDistance(
+            { latitude: v.lat, longitude: v.lng },
+            { latitude: batch.centerPoint[0], longitude: batch.centerPoint[1] }
+          ) / 1000).toFixed(2) + " km"; // in km
+        }
+        // Get capacity info
+        const vCapacity = v.transportCapacity || "small";
+        const capacityMatch = 5 - Math.abs(
+          transportRanking[vCapacity] - transportRanking[batch.requiredCapacity]
+        );
+        
+        console.log(`${v._id.toString().substring(0,8)}... | ${v.fullName.padEnd(15)} | ${distance.padStart(10)} | ${(vs.score - capacityMatch).toFixed(1).padStart(5)} | ${capacityMatch.toFixed(1).padStart(5)} | ${vs.score.toFixed(1).padStart(5)}`);
+      });
+      
       // Sort by score (highest first)
       volunteersWithScores.sort((a, b) => b.score - a.score);
+      
+      if (volunteersWithScores.length > 0) {
+        const best = volunteersWithScores[0];
+        console.log(`\n✅ SELECTED VOLUNTEER: ${best.volunteer.fullName}`);
+        console.log(`   - Score: ${best.score.toFixed(1)}/15 (highest among all volunteers)`);
+        
+        // Calculate specific details about the selection
+        if (best.volunteer.lat && best.volunteer.lng && batch.centerPoint) {
+          const distance = (geolib.getDistance(
+            { latitude: best.volunteer.lat, longitude: best.volunteer.lng },
+            { latitude: batch.centerPoint[0], longitude: batch.centerPoint[1] }
+          ) / 1000).toFixed(2);
+          console.log(`   - Distance: ${distance} km from batch center`);
+          console.log(`   - Proximity score: ${(best.score - (5 - Math.abs(transportRanking[best.volunteer.transportCapacity || "small"] - transportRanking[batch.requiredCapacity]))).toFixed(1)}/10`);
+        }
+        
+        console.log(`   - Capacity: ${best.volunteer.transportCapacity || "small"} (required: ${batch.requiredCapacity})`);
+        console.log(`   - Capacity match score: ${(5 - Math.abs(transportRanking[best.volunteer.transportCapacity || "small"] - transportRanking[batch.requiredCapacity])).toFixed(1)}/5`);
+        
+        // Log other top alternatives if available
+        if (volunteersWithScores.length > 1) {
+          console.log(`\n   Other top candidates:`);
+          for (let i = 1; i < Math.min(volunteersWithScores.length, 3); i++) {
+            console.log(`   ${i+1}. ${volunteersWithScores[i].volunteer.fullName} - Score: ${volunteersWithScores[i].score.toFixed(1)}/15`);
+          }
+        }
+        console.log(`-----------------------------------------------------------------`);
+      }
+      else {
+        console.log(`\n❌ NO SUITABLE VOLUNTEERS FOUND FOR THIS BATCH`);
+        console.log(`-----------------------------------------------------------------`);
+      }
       
       // Assign the highest-scoring volunteer
       if (volunteersWithScores.length > 0) {

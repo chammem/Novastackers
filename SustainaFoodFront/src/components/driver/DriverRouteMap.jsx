@@ -169,10 +169,12 @@ const DriverRouteMap = ({ driverId, userLocation }) => {
 
         // Prepare points for optimization
         deliveries.forEach((delivery, index) => {
-          // Add pickup point if available and needed (based on status)
+          // Only include in pickup points if it's not yet picked up
           if (
-            (delivery.deliveryStatus === "driver_assigned" ||
-              delivery.deliveryStatus === "pickup_ready") &&
+            (delivery.deliveryStatus === "driver_assigned" || 
+             delivery.deliveryStatus === "pickup_ready" ||
+             delivery.status === "pickup_ready") &&
+            !delivery.pickedUp && // This ensures picked up items are skipped
             delivery.foodSale?.businessDetails?.location?.lat &&
             delivery.foodSale?.businessDetails?.location?.lng
           ) {
@@ -194,6 +196,7 @@ const DriverRouteMap = ({ driverId, userLocation }) => {
                   _id: delivery._id,
                   name: delivery.foodSale.name || "Food item",
                   status: delivery.deliveryStatus,
+                  pickedUp: delivery.pickedUp, // Include pickedUp status
                 },
               ],
             });
@@ -220,6 +223,7 @@ const DriverRouteMap = ({ driverId, userLocation }) => {
                   _id: delivery._id,
                   name: delivery.foodSale?.name || "Food item",
                   status: delivery.deliveryStatus,
+                  pickedUp: delivery.pickedUp, // Include pickedUp status
                 },
               ],
             });
@@ -562,8 +566,11 @@ const DriverRouteMap = ({ driverId, userLocation }) => {
                     <strong>Items:</strong>
                     <ul className="list-disc ml-4">
                       {stop.items.map((item) => (
-                        <li key={item._id}>
-                          {item.name} ({item.status})
+                        <li key={item._id} className={item.pickedUp ? "line-through text-gray-500" : ""}>
+                          {item.name} 
+                          <span className={item.pickedUp ? "text-green-600 ml-1" : "text-amber-600 ml-1"}>
+                            ({item.pickedUp ? "Picked up" : item.status})
+                          </span>
                         </li>
                       ))}
                     </ul>

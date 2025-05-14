@@ -96,6 +96,7 @@ const CharityEventDetails = () => {
       <AnimatePresence mode="wait">
         {isLoading ? (
           <motion.div
+            key="loading-state"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -137,6 +138,7 @@ const CharityEventDetails = () => {
         ) : !donation ? (
           // Not found state - with more creative design
           <motion.div
+            key="not-found-state"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="min-h-[60vh] flex items-center justify-center bg-gradient-to-b from-gray-50 to-white"
@@ -177,6 +179,7 @@ const CharityEventDetails = () => {
           </motion.div>
         ) : (
           <motion.div
+            key="campaign-details"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
