@@ -93,7 +93,7 @@ axiosInstance.silentAuthCheck = async () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        credentials: 'include'
+        credentials: 'include'  // This is equivalent to withCredentials: true in axios
       }
     );
     
@@ -104,6 +104,31 @@ axiosInstance.silentAuthCheck = async () => {
     return null;
   } catch (e) {
     return null;
+  }
+};
+
+// Add helper method for login with fetch to ensure credentials are included
+axiosInstance.loginWithFetch = async (email, password) => {
+  try {
+    const response = await fetch(`${baseURL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password }),
+      credentials: 'include'  // Important for cookie-based auth
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok && data.token) {
+      localStorage.setItem('token', data.token);
+      return { success: true, data };
+    }
+    
+    return { success: false, message: data.message || 'Login failed' };
+  } catch (error) {
+    return { success: false, message: 'Network error during login' };
   }
 };
 
