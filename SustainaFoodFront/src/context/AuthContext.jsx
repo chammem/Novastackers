@@ -12,22 +12,16 @@ export function AuthProvider({ children }) {
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
-      
-      // Use silentAuthCheck to avoid console errors
-      const userData = await axiosInstance.silentAuthCheck();
-      
-      if (userData) {
-        setUser(userData);
+      const response = await axiosInstance.get("/user-details"); // Endpoint that returns current user from cookie
+      if (response.data.success) {
+        setUser(response.data.data);
         setIsAuthenticated(true);
       } else {
-        // Clean up if not authenticated
-        localStorage.removeItem('token');
         setUser(null);
         setIsAuthenticated(false);
       }
     } catch (error) {
-      // Silently handle auth errors
-      localStorage.removeItem('token');
+      console.error("Error checking auth status:", error);
       setUser(null);
       setIsAuthenticated(false);
     } finally {
@@ -40,25 +34,10 @@ export function AuthProvider({ children }) {
     checkAuthStatus();
   }, []);
 
-  // Login function using fetch to ensure cookies are properly handled
-  const login = async (email, password) => {
-    try {
-      // Use our custom fetch-based login
-      const result = await axiosInstance.loginWithFetch(email, password);
-      
-      if (result.success) {
-        // Refresh user data
-        await checkAuthStatus();
-        return { success: true };
-      } else {
-        return { success: false, message: result.message };
-      }
-    } catch (error) {
-      return { 
-        success: false, 
-        message: error.message || 'Login failed'
-      };
-    }
+  const login = async (userData) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+    return Promise.resolve(); // Return a resolved promise to allow awaiting
   };
 
   const logout = async () => {

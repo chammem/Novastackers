@@ -32,6 +32,20 @@ const corsOptions = require('./config/corsConfig');
 // Apply the CORS configuration from corsOptions
 app.use(cors(corsOptions));
 
+app.set('trust proxy', 1); // Important pour Render
+
+app.use(session({
+  secret: 'votre_secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: true, // En production seulement
+    sameSite: 'none', // Nécessaire pour cross-origin
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24h
+  }
+}));
+
 // Configure Socket.IO
 const io = new Server(server, {
   cors: corsOptions

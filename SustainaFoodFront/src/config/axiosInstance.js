@@ -1,33 +1,45 @@
 import axios from "axios";
 
-// Always use the correct backend URL regardless of environment
-const baseURL = 'https://sustainafood-backend-fzme.onrender.com/api';
+// Force production URL when in production environment (like Render)
+const isProductionHost = window.location.host.includes('onrender.com');
+
+// Determine the base URL based on the environment
+const baseURL = isProductionHost
+  ? 'https://sustainafood-backend-fzme.onrender.com/api'
+  : 'http://localhost:8082/api'; // localhost for development
 
 const axiosInstance = axios.create({
-    baseURL,
-    withCredentials: true, // Important for cookie-based authentication
-    headers: { 
-        "Content-Type": "application/json"
-    }
+  baseURL: isProductionHost 
+    ? 'https://sustainafood-backend-fzme.onrender.com/api' 
+    : 'http://localhost:8082/api',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  withCredentials: true
 });
 
-// Add request interceptor for authentication
-axiosInstance.interceptors.request.use(
-  (config) => {
-    // Tag auth check requests for special handling
-    if (config.url.includes('user-details')) {
-      config._isAuthCheck = true;
-    }
-    
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Intercepteur pour ajouter le token
+axiosInstance.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, error => Promise.reject(error));
 
+// Gestion des erreurs 401
+axiosInstance.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      // Gérer la déconnexion
+      localStorage.removeItem('token');
+      window.location.href = '/login'; // Rediriger vers login
+    }
+    return Promise.reject(error);
+  }
+);
 // Ensure the token is properly added to every request
 axiosInstance.interceptors.request.use(
   (config) => {
@@ -93,7 +105,7 @@ axiosInstance.silentAuthCheck = async () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        credentials: 'include'  // This is equivalent to withCredentials: true in axios
+        credentials: 'include'
       }
     );
     
@@ -104,31 +116,6 @@ axiosInstance.silentAuthCheck = async () => {
     return null;
   } catch (e) {
     return null;
-  }
-};
-
-// Add helper method for login with fetch to ensure credentials are included
-axiosInstance.loginWithFetch = async (email, password) => {
-  try {
-    const response = await fetch(`${baseURL}/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password }),
-      credentials: 'include'  // Important for cookie-based auth
-    });
-    
-    const data = await response.json();
-    
-    if (response.ok && data.token) {
-      localStorage.setItem('token', data.token);
-      return { success: true, data };
-    }
-    
-    return { success: false, message: data.message || 'Login failed' };
-  } catch (error) {
-    return { success: false, message: 'Network error during login' };
   }
 };
 
