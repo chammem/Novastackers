@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set-version.outputs.version }}
+      unique_version: ${{ steps.unique-version.outputs.unique_version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,7 +51,16 @@ jobs:
       - name: Display Version
         run: echo "Using version ${{ steps.set-version.outputs.version }}"
 
- backend:
+      - name: Create Unique Version
+        id: unique-version
+        run: |
+          VERSION=$(cat shared-version.txt || echo "1.0.0")
+          TIMESTAMP=$(date +%Y%m%d%H%M)
+          UNIQUE_VERSION="${VERSION}-${TIMESTAMP}-${GITHUB_RUN_NUMBER}"
+          echo "Generated unique version: $UNIQUE_VERSION"
+          echo "unique_version=$UNIQUE_VERSION" >> $GITHUB_OUTPUT
+
+  backend:
     name: Backend Analysis
     needs: versioning
     runs-on: ubuntu-latest
@@ -98,8 +108,19 @@ jobs:
       - name: Build and Push Docker Image (Backend)
         working-directory: SustainaFoodBack
         run: |
-          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }} .
+          # Build with unique version tag
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.unique_version }} .
+          
+          # Tag with semantic version
+          docker tag $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.unique_version }} $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }}
+          
+          # Tag as latest
+          docker tag $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.unique_version }} $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:latest
+          
+          # Push all tags
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.unique_version }}
           docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }}
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:latest
 
   frontend:
     name: Frontend Analysis
@@ -150,8 +171,19 @@ jobs:
       - name: Build and Push Docker Image (Frontend)
         working-directory: SustainaFoodFront
         run: |
-          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }} .
+          # Build with unique version tag
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.unique_version }} .
+          
+          # Tag with semantic version
+          docker tag $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.unique_version }} $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }}
+          
+          # Tag as latest
+          docker tag $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.unique_version }} $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:latest
+          
+          # Push all tags
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.unique_version }}
           docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:${{ needs.versioning.outputs.version }}
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FRONTEND:latest
 
   flask:
     name: Flask Service Build and Push
@@ -168,8 +200,19 @@ jobs:
       - name: Build and Push Docker Image (Flask)
         working-directory: RecommendationModel
         run: |
-          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }} .
+          # Build with unique version tag
+          docker build -t $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.unique_version }} .
+          
+          # Tag with semantic version
+          docker tag $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.unique_version }} $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }}
+          
+          # Tag as latest
+          docker tag $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.unique_version }} $DOCKER_USERNAME/$DOCKER_REPO_FLASK:latest
+          
+          # Push all tags
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.unique_version }}
           docker push $DOCKER_USERNAME/$DOCKER_REPO_FLASK:${{ needs.versioning.outputs.version }}
+          docker push $DOCKER_USERNAME/$DOCKER_REPO_FLASK:latest
 
   nexus_push:
     name: Optional Nexus Push (May Skip)
@@ -215,7 +258,7 @@ jobs:
             echo "Pulling $DOCKER_USERNAME/sustainafood-$APP:$VERSION from Docker Hub"
             docker pull $DOCKER_USERNAME/sustainafood-$APP:$VERSION || echo "Failed to pull $APP image"
           done
-      
+          
       - name: Manual Deployment Instructions
         run: |
           VERSION="${{ steps.get-version.outputs.version }}"
