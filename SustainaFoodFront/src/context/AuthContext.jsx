@@ -43,10 +43,16 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       await axiosInstance.post("/userLogout");
+      // Clear token from localStorage to prevent auto-login on refresh
+      localStorage.removeItem('token');
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {
       console.error("Logout error:", error);
+      // Still clear the token even if API call fails
+      localStorage.removeItem('token');
+      setUser(null);
+      setIsAuthenticated(false);
     }
   };
 
