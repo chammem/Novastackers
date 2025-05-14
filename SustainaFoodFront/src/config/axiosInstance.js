@@ -1,19 +1,14 @@
 import axios from "axios";
 
-// Force production URL when in production environment (like Render)
-const isProductionHost = window.location.host.includes('onrender.com');
-
-// Determine the base URL based on the environment
-const baseURL = isProductionHost
-  ? 'https://sustainafood-backend-fzme.onrender.com/api'
-  : 'http://localhost:8082/api'; // localhost for development
+// Always use the correct backend URL regardless of environment
+const baseURL = 'https://sustainafood-backend-fzme.onrender.com/api';
 
 const axiosInstance = axios.create({
     baseURL,
+    withCredentials: true, // Important for cookie-based authentication
     headers: { 
         "Content-Type": "application/json"
-    },
-    withCredentials: true, 
+    }
 });
 
 // Add request interceptor for authentication

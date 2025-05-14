@@ -109,7 +109,8 @@ const router = createBrowserRouter([
       {path:"/order-payment", element:<OrderPaymentPage />},
       {path:"/orders",element:<MyOrdersPage />},
       {path:"/orders/:orderId",element:<OrderDetailPage/>},
-      
+      {path: "donations", element: <DonationsList />}, // Keep this for restaurant users
+
       //volunteer protected routes
       {
         element: <VolunteerProtectedRoute />,
@@ -118,7 +119,6 @@ const router = createBrowserRouter([
           { path: "volunteer-availability", element: <VolunteerAvailability /> },
           { path: "requested-assignments", element: <RequestedAssignments /> },
           { path: "volunteer", element: <VolunteerDashboard /> },
-          { path: "donations", element: <DonationsList /> } // Added to volunteer routes too
         ]
       },
 
@@ -155,7 +155,6 @@ const router = createBrowserRouter([
       {
         element: <RestaurantProtectedRoute />,
         children: [
-          {path: "donations", element: <DonationsList />}, // Keep this for restaurant users
           {path: "my-donations", element: <MyFoodDonations />},
           {path: "food-sales", element: <FoodSalePage />},
           {path: 'suggested-products-list', element: <SuggestedProductsList /> }
