@@ -32,7 +32,6 @@ const corsOptions = require('./config/corsConfig');
 // Apply the CORS configuration from corsOptions
 app.use(cors(corsOptions));
 
-
 // Configure Socket.IO
 const io = new Server(server, {
   cors: corsOptions

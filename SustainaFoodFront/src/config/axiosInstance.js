@@ -9,37 +9,30 @@ const baseURL = isProductionHost
   : 'http://localhost:8082/api'; // localhost for development
 
 const axiosInstance = axios.create({
-  baseURL: isProductionHost 
-    ? 'https://sustainafood-backend-fzme.onrender.com/api' 
-    : 'http://localhost:8082/api',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  },
-  withCredentials: true
+    baseURL,
+    headers: { 
+        "Content-Type": "application/json"
+    },
+    withCredentials: true, 
 });
 
-// Intercepteur pour ajouter le token
-axiosInstance.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, error => Promise.reject(error));
-
-// Gestion des erreurs 401
-axiosInstance.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response?.status === 401) {
-      // Gérer la déconnexion
-      localStorage.removeItem('token');
-      window.location.href = '/login'; // Rediriger vers login
+// Add request interceptor for authentication
+axiosInstance.interceptors.request.use(
+  (config) => {
+    // Tag auth check requests for special handling
+    if (config.url.includes('user-details')) {
+      config._isAuthCheck = true;
     }
-    return Promise.reject(error);
-  }
+    
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
+
 // Ensure the token is properly added to every request
 axiosInstance.interceptors.request.use(
   (config) => {
