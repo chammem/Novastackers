@@ -7,14 +7,16 @@ export default defineConfig(({ mode }) => {
   
   return {
     server: {
+      host: '127.0.0.1', // Specifically use 127.0.0.1 instead of localhost
+      port: 5173,
       proxy: {
         '/api': {
-          target: process.env.VITE_API_URL || 'http://localhost:8082',
+          target: process.env.VITE_API_URL || 'http://127.0.0.1:8082',
           changeOrigin: true,
           secure: false,
         },
         '/socket.io': {
-          target: process.env.VITE_API_URL || 'http://localhost:8082',
+          target: process.env.VITE_API_URL || 'http://127.0.0.1:8082',
           ws: true,
           changeOrigin: true,
         },

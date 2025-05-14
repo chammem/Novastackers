@@ -1,4 +1,4 @@
-import axiosInstance from './axiosInstance';
+import axiosInstance from '../config/axiosInstance';
 
 const BASE_URL = '/api';
 const MAX_RETRIES = 3;

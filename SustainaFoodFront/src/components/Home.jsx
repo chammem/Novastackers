@@ -4,6 +4,7 @@ import HeaderMid from "./HeaderMid";
 import Footer from "./Footer";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import axios from "axios"; // Replace with the correct import
 import axiosInstance from "../config/axiosInstance";
 
 import {
@@ -19,6 +20,7 @@ function Home() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({ meals: 0, partners: 0, pounds: 0 });
+  const [error, setError] = useState(null);
 
   useEffect(() => {
   document.title = "Sustainafood | Home";
@@ -35,11 +37,8 @@ function Home() {
           return;
         }
 
-        const response = await axios.get('http://localhost:8082/api/auth/user', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        // Use the correct axiosInstance instead of axios directly
+        const response = await axiosInstance.get('/auth/user');
         setUser(response.data);
       } catch (error) {
         // Check if this is an authentication error (401/403) which is expected when not logged in

@@ -44,7 +44,6 @@ import Admin from './components/Admin.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import AdminUsersTab from './components/AdminUserTab.jsx'
 import AdminDonationsList from './components/AdminDonationsList.jsx'
-import { Navigate } from 'react-router-dom';
 import VolunteerAvailability from './components/VolunteerAvailability.jsx'
 import BatchRouteDetails from './components/donations/BatchRouteDetails.jsx';
 import FoodSalePage from './components/foodSales/FoodSalePage.jsx';
@@ -72,11 +71,7 @@ import RestaurantProtectedRoute from './components/RestaurantProtectedRoute.jsx'
 import CharityProtectedRoute from './components/CharityProtectedRoute.jsx';
 import DriverProtectedRoute from './components/DriverProtectedRoute.jsx';
 import VolunteerProtectedRoute from './components/VolunteerProtectedRoute.jsx';
-import MysteryPackList from "./components/MysteryPacks/MysteryPackList.jsx";
-import MysteryPackCard from "./components/MysteryPacks/MysteryPackCard.jsx";
 import { initializeCopyFeature } from './utils/copyUtils';
-import TwoFactorAuth from './components/TwoFactorAuth';
-import { AuthProvider } from './context/AuthContext.jsx';
 
 const router = createBrowserRouter([
   {
@@ -154,10 +149,7 @@ const router = createBrowserRouter([
           {path: "my-campaigns/:id", element: <ViewCampaignProgress />}
         ]
       },
-      { path: "/2fa", element:<TwoFactorAuth /> },
- { path: "mysterypack", element: <MysteryPackList /> },
-      { path: "mysterypackcard", element: <MysteryPackCard /> },
-      
+   
       // Restaurant protected routes
       {
         element: <RestaurantProtectedRoute />,

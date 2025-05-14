@@ -7,7 +7,6 @@ import Footer from './Footer';
 import { useNavigate } from 'react-router-dom';
 import Modal from './ui/Modal';
 import axios from 'axios';
-import axios from 'axios';
 
 const AvailableFoodList = () => {
   const [foodItems, setFoodItems] = useState([]);
@@ -15,8 +14,6 @@ const AvailableFoodList = () => {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all'); // Filter state for user or supermarket
   const [selectedAllergens, setSelectedAllergens] = useState(null);
-  const [recommendations, setRecommendations] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const navigate = useNavigate();
@@ -81,7 +78,7 @@ const AvailableFoodList = () => {
         <HeaderMid />
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-primary">Available Food Deals </h1>
+            <h1 className="text-3xl font-bold text-primary">Available Food Deals</h1>
             <div className="flex gap-4">
               <button 
                 className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-outline'}`}
@@ -138,21 +135,6 @@ const AvailableFoodList = () => {
         console.error('Error fetching recommendations:', error);
     }
 };
-  };
-
-  const fetchRecommendations = async (productName) => {
-    try {
-        const response = await axios.get(`/api/recommendations/${productName}`);
-        if (response.data.success) {
-            setRecommendations(response.data.recommendations);
-            setSelectedProduct(productName);
-        } else {
-            console.error('No recommendations found');
-        }
-    } catch (error) {
-        console.error('Error fetching recommendations:', error);
-    }
-};
 
   return (
     <>
@@ -162,6 +144,24 @@ const AvailableFoodList = () => {
         <div className="absolute inset-0 overflow-hidden z-0 pointer-events-none">
           <div className="absolute top-40 right-10 w-96 h-96 bg-green-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
           <div className="absolute bottom-40 left-10 w-80 h-80 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-15"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         </div>
         
         <div className="container mx-auto px-4 py-8 relative z-10">
@@ -293,6 +293,11 @@ const AvailableFoodList = () => {
                         <FiClock size={12} />
                         {getTimeRemaining(item.expiresAt || (item.foodItem?.expiry_date))}
                       </div>
+
+
+
+
+
                     </div>
                     
                     {item.foodItem?.allergens && (
@@ -365,6 +370,38 @@ const AvailableFoodList = () => {
                         </div>
                       </div>
                       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                       <motion.button 
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -413,9 +450,23 @@ const AvailableFoodList = () => {
                       <li key={index}>{rec.product_name} - Similarity: {rec.similarity}</li>
                   ))}
               </ul>
+
+
+
             </div>
           )}
         </div>
+
+
+
+
+
+
+
+
+
+
+
       </div>
       <Footer />
     </>
@@ -438,4 +489,5 @@ const getTimeRemaining = (expiryDate) => {
   return `${hours}h ${minutes}m remaining`;
 };
 
+export { AvailableFoodList };
 export default AvailableFoodList;
