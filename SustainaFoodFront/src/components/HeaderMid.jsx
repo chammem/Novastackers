@@ -120,9 +120,13 @@ function HeaderMid() {
           <NavLink to="/" className="flex items-center gap-2">
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg"
+              className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg overflow-hidden"
             >
-              S
+              <img 
+                src="/images/logo.png" 
+                alt="SustainaFood Logo" 
+                className="w-full h-full object-cover"
+              />
             </motion.div>
             <span className="text-xl font-bold text-primary hidden sm:block">
               SustainaFood
