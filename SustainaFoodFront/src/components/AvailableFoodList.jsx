@@ -7,6 +7,7 @@ import Footer from './Footer';
 import { useNavigate } from 'react-router-dom';
 import Modal from './ui/Modal';
 import axios from 'axios';
+import axios from 'axios';
 
 const AvailableFoodList = () => {
   const [foodItems, setFoodItems] = useState([]);
@@ -14,6 +15,8 @@ const AvailableFoodList = () => {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all'); // Filter state for user or supermarket
   const [selectedAllergens, setSelectedAllergens] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const navigate = useNavigate();
@@ -120,6 +123,21 @@ const AvailableFoodList = () => {
 
   const closeAllergensModal = () => {
     setSelectedAllergens(null);
+  };
+
+  const fetchRecommendations = async (productName) => {
+    try {
+        const response = await axios.get(`/api/recommendations/${productName}`);
+        if (response.data.success) {
+            setRecommendations(response.data.recommendations);
+            setSelectedProduct(productName);
+        } else {
+            console.error('No recommendations found');
+        }
+    } catch (error) {
+        console.error('Error fetching recommendations:', error);
+    }
+};
   };
 
   const fetchRecommendations = async (productName) => {

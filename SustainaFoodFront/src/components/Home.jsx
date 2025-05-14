@@ -29,8 +29,18 @@ function Home() {
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const response = await axiosInstance.get("/user-details");
-        setUser(response.data.data);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('No authentication token found');
+          return;
+        }
+
+        const response = await axios.get('http://localhost:8082/api/auth/user', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setUser(response.data);
       } catch (error) {
         // Check if this is an authentication error (401/403) which is expected when not logged in
         if (error.response && (error.response.status === 401 || error.response.status === 403)) {

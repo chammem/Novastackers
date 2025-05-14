@@ -1,16 +1,15 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 
-import { createBrowserRouter,RouterProvider,BrowserRouter} from 'react-router-dom'
-import App from './App.jsx'
-import ProtectedRoute from './components/ProtectedRoute.jsx'
-import AdminProtectedRoute from './components/AdminProtectedRoute.jsx'
-import ForgotPassword from './components/user/ForgotPassword.jsx'
-import Error404 from './components/Error404.jsx'
-import Account from './components/user/Account.jsx'
-import Connect from './components/user/Connect.jsx'
-import RoleChoice from './components/user/RoleChoice.jsx'
-// import TabArea from "./components/user/TabArea.jsx";
+import App from './App.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
+import AdminProtectedRoute from './components/AdminProtectedRoute.jsx';
+import ForgotPassword from './components/user/ForgotPassword.jsx';
+import Error404 from './components/Error404.jsx';
+import Account from './components/user/Account.jsx';
+import Connect from './components/user/Connect.jsx';
+import RoleChoice from './components/user/RoleChoice.jsx';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import VerifyAccount from './components/user/forms/VerifyAccount.jsx'
@@ -50,7 +49,7 @@ import VolunteerAvailability from './components/VolunteerAvailability.jsx'
 import BatchRouteDetails from './components/donations/BatchRouteDetails.jsx';
 import FoodSalePage from './components/foodSales/FoodSalePage.jsx';
 import AddFoodSalePage from './components/foodSales/AddFoodSalePage.jsx';
-import RestaurantDetailsPage from './components/foodSales/RestaurantDetailsPage';
+import RestaurantDetailsPage from './components/foodSales/RestaurantDetailsPage.jsx';
 import OrderConfirmationPage from './components/foodSales/OrderConfirmationPage.jsx';
 import OrderSuccessPage from './components/foodSales/OrderSuccessPage.jsx';
 import OrderPaymentPage from './components/foodSales/OrderPaymentPage.jsx';
@@ -73,6 +72,11 @@ import RestaurantProtectedRoute from './components/RestaurantProtectedRoute.jsx'
 import CharityProtectedRoute from './components/CharityProtectedRoute.jsx';
 import DriverProtectedRoute from './components/DriverProtectedRoute.jsx';
 import VolunteerProtectedRoute from './components/VolunteerProtectedRoute.jsx';
+import MysteryPackList from "./components/MysteryPacks/MysteryPackList.jsx";
+import MysteryPackCard from "./components/MysteryPacks/MysteryPackCard.jsx";
+import { initializeCopyFeature } from './utils/copyUtils';
+import TwoFactorAuth from './components/TwoFactorAuth';
+import { AuthProvider } from './context/AuthContext.jsx';
 
 const router = createBrowserRouter([
   {
@@ -150,7 +154,10 @@ const router = createBrowserRouter([
           {path: "my-campaigns/:id", element: <ViewCampaignProgress />}
         ]
       },
-
+      { path: "/2fa", element:<TwoFactorAuth /> },
+ { path: "mysterypack", element: <MysteryPackList /> },
+      { path: "mysterypackcard", element: <MysteryPackCard /> },
+      
       // Restaurant protected routes
       {
         element: <RestaurantProtectedRoute />,
@@ -161,14 +168,14 @@ const router = createBrowserRouter([
         ]
       },
 
-      // Routes admin - structure corrigée
+      // Routes admin
       {
-        path: "admin", // Préfixe commun pour toutes les routes admin
+        path: "admin",
         element: <AdminProtectedRoute />,
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
           { path: "dashboard", element: <AdminDashboard /> },
-          { path: "users", element: <AdminDashboard /> },
+          { path: "users", element: <AdminUsersTab /> },
           { path: "Food", element: <AdminFoodTab /> },
           { path: "roles-verification", element: <AdminVerificationComponent /> },
           { path: "campaigns", element: <AdminDonationsList /> },

@@ -296,6 +296,7 @@ const AdminNavbar = ({
               <MobileNavItem icon={<FiShield />} text="Verifications" to="/admin/roles-verification" />
               <MobileNavItem icon={<FiPackage />} text="Campaigns" to="/admin/campaigns" />
               <MobileNavItem icon={<FiTruck />} text="Food" to="/admin/food" />
+              <MobileNavItem icon={<FiPackage />} text="Mystery Packs" to="/admin/mysterypack" />
               <MobileNavItem icon={<FiPieChart />} text="Reports" to="/reports" />
               <MobileNavItem icon={<FiSettings />} text="Settings" to="/settings" />
               <div className="divider my-2" />

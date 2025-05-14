@@ -3,8 +3,13 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
 require('dotenv').config();
+
+// Import DB and routes
 const connectDB = require('./src/config/db');
+const mysteryPacksRouter = require('./src/routes/mysteryPacks');
+
 const router = require('./src/routes');
 const donationRouter = require('./src/routes/donationRouter');
 const path = require("path");
@@ -28,11 +33,12 @@ const paymentController = require("./src/controllers/payment/paymentController")
 const driverAssignmentService = require("./src/services/driverAssignmentService");
 
 const corsOptions = require('./config/corsConfig');
+const authRoutes = require('./src/routes/authRoutes');
 
 // Apply the CORS configuration from corsOptions
 app.use(cors(corsOptions));
 
-// Configure Socket.IO
+// Socket.IO Setup
 const io = new Server(server, {
   cors: corsOptions
 });
@@ -168,6 +174,8 @@ app.use("/api/driver", driverRoutes);
 app.use("/api", recommendationRoutes);
 // Suggested Products API
 app.use('/api/suggested-products', suggestedProductRoutes);
+app.use('/api/auth', require('./src/routes/authRoutes'));
+app.use('/api/mystery-packs', mysteryPacksRouter);
 
 
 // Start DB and server

@@ -11,8 +11,19 @@ const ProtectedRoute = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        await axiosInstance.get('/check-auth');
-        setLoading(false);
+        const response = await axiosInstance.get('http://localhost:8082/api/auth/check-auth', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        if (response.data.isAuthenticated) {
+          setLoading(false);
+        } else {
+          navigate('/login', { 
+            state: { from: location.pathname },
+            replace: true
+          });
+        }
       } catch (err) {
         navigate('/login', { 
           state: { from: location.pathname },
@@ -26,4 +37,4 @@ const ProtectedRoute = () => {
   if (loading) return <div>Loading...</div>;
   return <Outlet />;
 };
-export default ProtectedRoute
+export default ProtectedRoute;

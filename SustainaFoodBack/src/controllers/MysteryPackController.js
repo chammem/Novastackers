@@ -1,6 +1,6 @@
 const multer = require('multer');
 const path = require('path');
-const MysteryPack = require('../models/MysteryPack');
+const MysteryPack = require('../models/mysterypack'); // Fixed casing
 const FoodSale = require('../models/sales/FoodSaleItem');
 
 // Configuration de Multer
@@ -191,9 +191,35 @@ const reserveMysteryPack = async (req, res) => {
   }
 };
 
+const deleteMysteryPack = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedPack = await MysteryPack.findByIdAndDelete(id);
+    
+    if (!deletedPack) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Mystery pack not found' 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Mystery pack deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting mystery pack:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error deleting mystery pack' 
+    });
+  }
+};
+
 module.exports = {
   createMysteryPack,
   getAllMysteryPacks,
   updateMysteryPack,
   reserveMysteryPack,
+  deleteMysteryPack,
 };
