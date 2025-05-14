@@ -83,6 +83,31 @@ axiosInstance.interceptors.response.use(
   }
 );
 
+// Add a custom logout function that properly clears the token
+axiosInstance.logout = async () => {
+  try {
+    // Call the logout endpoint
+    await axiosInstance.post('/userLogout');
+    
+    // Always clear localStorage, regardless of API response
+    localStorage.removeItem('token');
+    sessionStorage.clear();
+    
+    // Force reload to ensure all app state is reset (uncomment if needed)
+    // setTimeout(() => window.location.reload(), 100);
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Logout error:', error);
+    
+    // Even if API fails, still clear local storage
+    localStorage.removeItem('token');
+    sessionStorage.clear();
+    
+    return { success: false, error };
+  }
+};
+
 // Create a custom auth check function that doesn't use the interceptors
 axiosInstance.silentAuthCheck = async () => {
   try {

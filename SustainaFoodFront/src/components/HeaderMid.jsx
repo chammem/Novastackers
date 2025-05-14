@@ -78,12 +78,19 @@ function HeaderMid() {
 
   const handleLogout = async () => {
     try {
-      await axiosInstance.post("/userLogout");
-      logout();
+      // Use the enhanced logout method from axiosInstance
+      const result = await axiosInstance.logout();
+      
+      // This will run even if API call fails
+      logout(); // Call the context logout
       toast.success("Logged out successfully");
       navigate("/login");
     } catch (error) {
       toast.error("Error logging out");
+      // Force logout anyway for safety
+      localStorage.removeItem('token');
+      logout();
+      navigate("/login");
     }
   };
 
