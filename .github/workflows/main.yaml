@@ -26,7 +26,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set-version.outputs.version }}
-      unique_version: ${{ steps.set-version.outputs.unique_version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,17 +44,13 @@ jobs:
             echo "1.0.0" > $VERSION_FILE
           fi
           VERSION=$(cat $VERSION_FILE)
-          # Create unique version with semantic version + build number
-          UNIQUE_VERSION="${VERSION}-build.${GITHUB_RUN_NUMBER}"
           echo "Current version: $VERSION"
-          echo "Unique version: $UNIQUE_VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "unique_version=$UNIQUE_VERSION" >> $GITHUB_OUTPUT
 
       - name: Display Version
         run: echo "Using version ${{ steps.set-version.outputs.version }}"
 
-  backend:
+ backend:
     name: Backend Analysis
     needs: versioning
     runs-on: ubuntu-latest
@@ -73,7 +68,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: SustainaFoodBack
-        run: npm install --force
+        run: npm ci
 
       - name: Run tests with coverage
         working-directory: SustainaFoodBack
@@ -103,21 +98,8 @@ jobs:
       - name: Build and Push Docker Image (Backend)
         working-directory: SustainaFoodBack
         run: |
-          # Build with semantic version tag
           docker build -t $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }} .
-          
-          # Also tag with unique version (includes build number)
-          docker tag $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }} \
-                    $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.unique_version }}
-          
-          # Tag as latest
-          docker tag $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }} \
-                    $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:latest
-          
-          # Push all tags
           docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.version }}
-          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:${{ needs.versioning.outputs.unique_version }}
-          docker push $DOCKER_USERNAME/$DOCKER_REPO_BACKEND:latest
 
   frontend:
     name: Frontend Analysis
@@ -137,7 +119,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: SustainaFoodFront
-        run: npm install --force
+        run: npm ci
 
       - name: Run tests with coverage
         working-directory: SustainaFoodFront
