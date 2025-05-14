@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   backend:
-    image: sinda12/sustainafood-backend:1.0.98
+    image: sinda12/sustainafood-backend:1.0.58
     container_name: backend
     ports:
       - "8082:8082"
@@ -9,7 +9,7 @@ services:
       - NODE_ENV=production
       - MONGODB_URI=mongodb+srv://sinda12:cindaa123.@sustainafood2.lcm8u6v.mongodb.net/Sustainafood2?retryWrites=true&w=majority&appName=Sustainafood2
       - TOKEN_SECRET_KEY="mzenfmezn809097B?cvknazlkf23EE12lkdvslllcdscmazehvlczomiv"
-      - FRONTEND_URL=http://localhost:5173
+      - FRONTEND_URL=http://frontend:5173
       - DOCKER_ENV=true
       - FLASK_BASE_URL=http://flask:5000
     env_file:
@@ -18,7 +18,7 @@ services:
       - sustainafood-network
 
   frontend:
-    image: sinda12/sustainafood-frontend:1.0.98
+    image: sinda12/sustainafood-frontend:1.0.58
     container_name: frontend
     ports:
       - "5173:80"
