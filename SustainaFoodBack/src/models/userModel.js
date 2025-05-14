@@ -104,6 +104,10 @@ const userSchema = new Schema(
       }],
       default: {}
     },
+    activeDeliveries: {
+    type: Number,
+    default: 0
+  },
 
   },
   { timestamps: true }
