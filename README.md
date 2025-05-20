@@ -62,5 +62,4 @@ npm install
 npm run dev
 #run the python recommendation
 python recommendation-api.py
-#run devops 
-docker-compose up --build
+
